@@ -1,0 +1,56 @@
+{
+    "name": "Proximos Passos",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "GitHub.copilot-chat",
+                "golang.go",
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "bradlc.vscode-tailwindcss"
+            ],
+            "settings": {
+                "go.gopath": "/go",
+                "go.toolsManagement.autoUpdate": true,
+                "editor.formatOnSave": true,
+                "[go]": {
+                    "editor.defaultFormatter": "golang.go"
+                },
+                "[typescript]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[typescriptreact]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                }
+            }
+        }
+    },
+    "forwardPorts": [
+        3000,
+        8080,
+        5432
+    ],
+    "portsAttributes": {
+        "3000": {
+            "label": "Frontend (Next.js)",
+            "onAutoForward": "notify"
+        },
+        "8080": {
+            "label": "Backend (Go)",
+            "onAutoForward": "notify"
+        },
+        "5432": {
+            "label": "PostgreSQL",
+            "onAutoForward": "silent"
+        }
+    },
+    "postCreateCommand": "cd /workspace/frontend && npm install && cd /workspace/backend && go mod download",
+    "remoteUser": "vscode"
+}
