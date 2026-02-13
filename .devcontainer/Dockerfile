@@ -15,7 +15,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 # Install Go tools for VS Code extension
 RUN go install golang.org/x/tools/gopls@latest \
     && go install github.com/go-delve/delve/cmd/dlv@latest \
-    && go install honnef.co/go/tools/cmd/staticcheck@latest
+    && go install honnef.co/go/tools/cmd/staticcheck@latest \
+    && go install github.com/swaggo/swag/cmd/swag@latest
 
 # Install PostgreSQL client
 RUN apt-get update \

@@ -6,11 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	_ "proximos-passos/backend/docs"
 	"proximos-passos/backend/internal/adapter/handler"
+	"proximos-passos/backend/internal/adapter/middleware"
+	"proximos-passos/backend/internal/infrastructure/jwt"
 	"proximos-passos/backend/internal/infrastructure/postgres"
 	"proximos-passos/backend/internal/usecase"
 )
@@ -22,6 +25,10 @@ import (
 // @host            localhost:8080
 // @BasePath        /
 
+// @securityDefinitions.apikey CookieAuth
+// @in                         cookie
+// @name                       token
+
 func main() {
 	ctx := context.Background()
 
@@ -30,15 +37,29 @@ func main() {
 		log.Fatal("DATABASE_URL environment variable is required")
 	}
 
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET environment variable is required")
+	}
+
 	pool, err := postgres.NewConnection(ctx, databaseURL)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 	defer pool.Close()
 
+	jwtService := jwt.NewService(jwtSecret, 24*time.Hour)
+
 	userRepo := postgres.NewUserRepository(pool)
 	userUC := usecase.NewUserUseCase(userRepo)
+	authUC := usecase.NewAuthUseCase(userRepo, jwtService)
+
+	authHandler := handler.NewAuthHandler(authUC)
 	userHandler := handler.NewUserHandler(userUC)
+
+	adminOnly := func(next http.Handler) http.Handler {
+		return middleware.Auth(jwtService)(middleware.RequireAdmin(userRepo)(next))
+	}
 
 	mux := http.NewServeMux()
 
@@ -54,12 +75,13 @@ func main() {
 		fmt.Fprintf(w, `{"status": "ok"}`)
 	})
 
-	userHandler.RegisterRoutes(mux)
+	authHandler.RegisterRoutes(mux)
+	userHandler.RegisterRoutes(mux, adminOnly)
 	mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		log.Fatal("PORT environment variable is required")
 	}
 
 	log.Printf("Backend listening on :%s", port)

@@ -68,6 +68,30 @@ func (r *UserRepository) GetByPublicID(ctx context.Context, publicID string) (*e
 	return &user, nil
 }
 
+func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
+	var user entity.User
+	err := r.pool.QueryRow(ctx,
+		`SELECT id, public_id, role, name, email, email_verified_at,
+		        password_hash, avatar_url, is_active, created_at, updated_at
+		 FROM users
+		 WHERE email = $1 AND is_active = true`,
+		email,
+	).Scan(
+		&user.ID, &user.PublicID, &user.Role, &user.Name, &user.Email,
+		&user.EmailVerifiedAt, &user.PasswordHash, &user.AvatarURL,
+		&user.IsActive, &user.CreatedAt, &user.UpdatedAt,
+	)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *UserRepository) List(ctx context.Context, limit, offset int) ([]entity.User, error) {
 	rows, err := r.pool.Query(ctx,
 		`SELECT id, public_id, role, name, email, email_verified_at,

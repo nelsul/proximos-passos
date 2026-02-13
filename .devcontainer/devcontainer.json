@@ -10,7 +10,6 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "GitHub.copilot-chat",
                 "golang.go",
                 "dbaeumer.vscode-eslint",
                 "esbenp.prettier-vscode",

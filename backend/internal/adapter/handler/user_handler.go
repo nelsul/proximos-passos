@@ -20,12 +20,12 @@ func NewUserHandler(uc *usecase.UserUseCase) *UserHandler {
 	return &UserHandler{uc: uc}
 }
 
-func (h *UserHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /users", h.Create)
-	mux.HandleFunc("GET /users", h.List)
-	mux.HandleFunc("GET /users/{id}", h.GetByID)
-	mux.HandleFunc("PUT /users/{id}", h.Update)
-	mux.HandleFunc("DELETE /users/{id}", h.Delete)
+func (h *UserHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
+	mux.Handle("POST /users", mw(http.HandlerFunc(h.Create)))
+	mux.Handle("GET /users", mw(http.HandlerFunc(h.List)))
+	mux.Handle("GET /users/{id}", mw(http.HandlerFunc(h.GetByID)))
+	mux.Handle("PUT /users/{id}", mw(http.HandlerFunc(h.Update)))
+	mux.Handle("DELETE /users/{id}", mw(http.HandlerFunc(h.Delete)))
 }
 
 // Create godoc
@@ -34,9 +34,12 @@ func (h *UserHandler) RegisterRoutes(mux *http.ServeMux) {
 // @Tags        users
 // @Accept      json
 // @Produce     json
+// @Security    CookieAuth
 // @Param       body body     dto.CreateUserRequest true "User data"
 // @Success     201  {object} dto.UserResponse
 // @Failure     400  {object} apperror.AppError
+// @Failure     401  {object} apperror.AppError
+// @Failure     403  {object} apperror.AppError
 // @Failure     409  {object} apperror.AppError
 // @Failure     500  {object} apperror.AppError
 // @Router      /users [post]
@@ -68,9 +71,12 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Description Returns a paginated list of users
 // @Tags        users
 // @Produce     json
+// @Security    CookieAuth
 // @Param       page_number query    int false "Page number" default(1)
 // @Param       page_size   query    int false "Page size"   default(20)
 // @Success     200         {object} dto.UserListResponse
+// @Failure     401         {object} apperror.AppError
+// @Failure     403         {object} apperror.AppError
 // @Failure     500         {object} apperror.AppError
 // @Router      /users [get]
 func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
@@ -109,8 +115,11 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Description Returns a user by their public ID
 // @Tags        users
 // @Produce     json
+// @Security    CookieAuth
 // @Param       id  path     string true "User public ID (UUID)"
 // @Success     200 {object} dto.UserResponse
+// @Failure     401 {object} apperror.AppError
+// @Failure     403 {object} apperror.AppError
 // @Failure     404 {object} apperror.AppError
 // @Failure     500 {object} apperror.AppError
 // @Router      /users/{id} [get]
@@ -132,10 +141,13 @@ func (h *UserHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Tags        users
 // @Accept      json
 // @Produce     json
+// @Security    CookieAuth
 // @Param       id   path     string               true "User public ID (UUID)"
 // @Param       body body     dto.UpdateUserRequest true "Fields to update"
 // @Success     200  {object} dto.UserResponse
 // @Failure     400  {object} apperror.AppError
+// @Failure     401  {object} apperror.AppError
+// @Failure     403  {object} apperror.AppError
 // @Failure     404  {object} apperror.AppError
 // @Failure     500  {object} apperror.AppError
 // @Router      /users/{id} [put]
@@ -173,8 +185,11 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Description Soft-deletes a user by their public ID
 // @Tags        users
 // @Produce     json
+// @Security    CookieAuth
 // @Param       id  path     string true "User public ID (UUID)"
 // @Success     204 "No Content"
+// @Failure     401 {object} apperror.AppError
+// @Failure     403 {object} apperror.AppError
 // @Failure     404 {object} apperror.AppError
 // @Failure     500 {object} apperror.AppError
 // @Router      /users/{id} [delete]
