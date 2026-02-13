@@ -20,6 +20,9 @@ const (
 	CodeInvalidFileType      Code = "INVALID_FILE_TYPE"
 	CodeFileTooLarge         Code = "FILE_TOO_LARGE"
 	CodeUploadFailed         Code = "UPLOAD_FAILED"
+	CodeGroupNotFound        Code = "GROUP_NOT_FOUND"
+	CodeMemberNotFound       Code = "MEMBER_NOT_FOUND"
+	CodeMemberAlreadyExists  Code = "MEMBER_ALREADY_EXISTS"
 )
 
 type AppError struct {
@@ -65,4 +68,7 @@ var (
 	ErrInvalidFileType      = New(CodeInvalidFileType, "The file type is not allowed.", http.StatusBadRequest)
 	ErrFileTooLarge         = New(CodeFileTooLarge, "The file exceeds the maximum allowed size.", http.StatusBadRequest)
 	ErrUploadFailed         = New(CodeUploadFailed, "Failed to upload the file.", http.StatusInternalServerError)
+	ErrGroupNotFound        = New(CodeGroupNotFound, "The requested group was not found.", http.StatusNotFound)
+	ErrMemberNotFound       = New(CodeMemberNotFound, "The requested member was not found.", http.StatusNotFound)
+	ErrMemberAlreadyExists  = New(CodeMemberAlreadyExists, "The user is already a member of this group.", http.StatusConflict)
 )

@@ -39,6 +39,34 @@ func Auth(jwtService *jwt.Service) func(http.Handler) http.Handler {
 	}
 }
 
+func AuthWithRole(jwtService *jwt.Service, repo repository.UserRepository) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			cookie, err := r.Cookie(jwt.CookieName)
+			if err != nil {
+				response.Error(w, apperror.ErrUnauthorized)
+				return
+			}
+
+			claims, err := jwtService.Parse(cookie.Value)
+			if err != nil {
+				response.Error(w, apperror.ErrUnauthorized)
+				return
+			}
+
+			user, err := repo.GetByPublicID(r.Context(), claims.UserPublicID)
+			if err != nil || user == nil {
+				response.Error(w, apperror.ErrUnauthorized)
+				return
+			}
+
+			ctx := context.WithValue(r.Context(), userPublicIDKey, claims.UserPublicID)
+			ctx = context.WithValue(ctx, userRoleKey, user.Role)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
 func RequireAdmin(repo repository.UserRepository) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
