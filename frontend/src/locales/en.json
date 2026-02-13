@@ -108,6 +108,19 @@
     "GROUP_CREATE_SUBMIT": "Create",
     "GROUP_CREATE_SUCCESS": "Group created successfully.",
 
+    "GROUP_DETAIL_ADMINS": "Administrators",
+    "GROUP_DETAIL_MEMBERS": "Members",
+    "GROUP_DETAIL_NO_MEMBERS": "No members found.",
+    "GROUP_DETAIL_ROLE_ADMIN": "Admin",
+
+    "GROUP_JOIN_BUTTON": "Join group",
+    "GROUP_REQUEST_BUTTON": "Request to join",
+    "GROUP_JOIN_SUCCESS": "You have joined the group.",
+    "GROUP_REQUEST_SUCCESS": "Your join request has been sent.",
+    "GROUP_ALREADY_MEMBER": "Already a member",
+    "GROUP_REQUEST_PENDING": "Request pending",
+    "ERROR_MEMBER_ALREADY_EXISTS": "You are already a member of this group.",
+
     "FILTER_NAME_PLACEHOLDER": "Search by name…",
     "FILTER_ACCESS_ALL": "All access types",
     "FILTER_VISIBILITY_ALL": "All visibilities"

@@ -68,3 +68,59 @@ export async function createGroup(
     body: JSON.stringify(input),
   });
 }
+
+export interface GroupMemberResponse {
+  user_id: string;
+  name: string;
+  email: string;
+  avatar_url: string | null;
+  role: "admin" | "member";
+  is_active: boolean;
+  joined_at: string;
+  updated_at: string;
+}
+
+export interface GroupMemberListResponse {
+  data: GroupMemberResponse[];
+  page_number: number;
+  page_size: number;
+  total_items: number;
+  total_pages: number;
+}
+
+export async function listGroupMembers(
+  groupId: string,
+  page = 1,
+  size = 10,
+  role?: string,
+): Promise<GroupMemberListResponse> {
+  const params = new URLSearchParams();
+  params.set("page_number", String(page));
+  params.set("page_size", String(size));
+  if (role) params.set("role", role);
+  return api<GroupMemberListResponse>(
+    `/groups/${groupId}/members?${params.toString()}`,
+  );
+}
+
+export interface JoinGroupResponse {
+  status: "accepted" | "pending";
+}
+
+export async function joinGroup(groupId: string): Promise<JoinGroupResponse> {
+  return api<JoinGroupResponse>(`/groups/${groupId}/join`, {
+    method: "POST",
+  });
+}
+
+export type MembershipStatus = "none" | "pending" | "member";
+
+export interface MembershipResponse {
+  status: MembershipStatus;
+}
+
+export async function checkMembership(
+  groupId: string,
+): Promise<MembershipResponse> {
+  return api<MembershipResponse>(`/groups/${groupId}/membership`);
+}

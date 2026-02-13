@@ -6,13 +6,20 @@ import type { GroupResponse } from "@/lib/groups";
 
 interface GroupCardProps {
   group: GroupResponse;
+  onClick?: () => void;
 }
 
-export function GroupCard({ group }: GroupCardProps) {
+export function GroupCard({ group, onClick }: GroupCardProps) {
   const t = useTranslations();
 
   return (
-    <div className="rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:border-secondary/40">
+    <div
+      onClick={onClick}
+      className={`rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:border-secondary/40${
+        onClick ? " cursor-pointer" : ""
+      }`}
+    >
+      {" "}
       <div className="flex items-start gap-4">
         {group.thumbnail_url ? (
           <img

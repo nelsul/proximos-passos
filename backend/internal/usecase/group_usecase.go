@@ -350,6 +350,55 @@ func extractThumbnailKeyFromURL(url string) string {
 // Member Operations
 // ==========================================
 
+func (uc *GroupUseCase) JoinGroup(ctx context.Context, groupPublicID string, userPublicID string) (*entity.GroupMember, error) {
+	group, err := uc.groupRepo.GetByPublicID(ctx, groupPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if group == nil {
+		return nil, apperror.ErrGroupNotFound
+	}
+
+	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, apperror.ErrUserNotFound
+	}
+
+	var acceptedByID *int
+	if group.AccessType == entity.GroupAccessOpen {
+		// Auto-accept: find the first admin of the group
+		admin, err := uc.groupRepo.GetFirstAdminMember(ctx, group.ID)
+		if err != nil {
+			return nil, err
+		}
+		if admin != nil {
+			acceptedByID = &admin.UserID
+		} else {
+			// Fallback: accept by self if no admin exists
+			acceptedByID = &user.ID
+		}
+	}
+	// For closed groups, acceptedByID stays nil → pending request
+
+	member := &entity.GroupMember{
+		GroupID:      group.ID,
+		UserID:       user.ID,
+		Role:         entity.MemberRoleMember,
+		AcceptedByID: acceptedByID,
+		IsActive:     true,
+		CreatedByID:  user.ID,
+	}
+
+	if err := uc.groupRepo.AddMember(ctx, member); err != nil {
+		return nil, err
+	}
+
+	return member, nil
+}
+
 func (uc *GroupUseCase) AddMember(ctx context.Context, groupPublicID string, input AddMemberInput) (*entity.GroupMember, error) {
 	group, err := uc.groupRepo.GetByPublicID(ctx, groupPublicID)
 	if err != nil {
@@ -403,7 +452,7 @@ func (uc *GroupUseCase) AddMember(ctx context.Context, groupPublicID string, inp
 	return member, nil
 }
 
-func (uc *GroupUseCase) ListMembers(ctx context.Context, groupPublicID string, requesterPublicID string, requesterRole entity.UserRole, pageNumber, pageSize int) ([]entity.GroupMember, int, error) {
+func (uc *GroupUseCase) ListMembers(ctx context.Context, groupPublicID string, requesterPublicID string, requesterRole entity.UserRole, pageNumber, pageSize int, role string) ([]entity.GroupMember, int, error) {
 	group, err := uc.groupRepo.GetByPublicID(ctx, groupPublicID)
 	if err != nil {
 		return nil, 0, err
@@ -412,8 +461,10 @@ func (uc *GroupUseCase) ListMembers(ctx context.Context, groupPublicID string, r
 		return nil, 0, apperror.ErrGroupNotFound
 	}
 
-	// System admins can list any group's members; regular users must be active members
-	if requesterRole != entity.UserRoleAdmin {
+	// System admins can list any group's members.
+	// For publicly visible groups, any authenticated user can view members.
+	// For private groups, the requester must be an active member.
+	if requesterRole != entity.UserRoleAdmin && group.VisibilityType != entity.GroupVisibilityPublic {
 		requester, err := uc.userRepo.GetByPublicID(ctx, requesterPublicID)
 		if err != nil {
 			return nil, 0, err
@@ -443,12 +494,12 @@ func (uc *GroupUseCase) ListMembers(ctx context.Context, groupPublicID string, r
 
 	offset := (pageNumber - 1) * pageSize
 
-	members, err := uc.groupRepo.ListMembers(ctx, group.ID, pageSize, offset)
+	members, err := uc.groupRepo.ListMembers(ctx, group.ID, pageSize, offset, role)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	total, err := uc.groupRepo.CountMembers(ctx, group.ID)
+	total, err := uc.groupRepo.CountMembers(ctx, group.ID, role)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -498,4 +549,34 @@ func (uc *GroupUseCase) RemoveMember(ctx context.Context, groupPublicID, userPub
 
 func (uc *GroupUseCase) GetUserByPublicID(ctx context.Context, publicID string) (*entity.User, error) {
 	return uc.userRepo.GetByPublicID(ctx, publicID)
+}
+
+func (uc *GroupUseCase) CheckMembership(ctx context.Context, groupPublicID string, userPublicID string) (string, error) {
+	group, err := uc.groupRepo.GetByPublicID(ctx, groupPublicID)
+	if err != nil {
+		return "", err
+	}
+	if group == nil {
+		return "", apperror.ErrGroupNotFound
+	}
+
+	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
+	if err != nil {
+		return "", err
+	}
+	if user == nil {
+		return "", apperror.ErrUserNotFound
+	}
+
+	member, err := uc.groupRepo.GetMember(ctx, group.ID, user.ID)
+	if err != nil {
+		return "", err
+	}
+	if member == nil {
+		return "none", nil
+	}
+	if member.AcceptedByID == nil {
+		return "pending", nil
+	}
+	return "member", nil
 }

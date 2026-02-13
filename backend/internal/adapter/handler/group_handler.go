@@ -37,6 +37,8 @@ func (h *GroupHandler) RegisterSelfRoutes(mux *http.ServeMux, mw func(http.Handl
 }
 
 func (h *GroupHandler) RegisterMemberRoutes(mux *http.ServeMux, adminMW, authMW func(http.Handler) http.Handler) {
+	mux.Handle("POST /groups/{id}/join", authMW(http.HandlerFunc(h.JoinGroup)))
+	mux.Handle("GET /groups/{id}/membership", authMW(http.HandlerFunc(h.CheckMembership)))
 	mux.Handle("POST /groups/{id}/members", adminMW(http.HandlerFunc(h.AddMember)))
 	mux.Handle("GET /groups/{id}/members", authMW(http.HandlerFunc(h.ListMembers)))
 	mux.Handle("PUT /groups/{id}/members/{userId}", adminMW(http.HandlerFunc(h.UpdateMemberRole)))
@@ -444,8 +446,9 @@ func (h *GroupHandler) ListMembers(w http.ResponseWriter, r *http.Request) {
 
 	requesterPublicID := middleware.UserPublicID(r.Context())
 	requesterRole := middleware.UserRole(r.Context())
+	role := r.URL.Query().Get("role")
 
-	members, totalItems, err := h.uc.ListMembers(r.Context(), groupPublicID, requesterPublicID, requesterRole, pageNumber, pageSize)
+	members, totalItems, err := h.uc.ListMembers(r.Context(), groupPublicID, requesterPublicID, requesterRole, pageNumber, pageSize, role)
 	if err != nil {
 		response.Error(w, err)
 		return
@@ -549,4 +552,70 @@ func (h *GroupHandler) RemoveMember(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// JoinGroup godoc
+// @Summary     Join a group
+// @Description Allows the authenticated user to join a group
+// @Tags        group-members
+// @Produce     json
+// @Security    CookieAuth
+// @Param       id  path     string true "Group public ID (UUID)"
+// @Success     200 {object} map[string]string
+// @Failure     401 {object} apperror.AppError
+// @Failure     404 {object} apperror.AppError
+// @Failure     409 {object} apperror.AppError
+// @Failure     500 {object} apperror.AppError
+// @Router      /groups/{id}/join [post]
+func (h *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
+	groupPublicID := r.PathValue("id")
+
+	userPublicID := middleware.UserPublicID(r.Context())
+	if userPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	member, err := h.uc.JoinGroup(r.Context(), groupPublicID, userPublicID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	status := "pending"
+	if member.AcceptedByID != nil {
+		status = "accepted"
+	}
+
+	response.JSON(w, http.StatusOK, map[string]string{"status": status})
+}
+
+// CheckMembership godoc
+// @Summary     Check membership status
+// @Description Returns the authenticated user's membership status for a group
+// @Tags        group-members
+// @Produce     json
+// @Security    CookieAuth
+// @Param       id  path     string true "Group public ID (UUID)"
+// @Success     200 {object} map[string]string
+// @Failure     401 {object} apperror.AppError
+// @Failure     404 {object} apperror.AppError
+// @Failure     500 {object} apperror.AppError
+// @Router      /groups/{id}/membership [get]
+func (h *GroupHandler) CheckMembership(w http.ResponseWriter, r *http.Request) {
+	groupPublicID := r.PathValue("id")
+
+	userPublicID := middleware.UserPublicID(r.Context())
+	if userPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	status, err := h.uc.CheckMembership(r.Context(), groupPublicID, userPublicID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, map[string]string{"status": status})
 }

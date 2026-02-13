@@ -8,6 +8,7 @@ import { listGroups, type GroupResponse, type GroupFilter } from "@/lib/groups";
 import { GroupCard } from "@/components/groups/group-card";
 import { GroupFilters } from "@/components/groups/group-filters";
 import { CreateGroupModal } from "@/components/groups/create-group-modal";
+import { GroupDetailModal } from "@/components/groups/group-detail-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -21,6 +22,9 @@ export default function GroupsPage() {
   const [groups, setGroups] = useState<GroupResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<GroupResponse | null>(
+    null,
+  );
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -104,7 +108,11 @@ export default function GroupsPage() {
         <>
           <div className="grid gap-4 sm:grid-cols-2">
             {groups.map((group) => (
-              <GroupCard key={group.id} group={group} />
+              <GroupCard
+                key={group.id}
+                group={group}
+                onClick={() => setSelectedGroup(group)}
+              />
             ))}
           </div>
           <Pagination
@@ -119,6 +127,13 @@ export default function GroupsPage() {
         <CreateGroupModal
           onClose={() => setShowCreate(false)}
           onCreated={handleGroupCreated}
+        />
+      )}
+
+      {selectedGroup && (
+        <GroupDetailModal
+          group={selectedGroup}
+          onClose={() => setSelectedGroup(null)}
         />
       )}
     </div>

@@ -29,8 +29,9 @@ type GroupRepository interface {
 	// Members
 	AddMember(ctx context.Context, member *entity.GroupMember) error
 	GetMember(ctx context.Context, groupID, userID int) (*entity.GroupMember, error)
-	ListMembers(ctx context.Context, groupID int, limit, offset int) ([]entity.GroupMember, error)
-	CountMembers(ctx context.Context, groupID int) (int, error)
+	GetFirstAdminMember(ctx context.Context, groupID int) (*entity.GroupMember, error)
+	ListMembers(ctx context.Context, groupID int, limit, offset int, role string) ([]entity.GroupMember, error)
+	CountMembers(ctx context.Context, groupID int, role string) (int, error)
 	UpdateMemberRole(ctx context.Context, groupID, userID int, role entity.MemberRole) error
 	RemoveMember(ctx context.Context, groupID, userID int) error
 }

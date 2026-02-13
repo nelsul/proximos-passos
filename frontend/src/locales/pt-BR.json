@@ -108,6 +108,19 @@
     "GROUP_CREATE_SUBMIT": "Criar",
     "GROUP_CREATE_SUCCESS": "Grupo criado com sucesso.",
 
+    "GROUP_DETAIL_ADMINS": "Administradores",
+    "GROUP_DETAIL_MEMBERS": "Membros",
+    "GROUP_DETAIL_NO_MEMBERS": "Nenhum membro encontrado.",
+    "GROUP_DETAIL_ROLE_ADMIN": "Admin",
+
+    "GROUP_JOIN_BUTTON": "Entrar no grupo",
+    "GROUP_REQUEST_BUTTON": "Solicitar entrada",
+    "GROUP_JOIN_SUCCESS": "Você entrou no grupo.",
+    "GROUP_REQUEST_SUCCESS": "Sua solicitação de entrada foi enviada.",
+    "GROUP_ALREADY_MEMBER": "Já é membro",
+    "GROUP_REQUEST_PENDING": "Solicitação pendente",
+    "ERROR_MEMBER_ALREADY_EXISTS": "Você já é membro deste grupo.",
+
     "FILTER_NAME_PLACEHOLDER": "Buscar por nome…",
     "FILTER_ACCESS_ALL": "Todos os tipos de acesso",
     "FILTER_VISIBILITY_ALL": "Todas as visibilidades"
