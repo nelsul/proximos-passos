@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+    /* Brand Colors */
+    --color-primary: #0f2e2e;
+    --color-primary-light: #1a4a4a;
+    --color-primary-dark: #0a1f1f;
+
+    --color-secondary: #cfa156;
+    --color-secondary-light: #dbb778;
+    --color-secondary-dark: #b8893e;
+
+    /* Dark Mode Surfaces */
+    --color-background: #0a1a1a;
+    --color-surface: #0f2e2e;
+    --color-surface-light: #153535;
+    --color-surface-border: #1a4a4a;
+
+    /* Dark Mode Text */
+    --color-heading: #e8ede8;
+    --color-body: #c5cec5;
+    --color-muted: #7a8f7a;
+
+    --color-success: #16a34a;
+    --color-error: #dc2626;
+    --color-warning: #f59e0b;
+
+    /* Font Families */
+    --font-heading: "Indi Kazka", serif;
+    --font-body: "Inter", sans-serif;
+}
+
+/* Base Styles */
+body {
+    @apply bg-background text-body font-body antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    @apply text-heading font-heading;
+}
