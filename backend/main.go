@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,6 +10,9 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	_ "proximos-passos/backend/docs"
+	"proximos-passos/backend/internal/adapter/handler"
+	"proximos-passos/backend/internal/infrastructure/postgres"
+	"proximos-passos/backend/internal/usecase"
 )
 
 // @title           Proximos Passos API
@@ -19,9 +23,25 @@ import (
 // @BasePath        /
 
 func main() {
+	ctx := context.Background()
+
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL environment variable is required")
+	}
+
+	pool, err := postgres.NewConnection(ctx, databaseURL)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer pool.Close()
+
+	userRepo := postgres.NewUserRepository(pool)
+	userUC := usecase.NewUserUseCase(userRepo)
+	userHandler := handler.NewUserHandler(userUC)
+
 	mux := http.NewServeMux()
 
-	// healthCheck godoc
 	// @Summary     Health check
 	// @Description Returns the health status of the API
 	// @Tags        health
@@ -34,6 +54,7 @@ func main() {
 		fmt.Fprintf(w, `{"status": "ok"}`)
 	})
 
+	userHandler.RegisterRoutes(mux)
 	mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
 
 	port := os.Getenv("PORT")
