@@ -9,3 +9,11 @@ type LoginResponse struct {
 	Token     string `json:"token"`
 	ExpiresAt int64  `json:"expires_at"`
 }
+
+type VerifyEmailRequest struct {
+	Token string `json:"token"`
+}
+
+type ResendVerificationRequest struct {
+	UserID string `json:"user_id"`
+}

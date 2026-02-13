@@ -15,6 +15,7 @@ import (
 	"proximos-passos/backend/internal/adapter/middleware"
 	"proximos-passos/backend/internal/infrastructure/jwt"
 	"proximos-passos/backend/internal/infrastructure/postgres"
+	"proximos-passos/backend/internal/infrastructure/resend"
 	"proximos-passos/backend/internal/usecase"
 )
 
@@ -42,6 +43,26 @@ func main() {
 		log.Fatal("JWT_SECRET environment variable is required")
 	}
 
+	resendAPIKey := os.Getenv("RESEND_API_KEY")
+	if resendAPIKey == "" {
+		log.Fatal("RESEND_API_KEY environment variable is required")
+	}
+
+	resendFromEmail := os.Getenv("RESEND_FROM_EMAIL")
+	if resendFromEmail == "" {
+		log.Fatal("RESEND_FROM_EMAIL environment variable is required")
+	}
+
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		log.Fatal("FRONTEND_URL environment variable is required")
+	}
+
+	logoFullURL := os.Getenv("LOGO_FULL_URL")
+	if logoFullURL == "" {
+		log.Fatal("LOGO_FULL_URL environment variable is required")
+	}
+
 	pool, err := postgres.NewConnection(ctx, databaseURL)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
@@ -49,12 +70,13 @@ func main() {
 	defer pool.Close()
 
 	jwtService := jwt.NewService(jwtSecret, 24*time.Hour)
+	emailSvc := resend.NewEmailService(resendAPIKey, resendFromEmail, logoFullURL)
 
 	userRepo := postgres.NewUserRepository(pool)
-	userUC := usecase.NewUserUseCase(userRepo)
+	userUC := usecase.NewUserUseCase(userRepo, emailSvc, jwtService, frontendURL)
 	authUC := usecase.NewAuthUseCase(userRepo, jwtService)
 
-	authHandler := handler.NewAuthHandler(authUC)
+	authHandler := handler.NewAuthHandler(authUC, userUC)
 	userHandler := handler.NewUserHandler(userUC)
 
 	adminOnly := func(next http.Handler) http.Handler {
@@ -76,6 +98,7 @@ func main() {
 	})
 
 	authHandler.RegisterRoutes(mux)
+	authHandler.RegisterProtectedRoutes(mux, adminOnly)
 	userHandler.RegisterRoutes(mux, adminOnly)
 	mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
 

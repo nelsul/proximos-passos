@@ -14,4 +14,5 @@ type UserRepository interface {
 	Count(ctx context.Context) (int, error)
 	Update(ctx context.Context, user *entity.User) error
 	Delete(ctx context.Context, publicID string) error
+	VerifyEmail(ctx context.Context, publicID string) error
 }

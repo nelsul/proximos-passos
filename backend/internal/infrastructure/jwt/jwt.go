@@ -18,6 +18,12 @@ type Claims struct {
 	jwtlib.RegisteredClaims
 }
 
+type VerificationClaims struct {
+	UserPublicID string `json:"sub"`
+	Purpose      string `json:"purpose"`
+	jwtlib.RegisteredClaims
+}
+
 type Service struct {
 	secret     []byte
 	expiration time.Duration
@@ -63,6 +69,36 @@ func (s *Service) Parse(tokenStr string) (*Claims, error) {
 
 	claims, ok := token.Claims.(*Claims)
 	if !ok || !token.Valid {
+		return nil, jwtlib.ErrTokenInvalidClaims
+	}
+
+	return claims, nil
+}
+
+func (s *Service) GenerateVerificationToken(userPublicID string, expiration time.Duration) (string, error) {
+	claims := VerificationClaims{
+		UserPublicID: userPublicID,
+		Purpose:      "email_verification",
+		RegisteredClaims: jwtlib.RegisteredClaims{
+			ExpiresAt: jwtlib.NewNumericDate(time.Now().Add(expiration)),
+			IssuedAt:  jwtlib.NewNumericDate(time.Now()),
+		},
+	}
+
+	token := jwtlib.NewWithClaims(jwtlib.SigningMethodHS256, claims)
+	return token.SignedString(s.secret)
+}
+
+func (s *Service) ParseVerificationToken(tokenStr string) (*VerificationClaims, error) {
+	token, err := jwtlib.ParseWithClaims(tokenStr, &VerificationClaims{}, func(t *jwtlib.Token) (any, error) {
+		return s.secret, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*VerificationClaims)
+	if !ok || !token.Valid || claims.Purpose != "email_verification" {
 		return nil, jwtlib.ErrTokenInvalidClaims
 	}
 

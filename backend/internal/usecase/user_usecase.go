@@ -2,21 +2,34 @@ package usecase
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"strings"
+	"time"
 
 	"proximos-passos/backend/internal/domain/apperror"
 	"proximos-passos/backend/internal/domain/entity"
 	"proximos-passos/backend/internal/domain/repository"
+	"proximos-passos/backend/internal/domain/service"
+	"proximos-passos/backend/internal/infrastructure/jwt"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserUseCase struct {
-	repo repository.UserRepository
+	repo        repository.UserRepository
+	emailSvc    service.EmailService
+	jwtService  *jwt.Service
+	frontendURL string
 }
 
-func NewUserUseCase(repo repository.UserRepository) *UserUseCase {
-	return &UserUseCase{repo: repo}
+func NewUserUseCase(repo repository.UserRepository, emailSvc service.EmailService, jwtService *jwt.Service, frontendURL string) *UserUseCase {
+	return &UserUseCase{
+		repo:        repo,
+		emailSvc:    emailSvc,
+		jwtService:  jwtService,
+		frontendURL: frontendURL,
+	}
 }
 
 type CreateUserInput struct {
@@ -64,7 +77,58 @@ func (uc *UserUseCase) Create(ctx context.Context, input CreateUserInput) (*enti
 		return nil, err
 	}
 
+	go uc.sendVerificationEmail(user)
+
 	return user, nil
+}
+
+func (uc *UserUseCase) sendVerificationEmail(user *entity.User) {
+	token, err := uc.jwtService.GenerateVerificationToken(user.PublicID, 24*time.Hour)
+	if err != nil {
+		log.Printf("failed to generate verification token for user %s: %v", user.PublicID, err)
+		return
+	}
+
+	verificationURL := fmt.Sprintf("%s/verify-email?token=%s", uc.frontendURL, token)
+
+	if err := uc.emailSvc.SendVerificationEmail(context.Background(), user.Email, user.Name, verificationURL); err != nil {
+		log.Printf("failed to send verification email to %s: %v", user.Email, err)
+	}
+}
+
+func (uc *UserUseCase) VerifyEmail(ctx context.Context, token string) error {
+	claims, err := uc.jwtService.ParseVerificationToken(token)
+	if err != nil {
+		return apperror.ErrInvalidToken
+	}
+
+	return uc.repo.VerifyEmail(ctx, claims.UserPublicID)
+}
+
+func (uc *UserUseCase) ResendVerificationEmail(ctx context.Context, publicID string) error {
+	user, err := uc.repo.GetByPublicID(ctx, publicID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return apperror.ErrUserNotFound
+	}
+	if user.EmailVerifiedAt != nil {
+		return apperror.ErrEmailAlreadyVerified
+	}
+
+	token, err := uc.jwtService.GenerateVerificationToken(user.PublicID, 24*time.Hour)
+	if err != nil {
+		return err
+	}
+
+	verificationURL := fmt.Sprintf("%s/verify-email?token=%s", uc.frontendURL, token)
+
+	if err := uc.emailSvc.SendVerificationEmail(ctx, user.Email, user.Name, verificationURL); err != nil {
+		return apperror.ErrEmailSendFailed
+	}
+
+	return nil
 }
 
 func (uc *UserUseCase) GetByPublicID(ctx context.Context, publicID string) (*entity.User, error) {

@@ -166,3 +166,19 @@ func (r *UserRepository) Delete(ctx context.Context, publicID string) error {
 
 	return nil
 }
+
+func (r *UserRepository) VerifyEmail(ctx context.Context, publicID string) error {
+	result, err := r.pool.Exec(ctx,
+		`UPDATE users SET email_verified_at = NOW() WHERE public_id = $1 AND is_active = true AND email_verified_at IS NULL`,
+		publicID,
+	)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return apperror.ErrEmailAlreadyVerified
+	}
+
+	return nil
+}

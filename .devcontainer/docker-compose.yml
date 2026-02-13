@@ -12,10 +12,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/proximospassos?sslmode=disable
-      JWT_SECRET: dev-secret-change-in-production
-      PORT: "8080"
+    env_file:
+      - ../.env
 
   db:
     image: postgres:17
