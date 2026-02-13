@@ -45,6 +45,12 @@ func NewUserUseCase(repo repository.UserRepository, emailSvc service.EmailServic
 	}
 }
 
+type SetupAdminInput struct {
+	Name     string
+	Email    string
+	Password string
+}
+
 type CreateUserInput struct {
 	Name     string
 	Email    string
@@ -57,6 +63,23 @@ type UpdateUserInput struct {
 	Email     *string
 	AvatarURL *string
 	Role      *entity.UserRole
+}
+
+func (uc *UserUseCase) SetupAdmin(ctx context.Context, input SetupAdminInput) (*entity.User, error) {
+	count, err := uc.repo.Count(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if count > 0 {
+		return nil, apperror.ErrSetupUnavailable
+	}
+
+	return uc.Create(ctx, CreateUserInput{
+		Name:     input.Name,
+		Email:    input.Email,
+		Password: input.Password,
+		Role:     entity.UserRoleAdmin,
+	})
 }
 
 func (uc *UserUseCase) Create(ctx context.Context, input CreateUserInput) (*entity.User, error) {

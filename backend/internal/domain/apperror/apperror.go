@@ -23,6 +23,7 @@ const (
 	CodeGroupNotFound        Code = "GROUP_NOT_FOUND"
 	CodeMemberNotFound       Code = "MEMBER_NOT_FOUND"
 	CodeMemberAlreadyExists  Code = "MEMBER_ALREADY_EXISTS"
+	CodeSetupUnavailable     Code = "SETUP_UNAVAILABLE"
 )
 
 type AppError struct {
@@ -71,4 +72,5 @@ var (
 	ErrGroupNotFound        = New(CodeGroupNotFound, "The requested group was not found.", http.StatusNotFound)
 	ErrMemberNotFound       = New(CodeMemberNotFound, "The requested member was not found.", http.StatusNotFound)
 	ErrMemberAlreadyExists  = New(CodeMemberAlreadyExists, "The user is already a member of this group.", http.StatusConflict)
+	ErrSetupUnavailable     = New(CodeSetupUnavailable, "Initial setup is no longer available.", http.StatusConflict)
 )

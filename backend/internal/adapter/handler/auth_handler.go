@@ -14,15 +14,17 @@ import (
 )
 
 type AuthHandler struct {
-	authUC *usecase.AuthUseCase
-	userUC *usecase.UserUseCase
+	authUC     *usecase.AuthUseCase
+	userUC     *usecase.UserUseCase
+	setupInput *usecase.SetupAdminInput
 }
 
-func NewAuthHandler(authUC *usecase.AuthUseCase, userUC *usecase.UserUseCase) *AuthHandler {
-	return &AuthHandler{authUC: authUC, userUC: userUC}
+func NewAuthHandler(authUC *usecase.AuthUseCase, userUC *usecase.UserUseCase, setupInput *usecase.SetupAdminInput) *AuthHandler {
+	return &AuthHandler{authUC: authUC, userUC: userUC, setupInput: setupInput}
 }
 
 func (h *AuthHandler) RegisterRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("POST /auth/setup", h.SetupAdmin)
 	mux.HandleFunc("POST /auth/register", h.Register)
 	mux.HandleFunc("POST /auth/login", h.Login)
 	mux.HandleFunc("POST /auth/logout", h.Logout)
@@ -31,6 +33,25 @@ func (h *AuthHandler) RegisterRoutes(mux *http.ServeMux) {
 
 func (h *AuthHandler) RegisterProtectedRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
 	mux.Handle("POST /auth/resend-verification", mw(http.HandlerFunc(h.ResendVerification)))
+}
+
+// SetupAdmin godoc
+// @Summary     Setup admin
+// @Description Creates the default admin user if no users exist
+// @Tags        auth
+// @Produce     json
+// @Success     201 {object} dto.UserResponse
+// @Failure     409 {object} apperror.AppError
+// @Failure     500 {object} apperror.AppError
+// @Router      /auth/setup [post]
+func (h *AuthHandler) SetupAdmin(w http.ResponseWriter, r *http.Request) {
+	user, err := h.userUC.SetupAdmin(r.Context(), *h.setupInput)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusCreated, dto.UserToResponse(user))
 }
 
 // Register godoc

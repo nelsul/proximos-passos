@@ -95,6 +95,16 @@ func main() {
 	}
 	defer pool.Close()
 
+	adminName := os.Getenv("ADMIN_NAME")
+	adminEmail := os.Getenv("ADMIN_EMAIL")
+	adminPassword := os.Getenv("ADMIN_PASSWORD")
+
+	setupInput := &usecase.SetupAdminInput{
+		Name:     adminName,
+		Email:    adminEmail,
+		Password: adminPassword,
+	}
+
 	jwtService := jwt.NewService(jwtSecret, 24*time.Hour)
 	emailSvc := resend.NewEmailService(resendAPIKey, resendFromEmail, logoFullURL)
 
@@ -109,7 +119,7 @@ func main() {
 	authUC := usecase.NewAuthUseCase(userRepo, jwtService)
 	groupUC := usecase.NewGroupUseCase(groupRepo, userRepo, storageSvc)
 
-	authHandler := handler.NewAuthHandler(authUC, userUC)
+	authHandler := handler.NewAuthHandler(authUC, userUC, setupInput)
 	userHandler := handler.NewUserHandler(userUC)
 	groupHandler := handler.NewGroupHandler(groupUC)
 
