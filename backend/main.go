@@ -15,6 +15,7 @@ import (
 	"proximos-passos/backend/internal/adapter/middleware"
 	"proximos-passos/backend/internal/infrastructure/jwt"
 	"proximos-passos/backend/internal/infrastructure/postgres"
+	"proximos-passos/backend/internal/infrastructure/r2"
 	"proximos-passos/backend/internal/infrastructure/resend"
 	"proximos-passos/backend/internal/usecase"
 )
@@ -63,6 +64,31 @@ func main() {
 		log.Fatal("LOGO_FULL_URL environment variable is required")
 	}
 
+	r2AccountID := os.Getenv("R2_ACCOUNT_ID")
+	if r2AccountID == "" {
+		log.Fatal("R2_ACCOUNT_ID environment variable is required")
+	}
+
+	r2AccessKeyID := os.Getenv("R2_ACCESS_KEY_ID")
+	if r2AccessKeyID == "" {
+		log.Fatal("R2_ACCESS_KEY_ID environment variable is required")
+	}
+
+	r2AccessKeySecret := os.Getenv("R2_ACCESS_KEY_SECRET")
+	if r2AccessKeySecret == "" {
+		log.Fatal("R2_ACCESS_KEY_SECRET environment variable is required")
+	}
+
+	r2Bucket := os.Getenv("R2_BUCKET")
+	if r2Bucket == "" {
+		log.Fatal("R2_BUCKET environment variable is required")
+	}
+
+	r2PublicURL := os.Getenv("R2_PUBLIC_URL")
+	if r2PublicURL == "" {
+		log.Fatal("R2_PUBLIC_URL environment variable is required")
+	}
+
 	pool, err := postgres.NewConnection(ctx, databaseURL)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
@@ -72,8 +98,13 @@ func main() {
 	jwtService := jwt.NewService(jwtSecret, 24*time.Hour)
 	emailSvc := resend.NewEmailService(resendAPIKey, resendFromEmail, logoFullURL)
 
+	storageSvc, err := r2.NewStorageService(r2AccountID, r2AccessKeyID, r2AccessKeySecret, r2Bucket, r2PublicURL)
+	if err != nil {
+		log.Fatalf("failed to initialize R2 storage: %v", err)
+	}
+
 	userRepo := postgres.NewUserRepository(pool)
-	userUC := usecase.NewUserUseCase(userRepo, emailSvc, jwtService, frontendURL)
+	userUC := usecase.NewUserUseCase(userRepo, emailSvc, storageSvc, jwtService, frontendURL)
 	authUC := usecase.NewAuthUseCase(userRepo, jwtService)
 
 	authHandler := handler.NewAuthHandler(authUC, userUC)
@@ -81,6 +112,10 @@ func main() {
 
 	adminOnly := func(next http.Handler) http.Handler {
 		return middleware.Auth(jwtService)(middleware.RequireAdmin(userRepo)(next))
+	}
+
+	authOnly := func(next http.Handler) http.Handler {
+		return middleware.Auth(jwtService)(next)
 	}
 
 	mux := http.NewServeMux()
@@ -100,6 +135,7 @@ func main() {
 	authHandler.RegisterRoutes(mux)
 	authHandler.RegisterProtectedRoutes(mux, adminOnly)
 	userHandler.RegisterRoutes(mux, adminOnly)
+	userHandler.RegisterSelfRoutes(mux, authOnly)
 	mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
 
 	port := os.Getenv("PORT")

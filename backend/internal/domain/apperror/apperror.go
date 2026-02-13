@@ -17,6 +17,9 @@ const (
 	CodeInvalidToken         Code = "INVALID_VERIFICATION_TOKEN"
 	CodeEmailAlreadyVerified Code = "EMAIL_ALREADY_VERIFIED"
 	CodeEmailSendFailed      Code = "EMAIL_SEND_FAILED"
+	CodeInvalidFileType      Code = "INVALID_FILE_TYPE"
+	CodeFileTooLarge         Code = "FILE_TOO_LARGE"
+	CodeUploadFailed         Code = "UPLOAD_FAILED"
 )
 
 type AppError struct {
@@ -59,4 +62,7 @@ var (
 	ErrInvalidToken         = New(CodeInvalidToken, "The verification token is invalid or expired.", http.StatusBadRequest)
 	ErrEmailAlreadyVerified = New(CodeEmailAlreadyVerified, "This email has already been verified.", http.StatusConflict)
 	ErrEmailSendFailed      = New(CodeEmailSendFailed, "Failed to send the verification email.", http.StatusInternalServerError)
+	ErrInvalidFileType      = New(CodeInvalidFileType, "The file type is not allowed.", http.StatusBadRequest)
+	ErrFileTooLarge         = New(CodeFileTooLarge, "The file exceeds the maximum allowed size.", http.StatusBadRequest)
+	ErrUploadFailed         = New(CodeUploadFailed, "Failed to upload the file.", http.StatusInternalServerError)
 )

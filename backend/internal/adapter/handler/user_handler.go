@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"proximos-passos/backend/internal/adapter/dto"
+	"proximos-passos/backend/internal/adapter/middleware"
 	"proximos-passos/backend/internal/adapter/response"
 	"proximos-passos/backend/internal/domain/apperror"
 	"proximos-passos/backend/internal/domain/entity"
@@ -26,6 +27,11 @@ func (h *UserHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) h
 	mux.Handle("GET /users/{id}", mw(http.HandlerFunc(h.GetByID)))
 	mux.Handle("PUT /users/{id}", mw(http.HandlerFunc(h.Update)))
 	mux.Handle("DELETE /users/{id}", mw(http.HandlerFunc(h.Delete)))
+}
+
+func (h *UserHandler) RegisterSelfRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
+	mux.Handle("PUT /me/avatar", mw(http.HandlerFunc(h.UploadAvatar)))
+	mux.Handle("DELETE /me/avatar", mw(http.HandlerFunc(h.DeleteAvatar)))
 }
 
 // Create godoc
@@ -202,4 +208,73 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// UploadAvatar godoc
+// @Summary     Upload avatar
+// @Description Uploads an avatar image for the authenticated user
+// @Tags        me
+// @Accept      multipart/form-data
+// @Produce     json
+// @Security    CookieAuth
+// @Param       avatar formData file true "Avatar image (max 5MB, jpeg/png/webp/gif)"
+// @Success     200    {object} dto.UserResponse
+// @Failure     400    {object} apperror.AppError
+// @Failure     401    {object} apperror.AppError
+// @Failure     404    {object} apperror.AppError
+// @Failure     500    {object} apperror.AppError
+// @Router      /me/avatar [put]
+func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
+	publicID := middleware.UserPublicID(r.Context())
+	if publicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	if err := r.ParseMultipartForm(5 << 20); err != nil {
+		response.Error(w, apperror.ErrFileTooLarge)
+		return
+	}
+
+	file, header, err := r.FormFile("avatar")
+	if err != nil {
+		response.Error(w, apperror.ErrInvalidInput)
+		return
+	}
+	defer file.Close()
+
+	user, err := h.uc.UploadAvatar(r.Context(), publicID, header.Filename, header.Header.Get("Content-Type"), header.Size, file)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, dto.UserToResponse(user))
+}
+
+// DeleteAvatar godoc
+// @Summary     Delete avatar
+// @Description Removes the avatar of the authenticated user
+// @Tags        me
+// @Produce     json
+// @Security    CookieAuth
+// @Success     200 {object} dto.UserResponse
+// @Failure     401 {object} apperror.AppError
+// @Failure     404 {object} apperror.AppError
+// @Failure     500 {object} apperror.AppError
+// @Router      /me/avatar [delete]
+func (h *UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
+	publicID := middleware.UserPublicID(r.Context())
+	if publicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	user, err := h.uc.DeleteAvatar(r.Context(), publicID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, dto.UserToResponse(user))
 }

@@ -182,3 +182,19 @@ func (r *UserRepository) VerifyEmail(ctx context.Context, publicID string) error
 
 	return nil
 }
+
+func (r *UserRepository) UpdateAvatar(ctx context.Context, publicID string, avatarURL *string) error {
+	result, err := r.pool.Exec(ctx,
+		`UPDATE users SET avatar_url = $1 WHERE public_id = $2 AND is_active = true`,
+		avatarURL, publicID,
+	)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return apperror.ErrUserNotFound
+	}
+
+	return nil
+}

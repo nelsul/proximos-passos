@@ -3,7 +3,9 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
+	"path"
 	"strings"
 	"time"
 
@@ -16,17 +18,28 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const maxAvatarSize = 5 << 20 // 5MB
+
+var allowedAvatarTypes = map[string]bool{
+	"image/jpeg": true,
+	"image/png":  true,
+	"image/webp": true,
+	"image/gif":  true,
+}
+
 type UserUseCase struct {
 	repo        repository.UserRepository
 	emailSvc    service.EmailService
+	storageSvc  service.StorageService
 	jwtService  *jwt.Service
 	frontendURL string
 }
 
-func NewUserUseCase(repo repository.UserRepository, emailSvc service.EmailService, jwtService *jwt.Service, frontendURL string) *UserUseCase {
+func NewUserUseCase(repo repository.UserRepository, emailSvc service.EmailService, storageSvc service.StorageService, jwtService *jwt.Service, frontendURL string) *UserUseCase {
 	return &UserUseCase{
 		repo:        repo,
 		emailSvc:    emailSvc,
+		storageSvc:  storageSvc,
 		jwtService:  jwtService,
 		frontendURL: frontendURL,
 	}
@@ -223,4 +236,76 @@ func (uc *UserUseCase) Delete(ctx context.Context, publicID string) error {
 	}
 
 	return uc.repo.Delete(ctx, publicID)
+}
+
+func (uc *UserUseCase) UploadAvatar(ctx context.Context, publicID string, filename string, contentType string, size int64, body io.Reader) (*entity.User, error) {
+	if size > maxAvatarSize {
+		return nil, apperror.ErrFileTooLarge
+	}
+
+	if !allowedAvatarTypes[contentType] {
+		return nil, apperror.ErrInvalidFileType
+	}
+
+	user, err := uc.repo.GetByPublicID(ctx, publicID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, apperror.ErrUserNotFound
+	}
+
+	if user.AvatarURL != nil {
+		oldKey := extractKeyFromURL(*user.AvatarURL)
+		if oldKey != "" {
+			_ = uc.storageSvc.Delete(ctx, oldKey)
+		}
+	}
+
+	ext := path.Ext(filename)
+	key := fmt.Sprintf("avatars/%s%s", publicID, ext)
+
+	url, err := uc.storageSvc.Upload(ctx, key, contentType, body)
+	if err != nil {
+		return nil, apperror.ErrUploadFailed
+	}
+
+	if err := uc.repo.UpdateAvatar(ctx, publicID, &url); err != nil {
+		return nil, err
+	}
+
+	user.AvatarURL = &url
+	return user, nil
+}
+
+func (uc *UserUseCase) DeleteAvatar(ctx context.Context, publicID string) (*entity.User, error) {
+	user, err := uc.repo.GetByPublicID(ctx, publicID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, apperror.ErrUserNotFound
+	}
+
+	if user.AvatarURL != nil {
+		oldKey := extractKeyFromURL(*user.AvatarURL)
+		if oldKey != "" {
+			_ = uc.storageSvc.Delete(ctx, oldKey)
+		}
+	}
+
+	if err := uc.repo.UpdateAvatar(ctx, publicID, nil); err != nil {
+		return nil, err
+	}
+
+	user.AvatarURL = nil
+	return user, nil
+}
+
+func extractKeyFromURL(url string) string {
+	parts := strings.SplitN(url, "/", 4)
+	if len(parts) >= 4 {
+		return parts[3]
+	}
+	return ""
 }
