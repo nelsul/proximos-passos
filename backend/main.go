@@ -155,7 +155,7 @@ func main() {
 
 	log.Printf("Backend listening on :%s", port)
 	log.Printf("Swagger UI available at http://localhost:%s/swagger/index.html", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
+	if err := http.ListenAndServe(":"+port, middleware.CORS(mux)); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -20,5 +20,40 @@
     "CTA_HEADING": "Ready to take the next step?",
     "CTA_DESCRIPTION": "Join students who are already organizing their studies in a smarter and more efficient way.",
     "CTA_BUTTON": "Create my account",
-    "FOOTER_RIGHTS": "© {year} Próximos Passos. All rights reserved."
+    "FOOTER_RIGHTS": "© {year} Próximos Passos. All rights reserved.",
+
+    "LOGIN_SUBTITLE": "Sign in to your account to continue.",
+    "LOGIN_EMAIL_LABEL": "Email",
+    "LOGIN_EMAIL_PLACEHOLDER": "you@email.com",
+    "LOGIN_PASSWORD_LABEL": "Password",
+    "LOGIN_PASSWORD_PLACEHOLDER": "Your password",
+    "LOGIN_SUBMIT": "Sign in",
+
+    "VERIFY_EMAIL_LOADING": "Verifying your email...",
+    "VERIFY_EMAIL_SUCCESS_TITLE": "Email verified!",
+    "VERIFY_EMAIL_SUCCESS_DESCRIPTION": "Your email has been verified successfully. You can now sign in.",
+    "VERIFY_EMAIL_ERROR_TITLE": "Verification error",
+    "VERIFY_EMAIL_NO_TOKEN_TITLE": "Invalid link",
+    "VERIFY_EMAIL_NO_TOKEN_DESCRIPTION": "The verification link does not contain a valid token. Please check the link from your email.",
+    "VERIFY_EMAIL_LOGIN_BUTTON": "Go to login",
+
+    "REGISTER_SUBTITLE": "Create your account to get started.",
+    "REGISTER_NAME_LABEL": "Full name",
+    "REGISTER_NAME_PLACEHOLDER": "Your full name",
+    "REGISTER_EMAIL_LABEL": "Email",
+    "REGISTER_EMAIL_PLACEHOLDER": "you@email.com",
+    "REGISTER_PASSWORD_LABEL": "Password",
+    "REGISTER_PASSWORD_PLACEHOLDER": "Create a password",
+    "REGISTER_SUBMIT": "Create account",
+    "REGISTER_SUCCESS_TITLE": "Account created!",
+    "REGISTER_SUCCESS_DESCRIPTION": "We sent a verification link to your email. Please check your inbox and verify your account.",
+    "REGISTER_LOGIN_LINK": "Already have an account? Sign in",
+    "LOGIN_REGISTER_LINK": "Don't have an account? Sign up",
+
+    "ERROR_INVALID_CREDENTIALS": "Invalid email or password.",
+    "ERROR_INVALID_VERIFICATION_TOKEN": "The verification token is invalid or expired.",
+    "ERROR_EMAIL_ALREADY_VERIFIED": "This email has already been verified.",
+    "ERROR_INTERNAL_ERROR": "An unexpected error occurred. Please try again.",
+    "ERROR_USER_EMAIL_ALREADY_EXISTS": "This email is already registered.",
+    "ERROR_INVALID_INPUT": "Please fill in all required fields."
 }

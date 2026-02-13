@@ -9,6 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { ScrollLink } from "@/components/ui/scroll-link";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
@@ -60,21 +61,32 @@ export default function Home() {
       {/* Header */}
       <header className="fixed top-0 z-50 w-full border-b border-surface-border bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 center justify-center">
-            <BrandLogo variant="icon" size="md" priority />
-            <div className="mt-1">
+          <div className="flex items-center gap-2">
+            <BrandLogo
+              variant="icon"
+              size="md"
+              priority
+              className="hidden sm:block"
+            />
+            <BrandLogo
+              variant="icon"
+              size="sm"
+              priority
+              className="sm:hidden"
+            />
+            <div className="mt-1 hidden min-[420px]:block">
               <BrandLogo variant="title" size="md" priority />
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
-            <a
+            <Link
               href="/login"
               className="rounded-lg bg-secondary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-secondary-dark"
             >
               {t("HEADER_LOGIN")}
-            </a>
+            </Link>
           </div>
         </div>
       </header>
@@ -101,13 +113,13 @@ export default function Home() {
               })}
             </p>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <a
-                href="/login"
+              <Link
+                href="/register"
                 className="inline-flex items-center gap-2 rounded-lg bg-secondary px-8 py-3 text-base font-semibold text-white shadow-lg transition-all hover:bg-secondary-dark hover:shadow-xl"
               >
                 {t("HERO_CTA_PRIMARY")}
                 <ArrowRight className="h-4 w-4" />
-              </a>
+              </Link>
               <ScrollLink href="#features">
                 {t("HERO_CTA_SECONDARY")}
               </ScrollLink>
@@ -157,13 +169,13 @@ export default function Home() {
           <p className="mx-auto mt-4 max-w-xl text-lg text-muted">
             {t("CTA_DESCRIPTION")}
           </p>
-          <a
-            href="/login"
+          <Link
+            href="/register"
             className="mt-8 inline-flex items-center gap-2 rounded-lg bg-secondary px-8 py-3 text-base font-semibold text-white shadow-lg transition-all hover:bg-secondary-dark hover:shadow-xl"
           >
             {t("CTA_BUTTON")}
             <ArrowRight className="h-4 w-4" />
-          </a>
+          </Link>
         </div>
       </section>
 

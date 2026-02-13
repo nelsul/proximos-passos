@@ -102,7 +102,7 @@ func (uc *UserUseCase) sendVerificationEmail(user *entity.User) {
 		return
 	}
 
-	verificationURL := fmt.Sprintf("%s/verify-email?token=%s", uc.frontendURL, token)
+	verificationURL := fmt.Sprintf("%s/pt-BR/verify-email?token=%s", uc.frontendURL, token)
 
 	if err := uc.emailSvc.SendVerificationEmail(context.Background(), user.Email, user.Name, verificationURL); err != nil {
 		log.Printf("failed to send verification email to %s: %v", user.Email, err)
@@ -135,7 +135,7 @@ func (uc *UserUseCase) ResendVerificationEmail(ctx context.Context, publicID str
 		return err
 	}
 
-	verificationURL := fmt.Sprintf("%s/verify-email?token=%s", uc.frontendURL, token)
+	verificationURL := fmt.Sprintf("%s/pt-BR/verify-email?token=%s", uc.frontendURL, token)
 
 	if err := uc.emailSvc.SendVerificationEmail(ctx, user.Email, user.Name, verificationURL); err != nil {
 		return apperror.ErrEmailSendFailed

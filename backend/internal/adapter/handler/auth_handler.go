@@ -8,6 +8,7 @@ import (
 	"proximos-passos/backend/internal/adapter/dto"
 	"proximos-passos/backend/internal/adapter/response"
 	"proximos-passos/backend/internal/domain/apperror"
+	"proximos-passos/backend/internal/domain/entity"
 	"proximos-passos/backend/internal/infrastructure/jwt"
 	"proximos-passos/backend/internal/usecase"
 )
@@ -22,6 +23,7 @@ func NewAuthHandler(authUC *usecase.AuthUseCase, userUC *usecase.UserUseCase) *A
 }
 
 func (h *AuthHandler) RegisterRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("POST /auth/register", h.Register)
 	mux.HandleFunc("POST /auth/login", h.Login)
 	mux.HandleFunc("POST /auth/logout", h.Logout)
 	mux.HandleFunc("POST /auth/verify-email", h.VerifyEmail)
@@ -29,6 +31,41 @@ func (h *AuthHandler) RegisterRoutes(mux *http.ServeMux) {
 
 func (h *AuthHandler) RegisterProtectedRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
 	mux.Handle("POST /auth/resend-verification", mw(http.HandlerFunc(h.ResendVerification)))
+}
+
+// Register godoc
+// @Summary     Register
+// @Description Creates a new user with regular role and sends a verification email
+// @Tags        auth
+// @Accept      json
+// @Produce     json
+// @Param       body body     dto.RegisterRequest true "Registration data"
+// @Success     201  {object} dto.UserResponse
+// @Failure     400  {object} apperror.AppError
+// @Failure     409  {object} apperror.AppError
+// @Failure     500  {object} apperror.AppError
+// @Router      /auth/register [post]
+func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+	var req dto.RegisterRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, apperror.ErrInvalidBody)
+		return
+	}
+
+	input := usecase.CreateUserInput{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
+		Role:     entity.UserRoleRegular,
+	}
+
+	user, err := h.userUC.Create(r.Context(), input)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusCreated, dto.UserToResponse(user))
 }
 
 // Login godoc

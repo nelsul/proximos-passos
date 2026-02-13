@@ -20,5 +20,40 @@
     "CTA_HEADING": "Pronto para dar o próximo passo?",
     "CTA_DESCRIPTION": "Junte-se a estudantes que já estão organizando seus estudos de forma mais inteligente e eficiente.",
     "CTA_BUTTON": "Criar minha conta",
-    "FOOTER_RIGHTS": "© {year} Próximos Passos. Todos os direitos reservados."
+    "FOOTER_RIGHTS": "© {year} Próximos Passos. Todos os direitos reservados.",
+
+    "LOGIN_SUBTITLE": "Entre na sua conta para continuar.",
+    "LOGIN_EMAIL_LABEL": "E-mail",
+    "LOGIN_EMAIL_PLACEHOLDER": "seu@email.com",
+    "LOGIN_PASSWORD_LABEL": "Senha",
+    "LOGIN_PASSWORD_PLACEHOLDER": "Sua senha",
+    "LOGIN_SUBMIT": "Entrar",
+
+    "VERIFY_EMAIL_LOADING": "Verificando seu e-mail...",
+    "VERIFY_EMAIL_SUCCESS_TITLE": "E-mail verificado!",
+    "VERIFY_EMAIL_SUCCESS_DESCRIPTION": "Seu e-mail foi verificado com sucesso. Você já pode fazer login.",
+    "VERIFY_EMAIL_ERROR_TITLE": "Erro na verificação",
+    "VERIFY_EMAIL_NO_TOKEN_TITLE": "Link inválido",
+    "VERIFY_EMAIL_NO_TOKEN_DESCRIPTION": "O link de verificação não contém um token válido. Verifique o link recebido por e-mail.",
+    "VERIFY_EMAIL_LOGIN_BUTTON": "Ir para o login",
+
+    "REGISTER_SUBTITLE": "Crie sua conta para começar.",
+    "REGISTER_NAME_LABEL": "Nome completo",
+    "REGISTER_NAME_PLACEHOLDER": "Seu nome completo",
+    "REGISTER_EMAIL_LABEL": "E-mail",
+    "REGISTER_EMAIL_PLACEHOLDER": "seu@email.com",
+    "REGISTER_PASSWORD_LABEL": "Senha",
+    "REGISTER_PASSWORD_PLACEHOLDER": "Crie uma senha",
+    "REGISTER_SUBMIT": "Criar conta",
+    "REGISTER_SUCCESS_TITLE": "Conta criada!",
+    "REGISTER_SUCCESS_DESCRIPTION": "Enviamos um link de verificação para o seu e-mail. Verifique sua caixa de entrada e confirme sua conta.",
+    "REGISTER_LOGIN_LINK": "Já tem uma conta? Entre",
+    "LOGIN_REGISTER_LINK": "Não tem uma conta? Cadastre-se",
+
+    "ERROR_INVALID_CREDENTIALS": "E-mail ou senha inválidos.",
+    "ERROR_INVALID_VERIFICATION_TOKEN": "O token de verificação é inválido ou expirou.",
+    "ERROR_EMAIL_ALREADY_VERIFIED": "Este e-mail já foi verificado.",
+    "ERROR_INTERNAL_ERROR": "Ocorreu um erro inesperado. Tente novamente.",
+    "ERROR_USER_EMAIL_ALREADY_EXISTS": "Este e-mail já está cadastrado.",
+    "ERROR_INVALID_INPUT": "Preencha todos os campos obrigatórios."
 }

@@ -17,3 +17,9 @@ type VerifyEmailRequest struct {
 type ResendVerificationRequest struct {
 	UserID string `json:"user_id"`
 }
+
+type RegisterRequest struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
