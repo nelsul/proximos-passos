@@ -30,6 +30,8 @@ func (h *UserHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) h
 }
 
 func (h *UserHandler) RegisterSelfRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
+	mux.Handle("GET /me", mw(http.HandlerFunc(h.GetMe)))
+	mux.Handle("PUT /me", mw(http.HandlerFunc(h.UpdateMe)))
 	mux.Handle("PUT /me/avatar", mw(http.HandlerFunc(h.UploadAvatar)))
 	mux.Handle("DELETE /me/avatar", mw(http.HandlerFunc(h.DeleteAvatar)))
 }
@@ -271,6 +273,73 @@ func (h *UserHandler) DeleteAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := h.uc.DeleteAvatar(r.Context(), publicID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, dto.UserToResponse(user))
+}
+
+// GetMe godoc
+// @Summary     Get current user
+// @Description Returns the authenticated user's profile
+// @Tags        me
+// @Produce     json
+// @Security    CookieAuth
+// @Success     200 {object} dto.UserResponse
+// @Failure     401 {object} apperror.AppError
+// @Failure     404 {object} apperror.AppError
+// @Failure     500 {object} apperror.AppError
+// @Router      /me [get]
+func (h *UserHandler) GetMe(w http.ResponseWriter, r *http.Request) {
+	publicID := middleware.UserPublicID(r.Context())
+	if publicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	user, err := h.uc.GetByPublicID(r.Context(), publicID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, dto.UserToResponse(user))
+}
+
+// UpdateMe godoc
+// @Summary     Update current user
+// @Description Updates the authenticated user's profile (name only)
+// @Tags        me
+// @Accept      json
+// @Produce     json
+// @Security    CookieAuth
+// @Param       body body     dto.UpdateMeRequest true "User data"
+// @Success     200  {object} dto.UserResponse
+// @Failure     400  {object} apperror.AppError
+// @Failure     401  {object} apperror.AppError
+// @Failure     404  {object} apperror.AppError
+// @Failure     500  {object} apperror.AppError
+// @Router      /me [put]
+func (h *UserHandler) UpdateMe(w http.ResponseWriter, r *http.Request) {
+	publicID := middleware.UserPublicID(r.Context())
+	if publicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req dto.UpdateMeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, apperror.ErrInvalidBody)
+		return
+	}
+
+	input := usecase.UpdateUserInput{
+		Name: req.Name,
+	}
+
+	user, err := h.uc.Update(r.Context(), publicID, input)
 	if err != nil {
 		response.Error(w, err)
 		return

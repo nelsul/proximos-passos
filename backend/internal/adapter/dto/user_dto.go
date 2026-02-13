@@ -20,6 +20,10 @@ type UpdateUserRequest struct {
 	Role      *string `json:"role,omitempty"`
 }
 
+type UpdateMeRequest struct {
+	Name *string `json:"name,omitempty"`
+}
+
 type UserResponse struct {
 	PublicID        string     `json:"id"`
 	Role            string     `json:"role"`

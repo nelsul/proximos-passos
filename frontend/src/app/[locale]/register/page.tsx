@@ -10,9 +10,11 @@ import { InputField } from "@/components/ui/input-field";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { useRedirectIfAuthenticated } from "@/hooks/use-redirect-if-authenticated";
 
 export default function RegisterPage() {
   const t = useTranslations();
+  const checking = useRedirectIfAuthenticated();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,6 +44,8 @@ export default function RegisterPage() {
       setLoading(false);
     }
   }
+
+  if (checking) return null;
 
   if (success) {
     return (

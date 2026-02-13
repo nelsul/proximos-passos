@@ -5,7 +5,7 @@ interface LoginResponse {
   expires_at: number;
 }
 
-interface UserResponse {
+export interface UserResponse {
   id: string;
   role: string;
   name: string;
@@ -54,4 +54,43 @@ export async function requestVerification(email: string): Promise<void> {
     method: "POST",
     body: JSON.stringify({ email }),
   });
+}
+
+export async function getMe(): Promise<UserResponse> {
+  return api<UserResponse>("/me", { method: "GET" });
+}
+
+export async function updateMe(name: string): Promise<UserResponse> {
+  return api<UserResponse>("/me", {
+    method: "PUT",
+    body: JSON.stringify({ name }),
+  });
+}
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+
+export async function uploadAvatar(file: File): Promise<UserResponse> {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const res = await fetch(`${API_BASE_URL}/me/avatar`, {
+    method: "PUT",
+    credentials: "include",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({
+      code: "INTERNAL_ERROR",
+      message: "An unexpected error occurred.",
+    }));
+    const { ApiRequestError } = await import("./api");
+    throw new ApiRequestError(body);
+  }
+
+  return res.json();
+}
+
+export async function deleteAvatar(): Promise<UserResponse> {
+  return api<UserResponse>("/me/avatar", { method: "DELETE" });
 }

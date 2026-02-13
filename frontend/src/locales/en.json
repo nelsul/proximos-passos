@@ -66,5 +66,19 @@
     "ERROR_USER_EMAIL_ALREADY_EXISTS": "This email is already registered.",
     "ERROR_INVALID_INPUT": "Please fill in all required fields.",
     "ERROR_VERIFICATION_COOLDOWN": "Please wait a few minutes before requesting another verification email.",
-    "ERROR_EMAIL_NOT_VERIFIED": "Please verify your email before logging in."
+    "ERROR_EMAIL_NOT_VERIFIED": "Please verify your email before logging in.",
+
+    "MENU_EDIT_PROFILE": "Edit profile",
+    "MENU_LOGOUT": "Log out",
+
+    "PROFILE_TITLE": "Edit profile",
+    "PROFILE_NAME_LABEL": "Name",
+    "PROFILE_NAME_PLACEHOLDER": "Your name",
+    "PROFILE_EMAIL_LABEL": "Email",
+    "PROFILE_REMOVE_AVATAR": "Remove photo",
+    "PROFILE_CANCEL": "Cancel",
+    "PROFILE_SAVE": "Save",
+    "PROFILE_SUCCESS": "Profile updated successfully.",
+
+    "LOGOUT_SUCCESS": "You have been logged out."
 }

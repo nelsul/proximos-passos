@@ -10,9 +10,11 @@ import { InputField } from "@/components/ui/input-field";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { useRedirectIfAuthenticated } from "@/hooks/use-redirect-if-authenticated";
 
 export default function ResendVerificationPage() {
   const t = useTranslations();
+  const checking = useRedirectIfAuthenticated();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,6 +42,8 @@ export default function ResendVerificationPage() {
       setLoading(false);
     }
   }
+
+  if (checking) return null;
 
   if (success) {
     return (

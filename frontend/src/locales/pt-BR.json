@@ -66,5 +66,19 @@
     "ERROR_USER_EMAIL_ALREADY_EXISTS": "Este e-mail já está cadastrado.",
     "ERROR_INVALID_INPUT": "Preencha todos os campos obrigatórios.",
     "ERROR_VERIFICATION_COOLDOWN": "Aguarde alguns minutos antes de solicitar outro e-mail de verificação.",
-    "ERROR_EMAIL_NOT_VERIFIED": "Verifique seu e-mail antes de fazer login."
+    "ERROR_EMAIL_NOT_VERIFIED": "Verifique seu e-mail antes de fazer login.",
+
+    "MENU_EDIT_PROFILE": "Editar perfil",
+    "MENU_LOGOUT": "Sair",
+
+    "PROFILE_TITLE": "Editar perfil",
+    "PROFILE_NAME_LABEL": "Nome",
+    "PROFILE_NAME_PLACEHOLDER": "Seu nome",
+    "PROFILE_EMAIL_LABEL": "E-mail",
+    "PROFILE_REMOVE_AVATAR": "Remover foto",
+    "PROFILE_CANCEL": "Cancelar",
+    "PROFILE_SAVE": "Salvar",
+    "PROFILE_SUCCESS": "Perfil atualizado com sucesso.",
+
+    "LOGOUT_SUCCESS": "Você saiu da sua conta."
 }

@@ -10,10 +10,12 @@ import { BrandLogo } from "@/components/ui/brand-logo";
 import { InputField } from "@/components/ui/input-field";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { useRedirectIfAuthenticated } from "@/hooks/use-redirect-if-authenticated";
 
 export default function LoginPage() {
   const t = useTranslations();
   const router = useRouter();
+  const checking = useRedirectIfAuthenticated();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -41,6 +43,8 @@ export default function LoginPage() {
       setLoading(false);
     }
   }
+
+  if (checking) return null;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
