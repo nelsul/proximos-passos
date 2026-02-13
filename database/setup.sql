@@ -19,6 +19,7 @@ CREATE TABLE users (
         AND email = trim(email)
     ),
     email_verified_at TIMESTAMPTZ,
+    last_verification_token_sent_at TIMESTAMPTZ,
     password_hash TEXT NOT NULL CHECK (
         length(password_hash) <= 255 
         AND length(password_hash) > 0 

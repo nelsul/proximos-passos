@@ -50,10 +50,21 @@
     "REGISTER_LOGIN_LINK": "Já tem uma conta? Entre",
     "LOGIN_REGISTER_LINK": "Não tem uma conta? Cadastre-se",
 
+    "RESEND_SUBTITLE": "Informe seu e-mail para receber um novo link de verificação.",
+    "RESEND_EMAIL_LABEL": "E-mail",
+    "RESEND_EMAIL_PLACEHOLDER": "seu@email.com",
+    "RESEND_SUBMIT": "Enviar e-mail de verificação",
+    "RESEND_SUCCESS_TITLE": "E-mail enviado!",
+    "RESEND_SUCCESS_DESCRIPTION": "Se uma conta com esse e-mail existir e ainda não estiver verificada, você receberá um link de verificação em breve.",
+    "RESEND_LOGIN_LINK": "Voltar para o login",
+    "LOGIN_RESEND_LINK": "Não recebeu o e-mail de verificação?",
+
     "ERROR_INVALID_CREDENTIALS": "E-mail ou senha inválidos.",
     "ERROR_INVALID_VERIFICATION_TOKEN": "O token de verificação é inválido ou expirou.",
     "ERROR_EMAIL_ALREADY_VERIFIED": "Este e-mail já foi verificado.",
     "ERROR_INTERNAL_ERROR": "Ocorreu um erro inesperado. Tente novamente.",
     "ERROR_USER_EMAIL_ALREADY_EXISTS": "Este e-mail já está cadastrado.",
-    "ERROR_INVALID_INPUT": "Preencha todos os campos obrigatórios."
+    "ERROR_INVALID_INPUT": "Preencha todos os campos obrigatórios.",
+    "ERROR_VERIFICATION_COOLDOWN": "Aguarde alguns minutos antes de solicitar outro e-mail de verificação.",
+    "ERROR_EMAIL_NOT_VERIFIED": "Verifique seu e-mail antes de fazer login."
 }

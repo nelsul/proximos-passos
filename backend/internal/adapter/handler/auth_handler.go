@@ -29,6 +29,7 @@ func (h *AuthHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /auth/login", h.Login)
 	mux.HandleFunc("POST /auth/logout", h.Logout)
 	mux.HandleFunc("POST /auth/verify-email", h.VerifyEmail)
+	mux.HandleFunc("POST /auth/request-verification", h.RequestVerification)
 }
 
 func (h *AuthHandler) RegisterProtectedRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
@@ -177,6 +178,33 @@ func (h *AuthHandler) VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.userUC.VerifyEmail(r.Context(), req.Token); err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// RequestVerification godoc
+// @Summary     Request verification email
+// @Description Sends a verification email to the given address if the account exists and is not yet verified. Subject to cooldown.
+// @Tags        auth
+// @Accept      json
+// @Produce     json
+// @Param       body body     dto.RequestVerificationRequest true "Email"
+// @Success     204  "No Content"
+// @Failure     400  {object} apperror.AppError
+// @Failure     429  {object} apperror.AppError
+// @Failure     500  {object} apperror.AppError
+// @Router      /auth/request-verification [post]
+func (h *AuthHandler) RequestVerification(w http.ResponseWriter, r *http.Request) {
+	var req dto.RequestVerificationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, apperror.ErrInvalidBody)
+		return
+	}
+
+	if err := h.userUC.RequestVerificationByEmail(r.Context(), req.Email); err != nil {
 		response.Error(w, err)
 		return
 	}

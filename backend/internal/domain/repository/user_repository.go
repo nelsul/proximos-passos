@@ -16,4 +16,5 @@ type UserRepository interface {
 	UpdateAvatar(ctx context.Context, publicID string, avatarURL *string) error
 	Delete(ctx context.Context, publicID string) error
 	VerifyEmail(ctx context.Context, publicID string) error
+	UpdateLastVerificationSent(ctx context.Context, publicID string) error
 }

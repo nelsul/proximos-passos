@@ -44,13 +44,15 @@ func (r *UserRepository) GetByPublicID(ctx context.Context, publicID string) (*e
 	var user entity.User
 	err := r.pool.QueryRow(ctx,
 		`SELECT id, public_id, role, name, email, email_verified_at,
-		        password_hash, avatar_url, is_active, created_at, updated_at
+		        last_verification_token_sent_at, password_hash, avatar_url,
+		        is_active, created_at, updated_at
 		 FROM users
 		 WHERE public_id = $1 AND is_active = true`,
 		publicID,
 	).Scan(
 		&user.ID, &user.PublicID, &user.Role, &user.Name, &user.Email,
-		&user.EmailVerifiedAt, &user.PasswordHash, &user.AvatarURL,
+		&user.EmailVerifiedAt, &user.LastVerificationTokenSentAt,
+		&user.PasswordHash, &user.AvatarURL,
 		&user.IsActive, &user.CreatedAt, &user.UpdatedAt,
 	)
 
@@ -72,13 +74,15 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*entity.
 	var user entity.User
 	err := r.pool.QueryRow(ctx,
 		`SELECT id, public_id, role, name, email, email_verified_at,
-		        password_hash, avatar_url, is_active, created_at, updated_at
+		        last_verification_token_sent_at, password_hash, avatar_url,
+		        is_active, created_at, updated_at
 		 FROM users
 		 WHERE email = $1 AND is_active = true`,
 		email,
 	).Scan(
 		&user.ID, &user.PublicID, &user.Role, &user.Name, &user.Email,
-		&user.EmailVerifiedAt, &user.PasswordHash, &user.AvatarURL,
+		&user.EmailVerifiedAt, &user.LastVerificationTokenSentAt,
+		&user.PasswordHash, &user.AvatarURL,
 		&user.IsActive, &user.CreatedAt, &user.UpdatedAt,
 	)
 
@@ -95,7 +99,8 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*entity.
 func (r *UserRepository) List(ctx context.Context, limit, offset int) ([]entity.User, error) {
 	rows, err := r.pool.Query(ctx,
 		`SELECT id, public_id, role, name, email, email_verified_at,
-		        password_hash, avatar_url, is_active, created_at, updated_at
+		        last_verification_token_sent_at, password_hash, avatar_url,
+		        is_active, created_at, updated_at
 		 FROM users
 		 WHERE is_active = true
 		 ORDER BY created_at DESC
@@ -112,7 +117,8 @@ func (r *UserRepository) List(ctx context.Context, limit, offset int) ([]entity.
 		var u entity.User
 		if err := rows.Scan(
 			&u.ID, &u.PublicID, &u.Role, &u.Name, &u.Email,
-			&u.EmailVerifiedAt, &u.PasswordHash, &u.AvatarURL,
+			&u.EmailVerifiedAt, &u.LastVerificationTokenSentAt,
+			&u.PasswordHash, &u.AvatarURL,
 			&u.IsActive, &u.CreatedAt, &u.UpdatedAt,
 		); err != nil {
 			return nil, err
@@ -197,4 +203,12 @@ func (r *UserRepository) UpdateAvatar(ctx context.Context, publicID string, avat
 	}
 
 	return nil
+}
+
+func (r *UserRepository) UpdateLastVerificationSent(ctx context.Context, publicID string) error {
+	_, err := r.pool.Exec(ctx,
+		`UPDATE users SET last_verification_token_sent_at = NOW() WHERE public_id = $1 AND is_active = true`,
+		publicID,
+	)
+	return err
 }

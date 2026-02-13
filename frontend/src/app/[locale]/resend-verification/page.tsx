@@ -2,22 +2,21 @@
 
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/routing";
 import { Link } from "@/i18n/routing";
-import { login } from "@/lib/auth";
+import { requestVerification } from "@/lib/auth";
 import { ApiRequestError } from "@/lib/api";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { InputField } from "@/components/ui/input-field";
 import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button-link";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
-export default function LoginPage() {
+export default function ResendVerificationPage() {
   const t = useTranslations();
-  const router = useRouter();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -25,8 +24,8 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password);
-      router.push("/dashboard");
+      await requestVerification(email);
+      setSuccess(true);
     } catch (err) {
       if (err instanceof ApiRequestError) {
         setError(
@@ -42,6 +41,31 @@ export default function LoginPage() {
     }
   }
 
+  if (success) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="absolute right-4 top-4">
+          <LanguageSwitcher />
+        </div>
+
+        <div className="w-full max-w-md space-y-8 text-center">
+          <div className="flex flex-col items-center gap-6">
+            <BrandLogo variant="full" size="lg" priority />
+          </div>
+
+          <div className="space-y-3">
+            <h1 className="text-2xl font-bold text-white">
+              {t("RESEND_SUCCESS_TITLE")}
+            </h1>
+            <p className="text-muted">{t("RESEND_SUCCESS_DESCRIPTION")}</p>
+          </div>
+
+          <ButtonLink href="/login">{t("RESEND_LOGIN_LINK")}</ButtonLink>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="absolute right-4 top-4">
@@ -51,7 +75,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center gap-6">
           <BrandLogo variant="full" size="lg" priority />
-          <p className="text-center text-muted">{t("LOGIN_SUBTITLE")}</p>
+          <p className="text-center text-muted">{t("RESEND_SUBTITLE")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -62,10 +86,10 @@ export default function LoginPage() {
           )}
 
           <InputField
-            label={t("LOGIN_EMAIL_LABEL")}
+            label={t("RESEND_EMAIL_LABEL")}
             name="email"
             type="email"
-            placeholder={t("LOGIN_EMAIL_PLACEHOLDER")}
+            placeholder={t("RESEND_EMAIL_PLACEHOLDER")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -73,34 +97,14 @@ export default function LoginPage() {
             autoFocus
           />
 
-          <InputField
-            label={t("LOGIN_PASSWORD_LABEL")}
-            name="password"
-            type="password"
-            placeholder={t("LOGIN_PASSWORD_PLACEHOLDER")}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
-
           <Button type="submit" loading={loading} className="mt-2">
-            {t("LOGIN_SUBMIT")}
+            {t("RESEND_SUBMIT")}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted">
-          <Link href="/register" className="text-secondary hover:underline">
-            {t("LOGIN_REGISTER_LINK")}
-          </Link>
-        </p>
-
-        <p className="text-center text-sm text-muted">
-          <Link
-            href="/resend-verification"
-            className="text-secondary hover:underline"
-          >
-            {t("LOGIN_RESEND_LINK")}
+          <Link href="/login" className="text-secondary hover:underline">
+            {t("RESEND_LOGIN_LINK")}
           </Link>
         </p>
       </div>

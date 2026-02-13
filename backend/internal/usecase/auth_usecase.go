@@ -50,6 +50,10 @@ func (uc *AuthUseCase) Login(ctx context.Context, input LoginInput) (*LoginOutpu
 		return nil, apperror.ErrInvalidCredentials
 	}
 
+	if user.EmailVerifiedAt == nil {
+		return nil, apperror.ErrEmailNotVerified
+	}
+
 	token, expiresAt, err := uc.jwtService.Generate(user)
 	if err != nil {
 		return nil, err

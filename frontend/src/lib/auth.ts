@@ -48,3 +48,10 @@ export async function verifyEmail(token: string): Promise<void> {
     body: JSON.stringify({ token }),
   });
 }
+
+export async function requestVerification(email: string): Promise<void> {
+  return api<void>("/auth/request-verification", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}

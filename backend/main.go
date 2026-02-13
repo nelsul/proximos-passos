@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -99,6 +100,16 @@ func main() {
 	adminEmail := os.Getenv("ADMIN_EMAIL")
 	adminPassword := os.Getenv("ADMIN_PASSWORD")
 
+	verificationCooldownStr := os.Getenv("VERIFICATION_COOLDOWN_SECONDS")
+	if verificationCooldownStr == "" {
+		verificationCooldownStr = "180"
+	}
+	verificationCooldownSecs, err := strconv.Atoi(verificationCooldownStr)
+	if err != nil {
+		log.Fatal("VERIFICATION_COOLDOWN_SECONDS must be a valid integer")
+	}
+	verificationCooldown := time.Duration(verificationCooldownSecs) * time.Second
+
 	setupInput := &usecase.SetupAdminInput{
 		Name:     adminName,
 		Email:    adminEmail,
@@ -115,7 +126,7 @@ func main() {
 
 	userRepo := postgres.NewUserRepository(pool)
 	groupRepo := postgres.NewGroupRepository(pool)
-	userUC := usecase.NewUserUseCase(userRepo, emailSvc, storageSvc, jwtService, frontendURL)
+	userUC := usecase.NewUserUseCase(userRepo, emailSvc, storageSvc, jwtService, frontendURL, verificationCooldown)
 	authUC := usecase.NewAuthUseCase(userRepo, jwtService)
 	groupUC := usecase.NewGroupUseCase(groupRepo, userRepo, storageSvc)
 

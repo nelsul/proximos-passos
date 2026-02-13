@@ -24,6 +24,8 @@ const (
 	CodeMemberNotFound       Code = "MEMBER_NOT_FOUND"
 	CodeMemberAlreadyExists  Code = "MEMBER_ALREADY_EXISTS"
 	CodeSetupUnavailable     Code = "SETUP_UNAVAILABLE"
+	CodeVerificationCooldown Code = "VERIFICATION_COOLDOWN"
+	CodeEmailNotVerified     Code = "EMAIL_NOT_VERIFIED"
 )
 
 type AppError struct {
@@ -73,4 +75,6 @@ var (
 	ErrMemberNotFound       = New(CodeMemberNotFound, "The requested member was not found.", http.StatusNotFound)
 	ErrMemberAlreadyExists  = New(CodeMemberAlreadyExists, "The user is already a member of this group.", http.StatusConflict)
 	ErrSetupUnavailable     = New(CodeSetupUnavailable, "Initial setup is no longer available.", http.StatusConflict)
+	ErrVerificationCooldown = New(CodeVerificationCooldown, "Please wait before requesting another verification email.", http.StatusTooManyRequests)
+	ErrEmailNotVerified     = New(CodeEmailNotVerified, "Please verify your email before logging in.", http.StatusForbidden)
 )

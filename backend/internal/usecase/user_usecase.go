@@ -28,20 +28,22 @@ var allowedAvatarTypes = map[string]bool{
 }
 
 type UserUseCase struct {
-	repo        repository.UserRepository
-	emailSvc    service.EmailService
-	storageSvc  service.StorageService
-	jwtService  *jwt.Service
-	frontendURL string
+	repo                 repository.UserRepository
+	emailSvc             service.EmailService
+	storageSvc           service.StorageService
+	jwtService           *jwt.Service
+	frontendURL          string
+	verificationCooldown time.Duration
 }
 
-func NewUserUseCase(repo repository.UserRepository, emailSvc service.EmailService, storageSvc service.StorageService, jwtService *jwt.Service, frontendURL string) *UserUseCase {
+func NewUserUseCase(repo repository.UserRepository, emailSvc service.EmailService, storageSvc service.StorageService, jwtService *jwt.Service, frontendURL string, verificationCooldown time.Duration) *UserUseCase {
 	return &UserUseCase{
-		repo:        repo,
-		emailSvc:    emailSvc,
-		storageSvc:  storageSvc,
-		jwtService:  jwtService,
-		frontendURL: frontendURL,
+		repo:                 repo,
+		emailSvc:             emailSvc,
+		storageSvc:           storageSvc,
+		jwtService:           jwtService,
+		frontendURL:          frontendURL,
+		verificationCooldown: verificationCooldown,
 	}
 }
 
@@ -129,6 +131,11 @@ func (uc *UserUseCase) sendVerificationEmail(user *entity.User) {
 
 	if err := uc.emailSvc.SendVerificationEmail(context.Background(), user.Email, user.Name, verificationURL); err != nil {
 		log.Printf("failed to send verification email to %s: %v", user.Email, err)
+		return
+	}
+
+	if err := uc.repo.UpdateLastVerificationSent(context.Background(), user.PublicID); err != nil {
+		log.Printf("failed to update last verification sent for user %s: %v", user.PublicID, err)
 	}
 }
 
@@ -153,6 +160,10 @@ func (uc *UserUseCase) ResendVerificationEmail(ctx context.Context, publicID str
 		return apperror.ErrEmailAlreadyVerified
 	}
 
+	if user.LastVerificationTokenSentAt != nil && time.Since(*user.LastVerificationTokenSentAt) < uc.verificationCooldown {
+		return apperror.ErrVerificationCooldown
+	}
+
 	token, err := uc.jwtService.GenerateVerificationToken(user.PublicID, 24*time.Hour)
 	if err != nil {
 		return err
@@ -162,6 +173,49 @@ func (uc *UserUseCase) ResendVerificationEmail(ctx context.Context, publicID str
 
 	if err := uc.emailSvc.SendVerificationEmail(ctx, user.Email, user.Name, verificationURL); err != nil {
 		return apperror.ErrEmailSendFailed
+	}
+
+	if err := uc.repo.UpdateLastVerificationSent(ctx, user.PublicID); err != nil {
+		log.Printf("failed to update last verification sent for user %s: %v", user.PublicID, err)
+	}
+
+	return nil
+}
+
+func (uc *UserUseCase) RequestVerificationByEmail(ctx context.Context, email string) error {
+	email = strings.TrimSpace(email)
+	if email == "" {
+		return apperror.ErrInvalidInput
+	}
+
+	user, err := uc.repo.GetByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return nil
+	}
+	if user.EmailVerifiedAt != nil {
+		return apperror.ErrEmailAlreadyVerified
+	}
+
+	if user.LastVerificationTokenSentAt != nil && time.Since(*user.LastVerificationTokenSentAt) < uc.verificationCooldown {
+		return apperror.ErrVerificationCooldown
+	}
+
+	token, err := uc.jwtService.GenerateVerificationToken(user.PublicID, 24*time.Hour)
+	if err != nil {
+		return err
+	}
+
+	verificationURL := fmt.Sprintf("%s/pt-BR/verify-email?token=%s", uc.frontendURL, token)
+
+	if err := uc.emailSvc.SendVerificationEmail(ctx, user.Email, user.Name, verificationURL); err != nil {
+		return apperror.ErrEmailSendFailed
+	}
+
+	if err := uc.repo.UpdateLastVerificationSent(ctx, user.PublicID); err != nil {
+		log.Printf("failed to update last verification sent for user %s: %v", user.PublicID, err)
 	}
 
 	return nil

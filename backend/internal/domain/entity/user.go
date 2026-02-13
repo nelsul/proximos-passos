@@ -10,15 +10,16 @@ const (
 )
 
 type User struct {
-	ID              int
-	PublicID        string
-	Role            UserRole
-	Name            string
-	Email           string
-	EmailVerifiedAt *time.Time
-	PasswordHash    string
-	AvatarURL       *string
-	IsActive        bool
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	ID                          int
+	PublicID                    string
+	Role                        UserRole
+	Name                        string
+	Email                       string
+	EmailVerifiedAt             *time.Time
+	LastVerificationTokenSentAt *time.Time
+	PasswordHash                string
+	AvatarURL                   *string
+	IsActive                    bool
+	CreatedAt                   time.Time
+	UpdatedAt                   time.Time
 }

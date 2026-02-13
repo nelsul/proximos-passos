@@ -50,10 +50,21 @@
     "REGISTER_LOGIN_LINK": "Already have an account? Sign in",
     "LOGIN_REGISTER_LINK": "Don't have an account? Sign up",
 
+    "RESEND_SUBTITLE": "Enter your email to receive a new verification link.",
+    "RESEND_EMAIL_LABEL": "Email",
+    "RESEND_EMAIL_PLACEHOLDER": "you@email.com",
+    "RESEND_SUBMIT": "Send verification email",
+    "RESEND_SUCCESS_TITLE": "Email sent!",
+    "RESEND_SUCCESS_DESCRIPTION": "If an account with that email exists and is not yet verified, you will receive a verification link shortly.",
+    "RESEND_LOGIN_LINK": "Back to login",
+    "LOGIN_RESEND_LINK": "Didn't receive the verification email?",
+
     "ERROR_INVALID_CREDENTIALS": "Invalid email or password.",
     "ERROR_INVALID_VERIFICATION_TOKEN": "The verification token is invalid or expired.",
     "ERROR_EMAIL_ALREADY_VERIFIED": "This email has already been verified.",
     "ERROR_INTERNAL_ERROR": "An unexpected error occurred. Please try again.",
     "ERROR_USER_EMAIL_ALREADY_EXISTS": "This email is already registered.",
-    "ERROR_INVALID_INPUT": "Please fill in all required fields."
+    "ERROR_INVALID_INPUT": "Please fill in all required fields.",
+    "ERROR_VERIFICATION_COOLDOWN": "Please wait a few minutes before requesting another verification email.",
+    "ERROR_EMAIL_NOT_VERIFIED": "Please verify your email before logging in."
 }
