@@ -443,30 +443,35 @@ CREATE TABLE activity_attachments (
 );
 
 CREATE TABLE activity_questions (
+    order_index INT NOT NULL DEFAULT 0,
     activity_id INT NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
     question_id INT NOT NULL REFERENCES questions(id) ON DELETE RESTRICT,
     PRIMARY KEY (activity_id, question_id)
 );
 
 CREATE TABLE activity_video_lessons (
+    order_index INT NOT NULL DEFAULT 0,
     activity_id INT NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
     video_lesson_id INT NOT NULL REFERENCES video_lessons(id) ON DELETE RESTRICT,
     PRIMARY KEY (activity_id, video_lesson_id)
 );
 
 CREATE TABLE activity_handouts (
+    order_index INT NOT NULL DEFAULT 0,
     activity_id INT NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
     handout_id INT NOT NULL REFERENCES handouts(id) ON DELETE RESTRICT,
     PRIMARY KEY (activity_id, handout_id)
 );
 
 CREATE TABLE activity_open_exercise_lists (
+    order_index INT NOT NULL DEFAULT 0,
     activity_id INT NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
     open_exercise_list_id INT NOT NULL REFERENCES open_exercise_lists(id) ON DELETE RESTRICT,
     PRIMARY KEY (activity_id, open_exercise_list_id)
 );
 
 CREATE TABLE activity_simulated_exams (
+    order_index INT NOT NULL DEFAULT 0,
     activity_id INT NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
     simulated_exam_id INT NOT NULL REFERENCES simulated_exams(id) ON DELETE RESTRICT,
     PRIMARY KEY (activity_id, simulated_exam_id)
@@ -507,6 +512,31 @@ CREATE TABLE activity_submission_attachments (
     activity_submission_id INT NOT NULL REFERENCES activity_submissions(id) ON DELETE CASCADE,
     file_id INT NOT NULL REFERENCES files(id) ON DELETE RESTRICT,
     PRIMARY KEY (activity_submission_id, file_id)
+);
+
+CREATE TABLE question_submissions (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    public_id UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+
+    question_id INT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    activity_submission_id INT REFERENCES activity_submissions(id) ON DELETE SET NULL,
+    simulated_exam_id INT REFERENCES simulated_exams(id) ON DELETE SET NULL,
+    question_option_id INT REFERENCES question_options(id) ON DELETE SET NULL,
+    answer_text TEXT CHECK (
+        answer_text IS NULL
+        OR (length(answer_text) > 0 AND answer_text = trim(answer_text))
+    ),
+    score INT CHECK (score IS NULL OR score BETWEEN 0 AND 100),
+    answer_feedback TEXT CHECK (
+        answer_feedback IS NULL
+        OR (length(answer_feedback) > 0 AND answer_feedback = trim(answer_feedback))
+    ),
+    passed BOOLEAN NOT NULL DEFAULT FALSE,
+
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ==========================================
