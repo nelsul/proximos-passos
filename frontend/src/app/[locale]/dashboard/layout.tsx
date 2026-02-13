@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/routing";
 import { getMe, type UserResponse } from "@/lib/auth";
 import { Navbar } from "@/components/layout/navbar";
+import { Sidebar } from "@/components/layout/sidebar";
 
 export default function DashboardLayout({
   children,
@@ -13,6 +14,7 @@ export default function DashboardLayout({
   const router = useRouter();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     getMe()
@@ -33,10 +35,18 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar user={user} onUserUpdated={setUser} />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {children}
-      </main>
+      <Navbar
+        user={user}
+        onUserUpdated={setUser}
+        onMenuToggle={() => setSidebarOpen((prev) => !prev)}
+      />
+      <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
+        <Sidebar
+          mobileOpen={sidebarOpen}
+          onMobileClose={() => setSidebarOpen(false)}
+        />
+        <main className="min-w-0 flex-1">{children}</main>
+      </div>
     </div>
   );
 }

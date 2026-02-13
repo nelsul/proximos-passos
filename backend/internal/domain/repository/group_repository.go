@@ -6,16 +6,22 @@ import (
 	"proximos-passos/backend/internal/domain/entity"
 )
 
+type GroupFilter struct {
+	Name           string
+	AccessType     string
+	VisibilityType string
+}
+
 type GroupRepository interface {
 	// Groups
 	Create(ctx context.Context, group *entity.Group) error
 	GetByPublicID(ctx context.Context, publicID string) (*entity.Group, error)
-	List(ctx context.Context, limit, offset int) ([]entity.Group, error)
-	Count(ctx context.Context) (int, error)
-	ListPublic(ctx context.Context, limit, offset int) ([]entity.Group, error)
-	CountPublic(ctx context.Context) (int, error)
-	ListByUser(ctx context.Context, userID int, limit, offset int) ([]entity.Group, error)
-	CountByUser(ctx context.Context, userID int) (int, error)
+	List(ctx context.Context, limit, offset int, filter GroupFilter) ([]entity.Group, error)
+	Count(ctx context.Context, filter GroupFilter) (int, error)
+	ListPublic(ctx context.Context, limit, offset int, filter GroupFilter) ([]entity.Group, error)
+	CountPublic(ctx context.Context, filter GroupFilter) (int, error)
+	ListByUser(ctx context.Context, userID int, limit, offset int, filter GroupFilter) ([]entity.Group, error)
+	CountByUser(ctx context.Context, userID int, filter GroupFilter) (int, error)
 	Update(ctx context.Context, group *entity.Group) error
 	UpdateThumbnail(ctx context.Context, publicID string, thumbnailURL *string) error
 	Delete(ctx context.Context, publicID string) error

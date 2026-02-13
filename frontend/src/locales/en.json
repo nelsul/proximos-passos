@@ -80,5 +80,35 @@
     "PROFILE_SAVE": "Save",
     "PROFILE_SUCCESS": "Profile updated successfully.",
 
-    "LOGOUT_SUCCESS": "You have been logged out."
+    "LOGOUT_SUCCESS": "You have been logged out.",
+
+    "SIDEBAR_GROUPS": "Groups",
+    "SIDEBAR_MY_GROUPS": "My Groups",
+
+    "GROUPS_TITLE": "Groups",
+    "GROUPS_SUBTITLE": "Browse public groups available on the platform.",
+    "GROUPS_EMPTY": "No public groups available yet.",
+
+    "MY_GROUPS_TITLE": "My Groups",
+    "MY_GROUPS_SUBTITLE": "Groups you are a member of.",
+    "MY_GROUPS_EMPTY": "You are not a member of any group yet.",
+
+    "GROUP_CREATE_BUTTON": "New group",
+    "GROUP_CREATE_TITLE": "Create group",
+    "GROUP_NAME_LABEL": "Group name",
+    "GROUP_NAME_PLACEHOLDER": "e.g. Math Study Group",
+    "GROUP_DESCRIPTION_LABEL": "Description",
+    "GROUP_DESCRIPTION_PLACEHOLDER": "What is this group about?",
+    "GROUP_VISIBILITY_LABEL": "Visibility",
+    "GROUP_VISIBILITY_PUBLIC": "Public",
+    "GROUP_VISIBILITY_PRIVATE": "Private",
+    "GROUP_ACCESS_LABEL": "Access",
+    "GROUP_ACCESS_OPEN": "Open",
+    "GROUP_ACCESS_CLOSED": "Closed",
+    "GROUP_CREATE_SUBMIT": "Create",
+    "GROUP_CREATE_SUCCESS": "Group created successfully.",
+
+    "FILTER_NAME_PLACEHOLDER": "Search by name…",
+    "FILTER_ACCESS_ALL": "All access types",
+    "FILTER_VISIBILITY_ALL": "All visibilities"
 }

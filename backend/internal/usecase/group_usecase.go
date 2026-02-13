@@ -150,7 +150,7 @@ func (uc *GroupUseCase) GetByPublicID(ctx context.Context, publicID string, user
 	return group, nil
 }
 
-func (uc *GroupUseCase) List(ctx context.Context, pageNumber, pageSize int, userRole entity.UserRole) ([]entity.Group, int, error) {
+func (uc *GroupUseCase) List(ctx context.Context, pageNumber, pageSize int, userRole entity.UserRole, filter repository.GroupFilter) ([]entity.Group, int, error) {
 	if pageSize <= 0 {
 		pageSize = 20
 	}
@@ -168,17 +168,17 @@ func (uc *GroupUseCase) List(ctx context.Context, pageNumber, pageSize int, user
 	var err error
 
 	if userRole == entity.UserRoleAdmin {
-		groups, err = uc.groupRepo.List(ctx, pageSize, offset)
+		groups, err = uc.groupRepo.List(ctx, pageSize, offset, filter)
 		if err != nil {
 			return nil, 0, err
 		}
-		total, err = uc.groupRepo.Count(ctx)
+		total, err = uc.groupRepo.Count(ctx, filter)
 	} else {
-		groups, err = uc.groupRepo.ListPublic(ctx, pageSize, offset)
+		groups, err = uc.groupRepo.ListPublic(ctx, pageSize, offset, filter)
 		if err != nil {
 			return nil, 0, err
 		}
-		total, err = uc.groupRepo.CountPublic(ctx)
+		total, err = uc.groupRepo.CountPublic(ctx, filter)
 	}
 	if err != nil {
 		return nil, 0, err
@@ -187,7 +187,7 @@ func (uc *GroupUseCase) List(ctx context.Context, pageNumber, pageSize int, user
 	return groups, total, nil
 }
 
-func (uc *GroupUseCase) ListMyGroups(ctx context.Context, userPublicID string, pageNumber, pageSize int) ([]entity.Group, int, error) {
+func (uc *GroupUseCase) ListMyGroups(ctx context.Context, userPublicID string, pageNumber, pageSize int, filter repository.GroupFilter) ([]entity.Group, int, error) {
 	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
 	if err != nil {
 		return nil, 0, err
@@ -208,12 +208,12 @@ func (uc *GroupUseCase) ListMyGroups(ctx context.Context, userPublicID string, p
 
 	offset := (pageNumber - 1) * pageSize
 
-	groups, err := uc.groupRepo.ListByUser(ctx, user.ID, pageSize, offset)
+	groups, err := uc.groupRepo.ListByUser(ctx, user.ID, pageSize, offset, filter)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	total, err := uc.groupRepo.CountByUser(ctx, user.ID)
+	total, err := uc.groupRepo.CountByUser(ctx, user.ID, filter)
 	if err != nil {
 		return nil, 0, err
 	}

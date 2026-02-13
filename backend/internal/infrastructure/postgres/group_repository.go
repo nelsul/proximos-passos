@@ -3,9 +3,12 @@ package postgres
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"proximos-passos/backend/internal/domain/apperror"
 	"proximos-passos/backend/internal/domain/entity"
+	"proximos-passos/backend/internal/domain/repository"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -67,16 +70,45 @@ func (r *GroupRepository) GetByPublicID(ctx context.Context, publicID string) (*
 	return &group, nil
 }
 
-func (r *GroupRepository) List(ctx context.Context, limit, offset int) ([]entity.Group, error) {
-	rows, err := r.pool.Query(ctx,
+func buildGroupFilterClause(filter repository.GroupFilter, startParam int) (string, []any) {
+	var conditions []string
+	var args []any
+	paramIdx := startParam
+
+	if filter.Name != "" {
+		conditions = append(conditions, fmt.Sprintf("g.name ILIKE $%d", paramIdx))
+		args = append(args, "%"+filter.Name+"%")
+		paramIdx++
+	}
+	if filter.AccessType != "" {
+		conditions = append(conditions, fmt.Sprintf("g.access_type = $%d", paramIdx))
+		args = append(args, filter.AccessType)
+		paramIdx++
+	}
+	if filter.VisibilityType != "" {
+		conditions = append(conditions, fmt.Sprintf("g.visibility_type = $%d", paramIdx))
+		args = append(args, filter.VisibilityType)
+		paramIdx++
+	}
+
+	if len(conditions) == 0 {
+		return "", nil
+	}
+	return " AND " + strings.Join(conditions, " AND "), args
+}
+
+func (r *GroupRepository) List(ctx context.Context, limit, offset int, filter repository.GroupFilter) ([]entity.Group, error) {
+	filterClause, filterArgs := buildGroupFilterClause(filter, 3)
+	query := fmt.Sprintf(
 		`SELECT id, public_id, name, description, access_type, visibility_type,
 		        thumbnail_url, is_active, created_by_id, created_at, updated_at
-		 FROM groups
-		 WHERE is_active = true
-		 ORDER BY created_at DESC
-		 LIMIT $1 OFFSET $2`,
-		limit, offset,
-	)
+		 FROM groups g
+		 WHERE g.is_active = true%s
+		 ORDER BY g.created_at DESC
+		 LIMIT $1 OFFSET $2`, filterClause)
+
+	args := append([]any{limit, offset}, filterArgs...)
+	rows, err := r.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -98,22 +130,27 @@ func (r *GroupRepository) List(ctx context.Context, limit, offset int) ([]entity
 	return groups, rows.Err()
 }
 
-func (r *GroupRepository) Count(ctx context.Context) (int, error) {
+func (r *GroupRepository) Count(ctx context.Context, filter repository.GroupFilter) (int, error) {
+	filterClause, filterArgs := buildGroupFilterClause(filter, 1)
+	query := fmt.Sprintf(`SELECT COUNT(*) FROM groups g WHERE g.is_active = true%s`, filterClause)
+
 	var count int
-	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM groups WHERE is_active = true`).Scan(&count)
+	err := r.pool.QueryRow(ctx, query, filterArgs...).Scan(&count)
 	return count, err
 }
 
-func (r *GroupRepository) ListPublic(ctx context.Context, limit, offset int) ([]entity.Group, error) {
-	rows, err := r.pool.Query(ctx,
+func (r *GroupRepository) ListPublic(ctx context.Context, limit, offset int, filter repository.GroupFilter) ([]entity.Group, error) {
+	filterClause, filterArgs := buildGroupFilterClause(filter, 3)
+	query := fmt.Sprintf(
 		`SELECT id, public_id, name, description, access_type, visibility_type,
 		        thumbnail_url, is_active, created_by_id, created_at, updated_at
-		 FROM groups
-		 WHERE is_active = true AND visibility_type = 'public'
-		 ORDER BY created_at DESC
-		 LIMIT $1 OFFSET $2`,
-		limit, offset,
-	)
+		 FROM groups g
+		 WHERE g.is_active = true AND g.visibility_type = 'public'%s
+		 ORDER BY g.created_at DESC
+		 LIMIT $1 OFFSET $2`, filterClause)
+
+	args := append([]any{limit, offset}, filterArgs...)
+	rows, err := r.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -135,23 +172,28 @@ func (r *GroupRepository) ListPublic(ctx context.Context, limit, offset int) ([]
 	return groups, rows.Err()
 }
 
-func (r *GroupRepository) CountPublic(ctx context.Context) (int, error) {
+func (r *GroupRepository) CountPublic(ctx context.Context, filter repository.GroupFilter) (int, error) {
+	filterClause, filterArgs := buildGroupFilterClause(filter, 1)
+	query := fmt.Sprintf(`SELECT COUNT(*) FROM groups g WHERE g.is_active = true AND g.visibility_type = 'public'%s`, filterClause)
+
 	var count int
-	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM groups WHERE is_active = true AND visibility_type = 'public'`).Scan(&count)
+	err := r.pool.QueryRow(ctx, query, filterArgs...).Scan(&count)
 	return count, err
 }
 
-func (r *GroupRepository) ListByUser(ctx context.Context, userID int, limit, offset int) ([]entity.Group, error) {
-	rows, err := r.pool.Query(ctx,
+func (r *GroupRepository) ListByUser(ctx context.Context, userID int, limit, offset int, filter repository.GroupFilter) ([]entity.Group, error) {
+	filterClause, filterArgs := buildGroupFilterClause(filter, 4)
+	query := fmt.Sprintf(
 		`SELECT g.id, g.public_id, g.name, g.description, g.access_type, g.visibility_type,
 		        g.thumbnail_url, g.is_active, g.created_by_id, g.created_at, g.updated_at
 		 FROM groups g
 		 JOIN group_members gm ON gm.group_id = g.id
-		 WHERE g.is_active = true AND gm.user_id = $1 AND gm.is_active = true
+		 WHERE g.is_active = true AND gm.user_id = $1 AND gm.is_active = true%s
 		 ORDER BY g.created_at DESC
-		 LIMIT $2 OFFSET $3`,
-		userID, limit, offset,
-	)
+		 LIMIT $2 OFFSET $3`, filterClause)
+
+	args := append([]any{userID, limit, offset}, filterArgs...)
+	rows, err := r.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -173,14 +215,16 @@ func (r *GroupRepository) ListByUser(ctx context.Context, userID int, limit, off
 	return groups, rows.Err()
 }
 
-func (r *GroupRepository) CountByUser(ctx context.Context, userID int) (int, error) {
-	var count int
-	err := r.pool.QueryRow(ctx,
+func (r *GroupRepository) CountByUser(ctx context.Context, userID int, filter repository.GroupFilter) (int, error) {
+	filterClause, filterArgs := buildGroupFilterClause(filter, 2)
+	query := fmt.Sprintf(
 		`SELECT COUNT(*) FROM groups g
 		 JOIN group_members gm ON gm.group_id = g.id
-		 WHERE g.is_active = true AND gm.user_id = $1 AND gm.is_active = true`,
-		userID,
-	).Scan(&count)
+		 WHERE g.is_active = true AND gm.user_id = $1 AND gm.is_active = true%s`, filterClause)
+
+	args := append([]any{userID}, filterArgs...)
+	var count int
+	err := r.pool.QueryRow(ctx, query, args...).Scan(&count)
 	return count, err
 }
 

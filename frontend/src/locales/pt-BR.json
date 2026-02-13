@@ -80,5 +80,35 @@
     "PROFILE_SAVE": "Salvar",
     "PROFILE_SUCCESS": "Perfil atualizado com sucesso.",
 
-    "LOGOUT_SUCCESS": "Você saiu da sua conta."
+    "LOGOUT_SUCCESS": "Você saiu da sua conta.",
+
+    "SIDEBAR_GROUPS": "Grupos",
+    "SIDEBAR_MY_GROUPS": "Meus Grupos",
+
+    "GROUPS_TITLE": "Grupos",
+    "GROUPS_SUBTITLE": "Explore os grupos públicos disponíveis na plataforma.",
+    "GROUPS_EMPTY": "Nenhum grupo público disponível ainda.",
+
+    "MY_GROUPS_TITLE": "Meus Grupos",
+    "MY_GROUPS_SUBTITLE": "Grupos dos quais você é membro.",
+    "MY_GROUPS_EMPTY": "Você ainda não é membro de nenhum grupo.",
+
+    "GROUP_CREATE_BUTTON": "Novo grupo",
+    "GROUP_CREATE_TITLE": "Criar grupo",
+    "GROUP_NAME_LABEL": "Nome do grupo",
+    "GROUP_NAME_PLACEHOLDER": "ex. Grupo de Estudos de Matemática",
+    "GROUP_DESCRIPTION_LABEL": "Descrição",
+    "GROUP_DESCRIPTION_PLACEHOLDER": "Sobre o que é este grupo?",
+    "GROUP_VISIBILITY_LABEL": "Visibilidade",
+    "GROUP_VISIBILITY_PUBLIC": "Público",
+    "GROUP_VISIBILITY_PRIVATE": "Privado",
+    "GROUP_ACCESS_LABEL": "Acesso",
+    "GROUP_ACCESS_OPEN": "Aberto",
+    "GROUP_ACCESS_CLOSED": "Fechado",
+    "GROUP_CREATE_SUBMIT": "Criar",
+    "GROUP_CREATE_SUCCESS": "Grupo criado com sucesso.",
+
+    "FILTER_NAME_PLACEHOLDER": "Buscar por nome…",
+    "FILTER_ACCESS_ALL": "Todos os tipos de acesso",
+    "FILTER_VISIBILITY_ALL": "Todas as visibilidades"
 }

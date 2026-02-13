@@ -10,6 +10,7 @@ import (
 	"proximos-passos/backend/internal/adapter/response"
 	"proximos-passos/backend/internal/domain/apperror"
 	"proximos-passos/backend/internal/domain/entity"
+	"proximos-passos/backend/internal/domain/repository"
 	"proximos-passos/backend/internal/usecase"
 )
 
@@ -104,7 +105,12 @@ func (h *GroupHandler) List(w http.ResponseWriter, r *http.Request) {
 	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	userRole := middleware.UserRole(r.Context())
 
-	groups, totalItems, err := h.uc.List(r.Context(), pageNumber, pageSize, userRole)
+	filter := repository.GroupFilter{
+		Name:       r.URL.Query().Get("name"),
+		AccessType: r.URL.Query().Get("access_type"),
+	}
+
+	groups, totalItems, err := h.uc.List(r.Context(), pageNumber, pageSize, userRole, filter)
 	if err != nil {
 		response.Error(w, err)
 		return
@@ -179,7 +185,13 @@ func (h *GroupHandler) ListMyGroups(w http.ResponseWriter, r *http.Request) {
 	pageNumber, _ := strconv.Atoi(r.URL.Query().Get("page_number"))
 	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 
-	groups, totalItems, err := h.uc.ListMyGroups(r.Context(), userPublicID, pageNumber, pageSize)
+	filter := repository.GroupFilter{
+		Name:           r.URL.Query().Get("name"),
+		AccessType:     r.URL.Query().Get("access_type"),
+		VisibilityType: r.URL.Query().Get("visibility_type"),
+	}
+
+	groups, totalItems, err := h.uc.ListMyGroups(r.Context(), userPublicID, pageNumber, pageSize, filter)
 	if err != nil {
 		response.Error(w, err)
 		return
