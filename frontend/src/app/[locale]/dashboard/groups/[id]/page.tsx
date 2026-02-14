@@ -20,6 +20,9 @@ import {
   Upload,
   Trash2,
   Share2,
+  CalendarClock,
+  History,
+  Info,
 } from "lucide-react";
 import {
   getGroup,
@@ -43,7 +46,10 @@ import { InputField } from "@/components/ui/input-field";
 import { Pagination } from "@/components/ui/pagination";
 import { useToast } from "@/components/ui/toast";
 import { InviteGroupModal } from "@/components/groups/invite-group-modal";
-import { ActivityList } from "@/components/activities/activity-list";
+import { UpcomingActivities } from "@/components/activities/upcoming-activities";
+import { PastActivities } from "@/components/activities/past-activities";
+
+type Tab = "details" | "activities" | "past" | "members";
 
 const MEMBERS_PAGE_SIZE = 10;
 const PENDING_PAGE_SIZE = 10;
@@ -89,6 +95,7 @@ export default function GroupDetailPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const isGroupAdmin = membership === "member" && userRole === "admin";
+  const [activeTab, setActiveTab] = useState<Tab>("activities");
 
   // Fetch group
   useEffect(() => {
@@ -272,8 +279,35 @@ export default function GroupDetailPage() {
     );
   }
 
+  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
+    ...(isGroupAdmin
+      ? [
+          {
+            key: "details" as Tab,
+            label: t("GROUP_TAB_DETAILS"),
+            icon: <Info className="h-4 w-4" />,
+          },
+        ]
+      : []),
+    {
+      key: "activities",
+      label: t("GROUP_TAB_ACTIVITIES"),
+      icon: <CalendarClock className="h-4 w-4" />,
+    },
+    {
+      key: "past",
+      label: t("GROUP_TAB_PAST_ACTIVITIES"),
+      icon: <History className="h-4 w-4" />,
+    },
+    {
+      key: "members",
+      label: t("GROUP_TAB_MEMBERS"),
+      icon: <Users className="h-4 w-4" />,
+    },
+  ];
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Back button */}
       <button
         onClick={() => router.push("/dashboard/my-groups")}
@@ -392,6 +426,25 @@ export default function GroupDetailPage() {
         )}
       </div>
 
+      {/* Tab Navigation */}
+      <div className="flex overflow-x-auto border-b border-surface-border">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
+              activeTab === tab.key
+                ? "border-secondary text-secondary"
+                : "border-transparent text-muted hover:text-heading hover:border-surface-border"
+            }`}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
       {/* Edit Group Modal */}
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -486,22 +539,121 @@ export default function GroupDetailPage() {
         </div>
       )}
 
-      {/* Pending Members (group admin only) */}
-      {isGroupAdmin && pendingTotal > 0 && (
+      {/* Invite Modal */}
+      {showInvite && group && (
+        <InviteGroupModal
+          groupId={group.id}
+          groupName={group.name}
+          onClose={() => setShowInvite(false)}
+        />
+      )}
+
+      {activeTab === "details" && (
+        <div className="space-y-6">
+          {/* Pending Members (group admin only) */}
+          {isGroupAdmin && pendingTotal > 0 && (
+            <div className="rounded-lg border border-surface-border bg-surface p-6">
+              <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-heading">
+                <Shield className="h-5 w-5 text-secondary" />
+                {t("GROUP_PENDING_TITLE")} ({pendingTotal})
+              </h2>
+
+              {pendingLoading ? (
+                <div className="flex justify-center py-6">
+                  <Loader2 className="h-6 w-6 animate-spin text-secondary" />
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-3">
+                    {pending.map((m) => (
+                      <div
+                        key={m.user_id}
+                        className="flex items-center justify-between rounded-lg border border-surface-border bg-background p-3"
+                      >
+                        <div className="flex items-center gap-3">
+                          {m.avatar_url ? (
+                            <img
+                              src={m.avatar_url}
+                              alt={m.name}
+                              className="h-9 w-9 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/15 text-sm font-medium text-secondary">
+                              {m.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <span className="text-sm font-medium text-heading">
+                            {m.name}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleApprove(m.user_id)}
+                            disabled={actionLoading === m.user_id}
+                            className="rounded-lg bg-green-600/20 p-1.5 text-green-400 hover:bg-green-600/30 transition-colors disabled:opacity-50"
+                            title={t("GROUP_APPROVE_BUTTON")}
+                          >
+                            {actionLoading === m.user_id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Check className="h-4 w-4" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleReject(m.user_id)}
+                            disabled={actionLoading === m.user_id}
+                            className="rounded-lg bg-red-600/20 p-1.5 text-red-400 hover:bg-red-600/30 transition-colors disabled:opacity-50"
+                            title={t("GROUP_REJECT_BUTTON")}
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Pagination
+                    page={pendingPage}
+                    totalPages={pendingTotalPages}
+                    onPageChange={setPendingPage}
+                  />
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "activities" && (
+        <div className="rounded-lg border border-surface-border bg-surface p-6">
+          <UpcomingActivities groupId={groupId} isGroupAdmin={isGroupAdmin} />
+        </div>
+      )}
+
+      {activeTab === "past" && (
+        <div className="rounded-lg border border-surface-border bg-surface p-6">
+          <PastActivities groupId={groupId} />
+        </div>
+      )}
+
+      {activeTab === "members" && (
         <div className="rounded-lg border border-surface-border bg-surface p-6">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-heading">
-            <Shield className="h-5 w-5 text-secondary" />
-            {t("GROUP_PENDING_TITLE")} ({pendingTotal})
+            <Users className="h-5 w-5 text-secondary" />
+            {t("GROUP_DETAIL_MEMBERS")}
           </h2>
 
-          {pendingLoading ? (
+          {membersLoading ? (
             <div className="flex justify-center py-6">
               <Loader2 className="h-6 w-6 animate-spin text-secondary" />
             </div>
+          ) : members.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted">
+              {t("GROUP_DETAIL_NO_MEMBERS")}
+            </p>
           ) : (
             <>
               <div className="space-y-3">
-                {pending.map((m) => (
+                {members.map((m) => (
                   <div
                     key={m.user_id}
                     className="flex items-center justify-between rounded-lg border border-surface-border bg-background p-3"
@@ -518,128 +670,43 @@ export default function GroupDetailPage() {
                           {m.name.charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <span className="text-sm font-medium text-heading">
-                        {m.name}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-heading">
+                          {m.name}
+                        </span>
+                        {m.role === "admin" && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-secondary/15 px-2 py-0.5 text-xs font-medium text-secondary">
+                            <Shield className="h-3 w-3" />
+                            {t("GROUP_DETAIL_ROLE_ADMIN")}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-2">
+                    {isGroupAdmin && m.role !== "admin" && (
                       <button
-                        onClick={() => handleApprove(m.user_id)}
+                        onClick={() => handleRemoveMember(m.user_id)}
                         disabled={actionLoading === m.user_id}
-                        className="rounded-lg bg-green-600/20 p-1.5 text-green-400 hover:bg-green-600/30 transition-colors disabled:opacity-50"
-                        title={t("GROUP_APPROVE_BUTTON")}
+                        className="rounded-lg p-1.5 text-muted hover:text-red-400 hover:bg-red-600/10 transition-colors disabled:opacity-50"
+                        title={t("GROUP_REMOVE_MEMBER_BUTTON")}
                       >
                         {actionLoading === m.user_id ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Check className="h-4 w-4" />
+                          <UserMinus className="h-4 w-4" />
                         )}
                       </button>
-                      <button
-                        onClick={() => handleReject(m.user_id)}
-                        disabled={actionLoading === m.user_id}
-                        className="rounded-lg bg-red-600/20 p-1.5 text-red-400 hover:bg-red-600/30 transition-colors disabled:opacity-50"
-                        title={t("GROUP_REJECT_BUTTON")}
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
               <Pagination
-                page={pendingPage}
-                totalPages={pendingTotalPages}
-                onPageChange={setPendingPage}
+                page={membersPage}
+                totalPages={membersTotalPages}
+                onPageChange={setMembersPage}
               />
             </>
           )}
         </div>
-      )}
-
-      {/* Activities */}
-      <ActivityList groupId={groupId} isGroupAdmin={isGroupAdmin} />
-
-      {/* Members */}
-      <div className="rounded-lg border border-surface-border bg-surface p-6">
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-heading">
-          <Users className="h-5 w-5 text-secondary" />
-          {t("GROUP_DETAIL_MEMBERS")}
-        </h2>
-
-        {membersLoading ? (
-          <div className="flex justify-center py-6">
-            <Loader2 className="h-6 w-6 animate-spin text-secondary" />
-          </div>
-        ) : members.length === 0 ? (
-          <p className="text-center text-sm text-muted py-6">
-            {t("GROUP_DETAIL_NO_MEMBERS")}
-          </p>
-        ) : (
-          <>
-            <div className="space-y-3">
-              {members.map((m) => (
-                <div
-                  key={m.user_id}
-                  className="flex items-center justify-between rounded-lg border border-surface-border bg-background p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    {m.avatar_url ? (
-                      <img
-                        src={m.avatar_url}
-                        alt={m.name}
-                        className="h-9 w-9 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/15 text-sm font-medium text-secondary">
-                        {m.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-heading">
-                        {m.name}
-                      </span>
-                      {m.role === "admin" && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-secondary/15 px-2 py-0.5 text-xs font-medium text-secondary">
-                          <Shield className="h-3 w-3" />
-                          {t("GROUP_DETAIL_ROLE_ADMIN")}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {isGroupAdmin && m.role !== "admin" && (
-                    <button
-                      onClick={() => handleRemoveMember(m.user_id)}
-                      disabled={actionLoading === m.user_id}
-                      className="rounded-lg p-1.5 text-muted hover:text-red-400 hover:bg-red-600/10 transition-colors disabled:opacity-50"
-                      title={t("GROUP_REMOVE_MEMBER_BUTTON")}
-                    >
-                      {actionLoading === m.user_id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <UserMinus className="h-4 w-4" />
-                      )}
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-            <Pagination
-              page={membersPage}
-              totalPages={membersTotalPages}
-              onPageChange={setMembersPage}
-            />
-          </>
-        )}
-      </div>
-
-      {/* Invite Modal */}
-      {showInvite && group && (
-        <InviteGroupModal
-          groupId={group.id}
-          groupName={group.name}
-          onClose={() => setShowInvite(false)}
-        />
       )}
     </div>
   );
