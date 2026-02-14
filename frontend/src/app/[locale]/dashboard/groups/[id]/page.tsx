@@ -43,6 +43,7 @@ import { InputField } from "@/components/ui/input-field";
 import { Pagination } from "@/components/ui/pagination";
 import { useToast } from "@/components/ui/toast";
 import { InviteGroupModal } from "@/components/groups/invite-group-modal";
+import { ActivityList } from "@/components/activities/activity-list";
 
 const MEMBERS_PAGE_SIZE = 10;
 const PENDING_PAGE_SIZE = 10;
@@ -555,6 +556,9 @@ export default function GroupDetailPage() {
           )}
         </div>
       )}
+
+      {/* Activities */}
+      <ActivityList groupId={groupId} isGroupAdmin={isGroupAdmin} />
 
       {/* Members */}
       <div className="rounded-lg border border-surface-border bg-surface p-6">

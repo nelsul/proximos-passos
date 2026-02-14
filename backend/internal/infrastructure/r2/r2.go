@@ -64,3 +64,7 @@ func (s *StorageService) Delete(ctx context.Context, key string) error {
 
 	return nil
 }
+
+func (s *StorageService) GetPublicURL(key string) string {
+	return fmt.Sprintf("%s/%s", s.publicURL, key)
+}

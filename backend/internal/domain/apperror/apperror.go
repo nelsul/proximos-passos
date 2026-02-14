@@ -26,6 +26,9 @@ const (
 	CodeSetupUnavailable     Code = "SETUP_UNAVAILABLE"
 	CodeVerificationCooldown Code = "VERIFICATION_COOLDOWN"
 	CodeEmailNotVerified     Code = "EMAIL_NOT_VERIFIED"
+	CodeActivityNotFound     Code = "ACTIVITY_NOT_FOUND"
+	CodeAttachmentNotFound   Code = "ATTACHMENT_NOT_FOUND"
+	CodeActivityTitleTaken   Code = "ACTIVITY_TITLE_TAKEN"
 )
 
 type AppError struct {
@@ -77,4 +80,7 @@ var (
 	ErrSetupUnavailable     = New(CodeSetupUnavailable, "Initial setup is no longer available.", http.StatusConflict)
 	ErrVerificationCooldown = New(CodeVerificationCooldown, "Please wait before requesting another verification email.", http.StatusTooManyRequests)
 	ErrEmailNotVerified     = New(CodeEmailNotVerified, "Please verify your email before logging in.", http.StatusForbidden)
+	ErrActivityNotFound     = New(CodeActivityNotFound, "The requested activity was not found.", http.StatusNotFound)
+	ErrAttachmentNotFound   = New(CodeAttachmentNotFound, "The requested attachment was not found.", http.StatusNotFound)
+	ErrActivityTitleTaken   = New(CodeActivityTitleTaken, "An activity with this title already exists in the group.", http.StatusConflict)
 )
