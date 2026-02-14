@@ -25,6 +25,7 @@ func NewGroupHandler(uc *usecase.GroupUseCase) *GroupHandler {
 func (h *GroupHandler) RegisterRoutes(mux *http.ServeMux, adminMW, authMW func(http.Handler) http.Handler) {
 	mux.Handle("GET /groups", authMW(http.HandlerFunc(h.List)))
 	mux.Handle("GET /groups/{id}", authMW(http.HandlerFunc(h.GetByID)))
+	mux.Handle("GET /groups/{id}/preview", authMW(http.HandlerFunc(h.GetPreview)))
 	mux.Handle("POST /groups", authMW(http.HandlerFunc(h.Create)))
 	mux.Handle("PUT /groups/{id}", adminMW(http.HandlerFunc(h.Update)))
 	mux.Handle("DELETE /groups/{id}", adminMW(http.HandlerFunc(h.Delete)))
@@ -43,6 +44,15 @@ func (h *GroupHandler) RegisterMemberRoutes(mux *http.ServeMux, adminMW, authMW 
 	mux.Handle("GET /groups/{id}/members", authMW(http.HandlerFunc(h.ListMembers)))
 	mux.Handle("PUT /groups/{id}/members/{userId}", adminMW(http.HandlerFunc(h.UpdateMemberRole)))
 	mux.Handle("DELETE /groups/{id}/members/{userId}", adminMW(http.HandlerFunc(h.RemoveMember)))
+
+	// Group-admin routes (authMW — group admin check is in use case)
+	mux.Handle("PUT /groups/{id}/admin/update", authMW(http.HandlerFunc(h.UpdateAsGroupAdmin)))
+	mux.Handle("PUT /groups/{id}/admin/thumbnail", authMW(http.HandlerFunc(h.UploadThumbnailAsGroupAdmin)))
+	mux.Handle("DELETE /groups/{id}/admin/thumbnail", authMW(http.HandlerFunc(h.DeleteThumbnailAsGroupAdmin)))
+	mux.Handle("GET /groups/{id}/members/pending", authMW(http.HandlerFunc(h.ListPendingMembers)))
+	mux.Handle("POST /groups/{id}/members/{userId}/approve", authMW(http.HandlerFunc(h.ApproveMember)))
+	mux.Handle("POST /groups/{id}/members/{userId}/reject", authMW(http.HandlerFunc(h.RejectMember)))
+	mux.Handle("DELETE /groups/{id}/admin/members/{userId}", authMW(http.HandlerFunc(h.RemoveMemberAsGroupAdmin)))
 }
 
 // Create godoc
@@ -154,9 +164,34 @@ func (h *GroupHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Router      /groups/{id} [get]
 func (h *GroupHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	publicID := r.PathValue("id")
+	userPublicID := middleware.UserPublicID(r.Context())
 	userRole := middleware.UserRole(r.Context())
 
-	group, err := h.uc.GetByPublicID(r.Context(), publicID, userRole)
+	group, err := h.uc.GetByPublicID(r.Context(), publicID, userPublicID, userRole)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, dto.GroupToResponse(group))
+}
+
+// GetPreview godoc
+// @Summary     Get group preview
+// @Description Returns basic group info for join page (ignores visibility)
+// @Tags        groups
+// @Produce     json
+// @Security    CookieAuth
+// @Param       id  path     string true "Group public ID (UUID)"
+// @Success     200 {object} dto.GroupResponse
+// @Failure     401 {object} apperror.AppError
+// @Failure     404 {object} apperror.AppError
+// @Failure     500 {object} apperror.AppError
+// @Router      /groups/{id}/preview [get]
+func (h *GroupHandler) GetPreview(w http.ResponseWriter, r *http.Request) {
+	publicID := r.PathValue("id")
+
+	group, err := h.uc.GetPreview(r.Context(), publicID)
 	if err != nil {
 		response.Error(w, err)
 		return
@@ -611,11 +646,213 @@ func (h *GroupHandler) CheckMembership(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status, err := h.uc.CheckMembership(r.Context(), groupPublicID, userPublicID)
+	status, role, err := h.uc.CheckMembership(r.Context(), groupPublicID, userPublicID)
 	if err != nil {
 		response.Error(w, err)
 		return
 	}
 
-	response.JSON(w, http.StatusOK, map[string]string{"status": status})
+	resp := map[string]string{"status": status}
+	if role != "" {
+		resp["role"] = role
+	}
+
+	response.JSON(w, http.StatusOK, resp)
+}
+
+// UpdateAsGroupAdmin allows a group admin to update group details
+func (h *GroupHandler) UpdateAsGroupAdmin(w http.ResponseWriter, r *http.Request) {
+	publicID := r.PathValue("id")
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req dto.UpdateGroupRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, apperror.ErrInvalidBody)
+		return
+	}
+
+	input := usecase.UpdateGroupInput{
+		Name:        req.Name,
+		Description: req.Description,
+	}
+
+	if req.AccessType != nil {
+		at := entity.GroupAccessType(*req.AccessType)
+		input.AccessType = &at
+	}
+
+	if req.VisibilityType != nil {
+		vt := entity.GroupVisibilityType(*req.VisibilityType)
+		input.VisibilityType = &vt
+	}
+
+	group, err := h.uc.UpdateAsGroupAdmin(r.Context(), publicID, requesterPublicID, input)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, dto.GroupToResponse(group))
+}
+
+// UploadThumbnailAsGroupAdmin allows a group admin to upload group thumbnail
+func (h *GroupHandler) UploadThumbnailAsGroupAdmin(w http.ResponseWriter, r *http.Request) {
+	publicID := r.PathValue("id")
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	if err := r.ParseMultipartForm(5 << 20); err != nil {
+		response.Error(w, apperror.ErrFileTooLarge)
+		return
+	}
+
+	file, header, err := r.FormFile("thumbnail")
+	if err != nil {
+		response.Error(w, apperror.ErrInvalidInput)
+		return
+	}
+	defer file.Close()
+
+	group, err := h.uc.UploadThumbnailAsGroupAdmin(r.Context(), publicID, requesterPublicID, header.Filename, header.Header.Get("Content-Type"), header.Size, file)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, dto.GroupToResponse(group))
+}
+
+// DeleteThumbnailAsGroupAdmin allows a group admin to delete group thumbnail
+func (h *GroupHandler) DeleteThumbnailAsGroupAdmin(w http.ResponseWriter, r *http.Request) {
+	publicID := r.PathValue("id")
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	group, err := h.uc.DeleteThumbnailAsGroupAdmin(r.Context(), publicID, requesterPublicID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, dto.GroupToResponse(group))
+}
+
+// ListPendingMembers returns pending member requests for group admins
+func (h *GroupHandler) ListPendingMembers(w http.ResponseWriter, r *http.Request) {
+	groupPublicID := r.PathValue("id")
+	pageNumber, _ := strconv.Atoi(r.URL.Query().Get("page_number"))
+	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
+
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	members, totalItems, err := h.uc.ListPendingMembers(r.Context(), groupPublicID, requesterPublicID, pageNumber, pageSize)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	if pageNumber < 1 {
+		pageNumber = 1
+	}
+
+	totalPages := (totalItems + pageSize - 1) / pageSize
+
+	memberResponses := make([]dto.GroupMemberResponse, len(members))
+	for i, m := range members {
+		memberResponses[i] = dto.GroupMemberResponse{
+			UserPublicID: m.UserPublicID,
+			Name:         m.UserName,
+			Email:        m.UserEmail,
+			AvatarURL:    m.UserAvatarURL,
+			Role:         string(m.Role),
+			IsActive:     m.IsActive,
+			JoinedAt:     m.JoinedAt,
+			UpdatedAt:    m.UpdatedAt,
+		}
+	}
+
+	response.JSON(w, http.StatusOK, dto.GroupMemberListResponse{
+		Data:       memberResponses,
+		PageNumber: pageNumber,
+		PageSize:   pageSize,
+		TotalItems: totalItems,
+		TotalPages: totalPages,
+	})
+}
+
+// ApproveMember approves a pending member request
+func (h *GroupHandler) ApproveMember(w http.ResponseWriter, r *http.Request) {
+	groupPublicID := r.PathValue("id")
+	userPublicID := r.PathValue("userId")
+
+	approverPublicID := middleware.UserPublicID(r.Context())
+	if approverPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	if err := h.uc.ApproveMember(r.Context(), groupPublicID, userPublicID, approverPublicID); err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// RejectMember rejects a pending member request
+func (h *GroupHandler) RejectMember(w http.ResponseWriter, r *http.Request) {
+	groupPublicID := r.PathValue("id")
+	userPublicID := r.PathValue("userId")
+
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	if err := h.uc.RejectMember(r.Context(), groupPublicID, userPublicID, requesterPublicID); err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// RemoveMemberAsGroupAdmin allows a group admin to remove a member
+func (h *GroupHandler) RemoveMemberAsGroupAdmin(w http.ResponseWriter, r *http.Request) {
+	groupPublicID := r.PathValue("id")
+	userPublicID := r.PathValue("userId")
+
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	if err := h.uc.RemoveMemberAsGroupAdmin(r.Context(), groupPublicID, userPublicID, requesterPublicID); err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

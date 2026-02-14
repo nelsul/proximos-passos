@@ -416,6 +416,80 @@ func (r *GroupRepository) UpdateMemberRole(ctx context.Context, groupID, userID 
 	return nil
 }
 
+func (r *GroupRepository) ListPendingMembers(ctx context.Context, groupID int, limit, offset int) ([]entity.GroupMember, error) {
+	query := `SELECT gm.group_id, gm.user_id, u.public_id, gm.role, gm.accepted_by_id,
+		        gm.is_active, gm.created_by_id, gm.joined_at, gm.updated_at,
+		        u.name, u.email, u.avatar_url
+		 FROM group_members gm
+		 JOIN users u ON u.id = gm.user_id
+		 WHERE gm.group_id = $1 AND gm.is_active = true AND gm.accepted_by_id IS NULL
+		 ORDER BY gm.joined_at ASC
+		 LIMIT $2 OFFSET $3`
+
+	rows, err := r.pool.Query(ctx, query, groupID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var members []entity.GroupMember
+	for rows.Next() {
+		var m entity.GroupMember
+		if err := rows.Scan(
+			&m.GroupID, &m.UserID, &m.UserPublicID, &m.Role, &m.AcceptedByID,
+			&m.IsActive, &m.CreatedByID, &m.JoinedAt, &m.UpdatedAt,
+			&m.UserName, &m.UserEmail, &m.UserAvatarURL,
+		); err != nil {
+			return nil, err
+		}
+		members = append(members, m)
+	}
+
+	return members, rows.Err()
+}
+
+func (r *GroupRepository) CountPendingMembers(ctx context.Context, groupID int) (int, error) {
+	var count int
+	err := r.pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM group_members WHERE group_id = $1 AND is_active = true AND accepted_by_id IS NULL`,
+		groupID,
+	).Scan(&count)
+	return count, err
+}
+
+func (r *GroupRepository) ApproveMember(ctx context.Context, groupID, userID, approvedByID int) error {
+	result, err := r.pool.Exec(ctx,
+		`UPDATE group_members SET accepted_by_id = $1 WHERE group_id = $2 AND user_id = $3 AND is_active = true AND accepted_by_id IS NULL`,
+		approvedByID, groupID, userID,
+	)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return apperror.ErrMemberNotFound
+	}
+
+	return nil
+}
+
+func (r *GroupRepository) ReactivateMember(ctx context.Context, groupID, userID int, acceptedByID *int) error {
+	result, err := r.pool.Exec(ctx,
+		`UPDATE group_members SET is_active = true, accepted_by_id = $1, role = 'member'
+		 WHERE group_id = $2 AND user_id = $3 AND is_active = false`,
+		acceptedByID, groupID, userID,
+	)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return apperror.ErrMemberNotFound
+	}
+
+	return nil
+}
+
 func (r *GroupRepository) RemoveMember(ctx context.Context, groupID, userID int) error {
 	result, err := r.pool.Exec(ctx,
 		`UPDATE group_members SET is_active = false WHERE group_id = $1 AND user_id = $2 AND is_active = true`,

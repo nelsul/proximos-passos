@@ -117,10 +117,97 @@ export type MembershipStatus = "none" | "pending" | "member";
 
 export interface MembershipResponse {
   status: MembershipStatus;
+  role?: "admin" | "member";
 }
 
 export async function checkMembership(
   groupId: string,
 ): Promise<MembershipResponse> {
   return api<MembershipResponse>(`/groups/${groupId}/membership`);
+}
+
+export async function getGroup(groupId: string): Promise<GroupResponse> {
+  return api<GroupResponse>(`/groups/${groupId}`);
+}
+
+export async function getGroupPreview(groupId: string): Promise<GroupResponse> {
+  return api<GroupResponse>(`/groups/${groupId}/preview`);
+}
+
+export interface UpdateGroupInput {
+  name?: string;
+  description?: string;
+  access_type?: "open" | "closed";
+  visibility_type?: "public" | "private";
+}
+
+export async function updateGroup(
+  groupId: string,
+  input: UpdateGroupInput,
+): Promise<GroupResponse> {
+  return api<GroupResponse>(`/groups/${groupId}/admin/update`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function uploadGroupThumbnail(
+  groupId: string,
+  file: File,
+): Promise<GroupResponse> {
+  const formData = new FormData();
+  formData.append("thumbnail", file);
+  return api<GroupResponse>(`/groups/${groupId}/admin/thumbnail`, {
+    method: "PUT",
+    body: formData,
+    headers: {},
+  });
+}
+
+export async function deleteGroupThumbnail(
+  groupId: string,
+): Promise<GroupResponse> {
+  return api<GroupResponse>(`/groups/${groupId}/admin/thumbnail`, {
+    method: "DELETE",
+  });
+}
+
+export async function listPendingMembers(
+  groupId: string,
+  page = 1,
+  size = 10,
+): Promise<GroupMemberListResponse> {
+  const params = new URLSearchParams();
+  params.set("page_number", String(page));
+  params.set("page_size", String(size));
+  return api<GroupMemberListResponse>(
+    `/groups/${groupId}/members/pending?${params.toString()}`,
+  );
+}
+
+export async function approveMember(
+  groupId: string,
+  userId: string,
+): Promise<void> {
+  return api<void>(`/groups/${groupId}/members/${userId}/approve`, {
+    method: "POST",
+  });
+}
+
+export async function rejectMember(
+  groupId: string,
+  userId: string,
+): Promise<void> {
+  return api<void>(`/groups/${groupId}/members/${userId}/reject`, {
+    method: "POST",
+  });
+}
+
+export async function removeMember(
+  groupId: string,
+  userId: string,
+): Promise<void> {
+  return api<void>(`/groups/${groupId}/admin/members/${userId}`, {
+    method: "DELETE",
+  });
 }

@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"path"
@@ -134,7 +135,7 @@ func (uc *GroupUseCase) Create(ctx context.Context, input CreateGroupInput) (*en
 	return group, nil
 }
 
-func (uc *GroupUseCase) GetByPublicID(ctx context.Context, publicID string, userRole entity.UserRole) (*entity.Group, error) {
+func (uc *GroupUseCase) GetByPublicID(ctx context.Context, publicID string, userPublicID string, userRole entity.UserRole) (*entity.Group, error) {
 	group, err := uc.groupRepo.GetByPublicID(ctx, publicID)
 	if err != nil {
 		return nil, err
@@ -144,6 +145,32 @@ func (uc *GroupUseCase) GetByPublicID(ctx context.Context, publicID string, user
 	}
 
 	if userRole != entity.UserRoleAdmin && group.VisibilityType == entity.GroupVisibilityPrivate {
+		// Allow access if the user is a member of the group
+		user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
+		if err != nil {
+			return nil, err
+		}
+		if user == nil {
+			return nil, apperror.ErrGroupNotFound
+		}
+		member, err := uc.groupRepo.GetMember(ctx, group.ID, user.ID)
+		if err != nil {
+			return nil, err
+		}
+		if member == nil || member.AcceptedByID == nil {
+			return nil, apperror.ErrGroupNotFound
+		}
+	}
+
+	return group, nil
+}
+
+func (uc *GroupUseCase) GetPreview(ctx context.Context, publicID string) (*entity.Group, error) {
+	group, err := uc.groupRepo.GetByPublicID(ctx, publicID)
+	if err != nil {
+		return nil, err
+	}
+	if group == nil {
 		return nil, apperror.ErrGroupNotFound
 	}
 
@@ -393,6 +420,13 @@ func (uc *GroupUseCase) JoinGroup(ctx context.Context, groupPublicID string, use
 	}
 
 	if err := uc.groupRepo.AddMember(ctx, member); err != nil {
+		// If member record exists (was previously rejected/removed), reactivate it
+		if errors.Is(err, apperror.ErrMemberAlreadyExists) {
+			if reactivateErr := uc.groupRepo.ReactivateMember(ctx, group.ID, user.ID, acceptedByID); reactivateErr != nil {
+				return nil, reactivateErr
+			}
+			return member, nil
+		}
 		return nil, err
 	}
 
@@ -463,8 +497,9 @@ func (uc *GroupUseCase) ListMembers(ctx context.Context, groupPublicID string, r
 
 	// System admins can list any group's members.
 	// For publicly visible groups, any authenticated user can view members.
-	// For private groups, the requester must be an active member.
-	if requesterRole != entity.UserRoleAdmin && group.VisibilityType != entity.GroupVisibilityPublic {
+	// When requesting only admins, allow access (for join page preview).
+	// For private groups, the requester must be an active member to see all members.
+	if requesterRole != entity.UserRoleAdmin && group.VisibilityType != entity.GroupVisibilityPublic && role != string(entity.MemberRoleAdmin) {
 		requester, err := uc.userRepo.GetByPublicID(ctx, requesterPublicID)
 		if err != nil {
 			return nil, 0, err
@@ -551,32 +586,238 @@ func (uc *GroupUseCase) GetUserByPublicID(ctx context.Context, publicID string) 
 	return uc.userRepo.GetByPublicID(ctx, publicID)
 }
 
-func (uc *GroupUseCase) CheckMembership(ctx context.Context, groupPublicID string, userPublicID string) (string, error) {
+func (uc *GroupUseCase) CheckMembership(ctx context.Context, groupPublicID string, userPublicID string) (string, string, error) {
 	group, err := uc.groupRepo.GetByPublicID(ctx, groupPublicID)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	if group == nil {
-		return "", apperror.ErrGroupNotFound
+		return "", "", apperror.ErrGroupNotFound
 	}
 
 	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	if user == nil {
-		return "", apperror.ErrUserNotFound
+		return "", "", apperror.ErrUserNotFound
 	}
 
 	member, err := uc.groupRepo.GetMember(ctx, group.ID, user.ID)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	if member == nil {
-		return "none", nil
+		return "none", "", nil
 	}
 	if member.AcceptedByID == nil {
-		return "pending", nil
+		return "pending", string(member.Role), nil
 	}
-	return "member", nil
+	return "member", string(member.Role), nil
+}
+
+// isGroupAdmin checks whether the given user is an active admin member of the group.
+func (uc *GroupUseCase) isGroupAdmin(ctx context.Context, groupID int, userPublicID string) (bool, *entity.User, error) {
+	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
+	if err != nil {
+		return false, nil, err
+	}
+	if user == nil {
+		return false, nil, apperror.ErrUserNotFound
+	}
+
+	member, err := uc.groupRepo.GetMember(ctx, groupID, user.ID)
+	if err != nil {
+		return false, user, err
+	}
+	if member == nil || !member.IsActive || member.AcceptedByID == nil {
+		return false, user, nil
+	}
+
+	return member.Role == entity.MemberRoleAdmin, user, nil
+}
+
+func (uc *GroupUseCase) UpdateAsGroupAdmin(ctx context.Context, publicID string, requesterPublicID string, input UpdateGroupInput) (*entity.Group, error) {
+	group, err := uc.groupRepo.GetByPublicID(ctx, publicID)
+	if err != nil {
+		return nil, err
+	}
+	if group == nil {
+		return nil, apperror.ErrGroupNotFound
+	}
+
+	isAdmin, _, err := uc.isGroupAdmin(ctx, group.ID, requesterPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, apperror.ErrForbidden
+	}
+
+	return uc.Update(ctx, publicID, input)
+}
+
+func (uc *GroupUseCase) UploadThumbnailAsGroupAdmin(ctx context.Context, publicID string, requesterPublicID string, filename string, contentType string, size int64, body io.Reader) (*entity.Group, error) {
+	group, err := uc.groupRepo.GetByPublicID(ctx, publicID)
+	if err != nil {
+		return nil, err
+	}
+	if group == nil {
+		return nil, apperror.ErrGroupNotFound
+	}
+
+	isAdmin, _, err := uc.isGroupAdmin(ctx, group.ID, requesterPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, apperror.ErrForbidden
+	}
+
+	return uc.UploadThumbnail(ctx, publicID, filename, contentType, size, body)
+}
+
+func (uc *GroupUseCase) DeleteThumbnailAsGroupAdmin(ctx context.Context, publicID string, requesterPublicID string) (*entity.Group, error) {
+	group, err := uc.groupRepo.GetByPublicID(ctx, publicID)
+	if err != nil {
+		return nil, err
+	}
+	if group == nil {
+		return nil, apperror.ErrGroupNotFound
+	}
+
+	isAdmin, _, err := uc.isGroupAdmin(ctx, group.ID, requesterPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, apperror.ErrForbidden
+	}
+
+	return uc.DeleteThumbnail(ctx, publicID)
+}
+
+func (uc *GroupUseCase) ListPendingMembers(ctx context.Context, groupPublicID string, requesterPublicID string, pageNumber, pageSize int) ([]entity.GroupMember, int, error) {
+	group, err := uc.groupRepo.GetByPublicID(ctx, groupPublicID)
+	if err != nil {
+		return nil, 0, err
+	}
+	if group == nil {
+		return nil, 0, apperror.ErrGroupNotFound
+	}
+
+	isAdmin, _, err := uc.isGroupAdmin(ctx, group.ID, requesterPublicID)
+	if err != nil {
+		return nil, 0, err
+	}
+	if !isAdmin {
+		return nil, 0, apperror.ErrForbidden
+	}
+
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	if pageNumber < 1 {
+		pageNumber = 1
+	}
+	offset := (pageNumber - 1) * pageSize
+
+	members, err := uc.groupRepo.ListPendingMembers(ctx, group.ID, pageSize, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total, err := uc.groupRepo.CountPendingMembers(ctx, group.ID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return members, total, nil
+}
+
+func (uc *GroupUseCase) ApproveMember(ctx context.Context, groupPublicID, userPublicID, approverPublicID string) error {
+	group, err := uc.groupRepo.GetByPublicID(ctx, groupPublicID)
+	if err != nil {
+		return err
+	}
+	if group == nil {
+		return apperror.ErrGroupNotFound
+	}
+
+	isAdmin, approver, err := uc.isGroupAdmin(ctx, group.ID, approverPublicID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return apperror.ErrForbidden
+	}
+
+	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return apperror.ErrUserNotFound
+	}
+
+	return uc.groupRepo.ApproveMember(ctx, group.ID, user.ID, approver.ID)
+}
+
+func (uc *GroupUseCase) RejectMember(ctx context.Context, groupPublicID, userPublicID, requesterPublicID string) error {
+	group, err := uc.groupRepo.GetByPublicID(ctx, groupPublicID)
+	if err != nil {
+		return err
+	}
+	if group == nil {
+		return apperror.ErrGroupNotFound
+	}
+
+	isAdmin, _, err := uc.isGroupAdmin(ctx, group.ID, requesterPublicID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return apperror.ErrForbidden
+	}
+
+	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return apperror.ErrUserNotFound
+	}
+
+	return uc.groupRepo.RemoveMember(ctx, group.ID, user.ID)
+}
+
+func (uc *GroupUseCase) RemoveMemberAsGroupAdmin(ctx context.Context, groupPublicID, userPublicID, requesterPublicID string) error {
+	group, err := uc.groupRepo.GetByPublicID(ctx, groupPublicID)
+	if err != nil {
+		return err
+	}
+	if group == nil {
+		return apperror.ErrGroupNotFound
+	}
+
+	isAdmin, _, err := uc.isGroupAdmin(ctx, group.ID, requesterPublicID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return apperror.ErrForbidden
+	}
+
+	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return apperror.ErrUserNotFound
+	}
+
+	return uc.groupRepo.RemoveMember(ctx, group.ID, user.ID)
 }

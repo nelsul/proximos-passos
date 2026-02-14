@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import { Plus, Loader2 } from "lucide-react";
 import {
   listMyGroups,
@@ -20,6 +21,7 @@ const PAGE_SIZE = 20;
 export default function MyGroupsPage() {
   const t = useTranslations();
   const { toast } = useToast();
+  const router = useRouter();
   const [groups, setGroups] = useState<GroupResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -119,7 +121,11 @@ export default function MyGroupsPage() {
         <>
           <div className="grid gap-4 sm:grid-cols-2">
             {groups.map((group) => (
-              <GroupCard key={group.id} group={group} />
+              <GroupCard
+                key={group.id}
+                group={group}
+                onClick={() => router.push(`/dashboard/groups/${group.id}`)}
+              />
             ))}
           </div>
           <Pagination
