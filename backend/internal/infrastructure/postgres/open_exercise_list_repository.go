@@ -278,7 +278,7 @@ func buildOpenExerciseListFilterClause(filter repository.OpenExerciseListFilter)
 	}
 
 	if filter.TopicID != nil {
-		clause += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM open_exercise_list_topics oelt WHERE oelt.open_exercise_list_id = oel.id AND oelt.topic_id = $%d)", argIdx)
+		clause += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM open_exercise_list_topics oelt WHERE oelt.open_exercise_list_id = oel.id AND oelt.topic_id IN (WITH RECURSIVE topic_tree AS (SELECT id FROM topics WHERE id = $%d UNION ALL SELECT t.id FROM topics t JOIN topic_tree tt ON t.parent_id = tt.id) SELECT id FROM topic_tree))", argIdx)
 		args = append(args, *filter.TopicID)
 		argIdx++
 	}

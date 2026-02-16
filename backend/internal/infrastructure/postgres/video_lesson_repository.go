@@ -278,7 +278,7 @@ func buildVideoLessonFilterClause(filter repository.VideoLessonFilter) (string, 
 	}
 
 	if filter.TopicID != nil {
-		clause += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM video_lesson_topics vlt WHERE vlt.video_lesson_id = vl.id AND vlt.topic_id = $%d)", argIdx)
+		clause += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM video_lesson_topics vlt WHERE vlt.video_lesson_id = vl.id AND vlt.topic_id IN (WITH RECURSIVE topic_tree AS (SELECT id FROM topics WHERE id = $%d UNION ALL SELECT t.id FROM topics t JOIN topic_tree tt ON t.parent_id = tt.id) SELECT id FROM topic_tree))", argIdx)
 		args = append(args, *filter.TopicID)
 		argIdx++
 	}
