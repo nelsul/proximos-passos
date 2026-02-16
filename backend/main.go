@@ -128,17 +128,20 @@ func main() {
 	groupRepo := postgres.NewGroupRepository(pool)
 	activityRepo := postgres.NewActivityRepository(pool)
 	topicRepo := postgres.NewTopicRepository(pool)
+	handoutRepo := postgres.NewHandoutRepository(pool)
 	userUC := usecase.NewUserUseCase(userRepo, emailSvc, storageSvc, jwtService, frontendURL, verificationCooldown)
 	authUC := usecase.NewAuthUseCase(userRepo, jwtService)
 	groupUC := usecase.NewGroupUseCase(groupRepo, userRepo, storageSvc)
 	activityUC := usecase.NewActivityUseCase(activityRepo, groupRepo, userRepo, storageSvc)
 	topicUC := usecase.NewTopicUseCase(topicRepo, userRepo)
+	handoutUC := usecase.NewHandoutUseCase(handoutRepo, topicRepo, userRepo, storageSvc)
 
 	authHandler := handler.NewAuthHandler(authUC, userUC, setupInput)
 	userHandler := handler.NewUserHandler(userUC)
 	groupHandler := handler.NewGroupHandler(groupUC)
 	activityHandler := handler.NewActivityHandler(activityUC)
 	topicHandler := handler.NewTopicHandler(topicUC)
+	handoutHandler := handler.NewHandoutHandler(handoutUC)
 
 	adminOnly := func(next http.Handler) http.Handler {
 		return middleware.Auth(jwtService)(middleware.RequireAdmin(userRepo)(next))
@@ -175,6 +178,7 @@ func main() {
 	groupHandler.RegisterMemberRoutes(mux, adminOnly, authWithRole)
 	activityHandler.RegisterRoutes(mux, authWithRole)
 	topicHandler.RegisterRoutes(mux, adminOnly)
+	handoutHandler.RegisterRoutes(mux, adminOnly)
 	mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
 
 	port := os.Getenv("PORT")

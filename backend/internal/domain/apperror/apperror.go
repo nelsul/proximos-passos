@@ -32,6 +32,8 @@ const (
 	CodeTopicNotFound        Code = "TOPIC_NOT_FOUND"
 	CodeTopicNameTaken       Code = "TOPIC_NAME_TAKEN"
 	CodeTopicHasChildren     Code = "TOPIC_HAS_CHILDREN"
+	CodeHandoutNotFound      Code = "HANDOUT_NOT_FOUND"
+	CodeHandoutTitleTaken    Code = "HANDOUT_TITLE_TAKEN"
 )
 
 type AppError struct {
@@ -89,4 +91,6 @@ var (
 	ErrTopicNotFound        = New(CodeTopicNotFound, "The requested topic was not found.", http.StatusNotFound)
 	ErrTopicNameTaken       = New(CodeTopicNameTaken, "A topic with this name already exists under the same parent.", http.StatusConflict)
 	ErrTopicHasChildren     = New(CodeTopicHasChildren, "Cannot delete a topic that has child topics.", http.StatusConflict)
+	ErrHandoutNotFound      = New(CodeHandoutNotFound, "The requested handout was not found.", http.StatusNotFound)
+	ErrHandoutTitleTaken    = New(CodeHandoutTitleTaken, "A handout with this title already exists.", http.StatusConflict)
 )
