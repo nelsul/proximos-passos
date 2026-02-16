@@ -130,6 +130,7 @@ func main() {
 	topicRepo := postgres.NewTopicRepository(pool)
 	handoutRepo := postgres.NewHandoutRepository(pool)
 	videoLessonRepo := postgres.NewVideoLessonRepository(pool)
+	openExerciseListRepo := postgres.NewOpenExerciseListRepository(pool)
 	userUC := usecase.NewUserUseCase(userRepo, emailSvc, storageSvc, jwtService, frontendURL, verificationCooldown)
 	authUC := usecase.NewAuthUseCase(userRepo, jwtService)
 	groupUC := usecase.NewGroupUseCase(groupRepo, userRepo, storageSvc)
@@ -137,6 +138,7 @@ func main() {
 	topicUC := usecase.NewTopicUseCase(topicRepo, userRepo)
 	handoutUC := usecase.NewHandoutUseCase(handoutRepo, topicRepo, userRepo, storageSvc)
 	videoLessonUC := usecase.NewVideoLessonUseCase(videoLessonRepo, topicRepo, userRepo, storageSvc)
+	openExerciseListUC := usecase.NewOpenExerciseListUseCase(openExerciseListRepo, topicRepo, userRepo, storageSvc)
 
 	authHandler := handler.NewAuthHandler(authUC, userUC, setupInput)
 	userHandler := handler.NewUserHandler(userUC)
@@ -145,6 +147,7 @@ func main() {
 	topicHandler := handler.NewTopicHandler(topicUC)
 	handoutHandler := handler.NewHandoutHandler(handoutUC)
 	videoLessonHandler := handler.NewVideoLessonHandler(videoLessonUC)
+	openExerciseListHandler := handler.NewOpenExerciseListHandler(openExerciseListUC)
 
 	adminOnly := func(next http.Handler) http.Handler {
 		return middleware.Auth(jwtService)(middleware.RequireAdmin(userRepo)(next))
@@ -183,6 +186,7 @@ func main() {
 	topicHandler.RegisterRoutes(mux, adminOnly)
 	handoutHandler.RegisterRoutes(mux, adminOnly)
 	videoLessonHandler.RegisterRoutes(mux, adminOnly)
+	openExerciseListHandler.RegisterRoutes(mux, adminOnly)
 	mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
 
 	port := os.Getenv("PORT")
