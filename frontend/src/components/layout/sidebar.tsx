@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { usePathname, Link } from "@/i18n/routing";
-import { Users, BookOpen, Layers, FileText, X } from "lucide-react";
+import { Users, BookOpen, Layers, FileText, Video, X } from "lucide-react";
 
 interface NavItem {
   href: string;
@@ -28,6 +28,12 @@ const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/handouts",
     icon: FileText,
     labelKey: "SIDEBAR_HANDOUTS",
+    adminOnly: true,
+  },
+  {
+    href: "/dashboard/video-lessons",
+    icon: Video,
+    labelKey: "SIDEBAR_VIDEO_LESSONS",
     adminOnly: true,
   },
 ];
