@@ -2,30 +2,49 @@
 
 import { useTranslations } from "next-intl";
 import { usePathname, Link } from "@/i18n/routing";
-import { Users, BookOpen, X } from "lucide-react";
+import { Users, BookOpen, Layers, X } from "lucide-react";
 
-const NAV_ITEMS = [
+interface NavItem {
+  href: string;
+  icon: typeof Users;
+  labelKey: string;
+  adminOnly?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/groups", icon: Users, labelKey: "SIDEBAR_GROUPS" },
   {
     href: "/dashboard/my-groups",
     icon: BookOpen,
     labelKey: "SIDEBAR_MY_GROUPS",
   },
-] as const;
+  {
+    href: "/dashboard/topics",
+    icon: Layers,
+    labelKey: "SIDEBAR_TOPICS",
+    adminOnly: true,
+  },
+];
 
 interface SidebarProps {
   mobileOpen: boolean;
   onMobileClose: () => void;
+  userRole?: string;
 }
 
-export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
+export function Sidebar({ mobileOpen, onMobileClose, userRole }: SidebarProps) {
   const t = useTranslations();
   const pathname = usePathname();
 
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.adminOnly || userRole === "admin",
+  );
+
   const navContent = (
     <ul className="space-y-1">
-      {NAV_ITEMS.map((item) => {
-        const active = pathname === item.href;
+      {visibleItems.map((item) => {
+        const active =
+          pathname === item.href || pathname.startsWith(item.href + "/");
         return (
           <li key={item.href}>
             <Link

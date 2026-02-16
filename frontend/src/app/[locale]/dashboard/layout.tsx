@@ -44,6 +44,7 @@ export default function DashboardLayout({
         <Sidebar
           mobileOpen={sidebarOpen}
           onMobileClose={() => setSidebarOpen(false)}
+          userRole={user.role}
         />
         <main className="min-w-0 flex-1">{children}</main>
       </div>

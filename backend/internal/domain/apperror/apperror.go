@@ -29,6 +29,9 @@ const (
 	CodeActivityNotFound     Code = "ACTIVITY_NOT_FOUND"
 	CodeAttachmentNotFound   Code = "ATTACHMENT_NOT_FOUND"
 	CodeActivityTitleTaken   Code = "ACTIVITY_TITLE_TAKEN"
+	CodeTopicNotFound        Code = "TOPIC_NOT_FOUND"
+	CodeTopicNameTaken       Code = "TOPIC_NAME_TAKEN"
+	CodeTopicHasChildren     Code = "TOPIC_HAS_CHILDREN"
 )
 
 type AppError struct {
@@ -83,4 +86,7 @@ var (
 	ErrActivityNotFound     = New(CodeActivityNotFound, "The requested activity was not found.", http.StatusNotFound)
 	ErrAttachmentNotFound   = New(CodeAttachmentNotFound, "The requested attachment was not found.", http.StatusNotFound)
 	ErrActivityTitleTaken   = New(CodeActivityTitleTaken, "An activity with this title already exists in the group.", http.StatusConflict)
+	ErrTopicNotFound        = New(CodeTopicNotFound, "The requested topic was not found.", http.StatusNotFound)
+	ErrTopicNameTaken       = New(CodeTopicNameTaken, "A topic with this name already exists under the same parent.", http.StatusConflict)
+	ErrTopicHasChildren     = New(CodeTopicHasChildren, "Cannot delete a topic that has child topics.", http.StatusConflict)
 )

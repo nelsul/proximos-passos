@@ -127,15 +127,18 @@ func main() {
 	userRepo := postgres.NewUserRepository(pool)
 	groupRepo := postgres.NewGroupRepository(pool)
 	activityRepo := postgres.NewActivityRepository(pool)
+	topicRepo := postgres.NewTopicRepository(pool)
 	userUC := usecase.NewUserUseCase(userRepo, emailSvc, storageSvc, jwtService, frontendURL, verificationCooldown)
 	authUC := usecase.NewAuthUseCase(userRepo, jwtService)
 	groupUC := usecase.NewGroupUseCase(groupRepo, userRepo, storageSvc)
 	activityUC := usecase.NewActivityUseCase(activityRepo, groupRepo, userRepo, storageSvc)
+	topicUC := usecase.NewTopicUseCase(topicRepo, userRepo)
 
 	authHandler := handler.NewAuthHandler(authUC, userUC, setupInput)
 	userHandler := handler.NewUserHandler(userUC)
 	groupHandler := handler.NewGroupHandler(groupUC)
 	activityHandler := handler.NewActivityHandler(activityUC)
+	topicHandler := handler.NewTopicHandler(topicUC)
 
 	adminOnly := func(next http.Handler) http.Handler {
 		return middleware.Auth(jwtService)(middleware.RequireAdmin(userRepo)(next))
@@ -171,6 +174,7 @@ func main() {
 	groupHandler.RegisterSelfRoutes(mux, authOnly)
 	groupHandler.RegisterMemberRoutes(mux, adminOnly, authWithRole)
 	activityHandler.RegisterRoutes(mux, authWithRole)
+	topicHandler.RegisterRoutes(mux, adminOnly)
 	mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
 
 	port := os.Getenv("PORT")
