@@ -443,39 +443,55 @@ CREATE TABLE activity_attachments (
     PRIMARY KEY (activity_id, file_id)
 );
 
-CREATE TABLE activity_questions (
-    order_index INT NOT NULL DEFAULT 0,
-    activity_id INT NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
-    question_id INT NOT NULL REFERENCES questions(id) ON DELETE RESTRICT,
-    PRIMARY KEY (activity_id, question_id)
+CREATE TYPE activity_item_type AS ENUM (
+    'question', 
+    'video_lesson', 
+    'handout', 
+    'open_exercise_list', 
+    'simulated_exam'
 );
 
-CREATE TABLE activity_video_lessons (
-    order_index INT NOT NULL DEFAULT 0,
-    activity_id INT NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
-    video_lesson_id INT NOT NULL REFERENCES video_lessons(id) ON DELETE RESTRICT,
-    PRIMARY KEY (activity_id, video_lesson_id)
-);
+CREATE TABLE activity_items (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    public_id UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
 
-CREATE TABLE activity_handouts (
     order_index INT NOT NULL DEFAULT 0,
+    title TEXT NOT NULL CHECK (
+        length(title) <= 255
+        AND length(title) > 0
+        AND title = trim(title)
+    ),
+    description TEXT CHECK (
+        description IS NULL
+        OR (length(description) > 0 AND description = trim(description))
+    ),
     activity_id INT NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
-    handout_id INT NOT NULL REFERENCES handouts(id) ON DELETE RESTRICT,
-    PRIMARY KEY (activity_id, handout_id)
-);
+    question_id INT REFERENCES questions(id) ON DELETE RESTRICT,
+    video_lesson_id INT REFERENCES video_lessons(id) ON DELETE RESTRICT,
+    handout_id INT REFERENCES handouts(id) ON DELETE RESTRICT,
+    open_exercise_list_id INT REFERENCES open_exercise_lists(id) ON DELETE RESTRICT,
+    simulated_exam_id INT REFERENCES simulated_exams(id) ON DELETE RESTRICT,
 
-CREATE TABLE activity_open_exercise_lists (
-    order_index INT NOT NULL DEFAULT 0,
-    activity_id INT NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
-    open_exercise_list_id INT NOT NULL REFERENCES open_exercise_lists(id) ON DELETE RESTRICT,
-    PRIMARY KEY (activity_id, open_exercise_list_id)
-);
+    type activity_item_type GENERATED ALWAYS AS (
+        CASE 
+            WHEN question_id IS NOT NULL THEN 'question'::activity_item_type
+            WHEN video_lesson_id IS NOT NULL THEN 'video_lesson'::activity_item_type
+            WHEN handout_id IS NOT NULL THEN 'handout'::activity_item_type
+            WHEN open_exercise_list_id IS NOT NULL THEN 'open_exercise_list'::activity_item_type
+            WHEN simulated_exam_id IS NOT NULL THEN 'simulated_exam'::activity_item_type
+        END
+    ) STORED,
 
-CREATE TABLE activity_simulated_exams (
-    order_index INT NOT NULL DEFAULT 0,
-    activity_id INT NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
-    simulated_exam_id INT NOT NULL REFERENCES simulated_exams(id) ON DELETE RESTRICT,
-    PRIMARY KEY (activity_id, simulated_exam_id)
+    UNIQUE(activity_id, order_index),
+    CONSTRAINT activity_item_content_exclusive_check CHECK (
+        num_nonnulls(
+            question_id, 
+            video_lesson_id, 
+            handout_id, 
+            open_exercise_list_id, 
+            simulated_exam_id
+        ) = 1
+    )
 );
 
 -- ==========================================
