@@ -38,6 +38,7 @@ const (
 	CodeVideoLessonTitleTaken      Code = "VIDEO_LESSON_TITLE_TAKEN"
 	CodeOpenExerciseListNotFound   Code = "OPEN_EXERCISE_LIST_NOT_FOUND"
 	CodeOpenExerciseListTitleTaken Code = "OPEN_EXERCISE_LIST_TITLE_TAKEN"
+	CodeQuestionNotFound           Code = "QUESTION_NOT_FOUND"
 )
 
 type AppError struct {
@@ -101,4 +102,5 @@ var (
 	ErrVideoLessonTitleTaken      = New(CodeVideoLessonTitleTaken, "A video lesson with this title already exists.", http.StatusConflict)
 	ErrOpenExerciseListNotFound   = New(CodeOpenExerciseListNotFound, "The requested exercise list was not found.", http.StatusNotFound)
 	ErrOpenExerciseListTitleTaken = New(CodeOpenExerciseListTitleTaken, "An exercise list with this title already exists.", http.StatusConflict)
+	ErrQuestionNotFound           = New(CodeQuestionNotFound, "The requested question was not found.", http.StatusNotFound)
 )

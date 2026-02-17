@@ -203,8 +203,6 @@ CREATE TABLE question_options (
         text IS NULL
         OR (length(text) > 0 AND text = trim(text))
     ),
-    image_file_id INT,
-    image_file_type_check file_category DEFAULT 'image' CHECK (image_file_type_check = 'image'),
     is_correct BOOLEAN NOT NULL DEFAULT false,
     
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -212,11 +210,16 @@ CREATE TABLE question_options (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
+    UNIQUE (question_id, original_order)
+);
+
+CREATE TABLE question_option_images (
+    question_option_id INT NOT NULL REFERENCES question_options(id) ON DELETE CASCADE,
+    image_file_id INT NOT NULL,
+    image_file_type_check file_category DEFAULT 'image' CHECK (image_file_type_check = 'image'),
+
     FOREIGN KEY (image_file_id, image_file_type_check) REFERENCES files(id, category) ON DELETE RESTRICT,
-    UNIQUE (question_id, original_order),
-    CONSTRAINT question_options_content_check CHECK (
-        text IS NOT NULL OR image_file_id IS NOT NULL
-    )
+    PRIMARY KEY (question_option_id, image_file_id)
 );
 
 CREATE TABLE question_feedbacks (

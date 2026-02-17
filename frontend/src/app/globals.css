@@ -43,3 +43,172 @@ h5,
 h6 {
     @apply text-heading font-heading;
 }
+
+/* ============================
+   Print-optimised question page
+   ============================ */
+
+.print-page {
+    @apply mx-auto w-full max-w-[105mm] bg-white px-4 py-6;
+    min-height: auto;
+}
+
+.print-page-inner {
+    @apply flex flex-col;
+}
+
+.print-page-break {
+    break-before: page;
+}
+
+.print-brand {
+    @apply mb-1 flex items-center justify-center;
+}
+
+.print-brand-logo {
+    height: 32px;
+    width: auto;
+}
+
+.print-header {
+    @apply mb-3;
+}
+
+.print-header-line {
+    @apply mb-2 h-0.5 rounded-full;
+    background: linear-gradient(90deg, #cfa156 0%, #dbb778 50%, #cfa156 100%);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
+.print-title {
+    @apply text-sm font-bold tracking-tight;
+    font-family: var(--font-body), sans-serif;
+    color: #0f2e2e;
+}
+
+.print-section {
+    @apply mb-3;
+}
+
+.print-statement {
+    @apply text-xs leading-relaxed;
+    color: #1a1a1a;
+}
+
+.print-images {
+    @apply mb-3 flex flex-wrap gap-2;
+}
+
+.print-image {
+    @apply max-h-32 max-w-48 rounded border border-gray-200 object-contain;
+}
+
+.print-options {
+    @apply mt-3 space-y-1.5;
+}
+
+.print-option {
+    @apply flex items-start gap-2 rounded border border-gray-200 px-2 py-1.5;
+}
+
+.print-option-letter {
+    @apply shrink-0 text-xs font-semibold;
+    color: #0f2e2e;
+}
+
+.print-option-text {
+    @apply text-xs leading-relaxed;
+    color: #1a1a1a;
+}
+
+.print-option-image {
+    @apply max-h-20 max-w-32 rounded border border-gray-200 object-contain;
+}
+
+.print-answer-area {
+    @apply mt-3 rounded border border-dashed border-gray-300 px-3 py-2;
+}
+
+.print-answer-lines {
+    @apply space-y-3;
+}
+
+.print-answer-line {
+    @apply h-px bg-gray-300;
+}
+
+.print-correct-badge {
+    @apply flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm;
+    border-color: #cfa156;
+    color: #0f2e2e;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
+.print-answer-key-table {
+    @apply flex items-center gap-3 rounded border border-gray-200 px-3 py-2;
+}
+
+.print-answer-key-label {
+    @apply text-xs font-semibold text-gray-500;
+}
+
+.print-answer-key-value {
+    @apply text-sm font-bold;
+    color: #0f2e2e;
+}
+
+.print-footer {
+    @apply mt-auto pt-3;
+}
+
+.print-footer-line {
+    @apply h-0.5 rounded-full;
+    background: linear-gradient(90deg, #cfa156 0%, #dbb778 50%, #cfa156 100%);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+}
+
+/* Print media styles */
+@media print {
+    @page {
+        size: A4;
+        margin: 10mm;
+    }
+
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 10pt;
+    }
+
+    .print-page {
+        padding: 0;
+        max-width: 105mm;
+        box-shadow: none;
+    }
+
+    .print-page-inner {
+        min-height: auto;
+    }
+
+    .print-page-break {
+        break-before: page;
+        page-break-before: always;
+    }
+
+    .print-option {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .print-images {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    img {
+        max-width: 100% !important;
+    }
+}

@@ -9,6 +9,7 @@ import {
   FileText,
   Video,
   ListChecks,
+  HelpCircle,
   X,
 } from "lucide-react";
 
@@ -48,6 +49,12 @@ const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/exercise-lists",
     icon: ListChecks,
     labelKey: "SIDEBAR_EXERCISE_LISTS",
+    adminOnly: true,
+  },
+  {
+    href: "/dashboard/questions",
+    icon: HelpCircle,
+    labelKey: "SIDEBAR_QUESTIONS",
     adminOnly: true,
   },
 ];
