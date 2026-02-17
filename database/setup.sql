@@ -107,21 +107,23 @@ CREATE TABLE exams (
     public_id UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
     
     institution_id INT NOT NULL REFERENCES institutions(id) ON DELETE CASCADE,
-    year INTEGER NOT NULL,
-    stage TEXT CHECK (
-        length(stage) <= 255
-        AND (
-            stage IS NULL 
-            OR (length(stage) > 0 AND stage = trim(stage))
-        )
+    title TEXT NOT NULL CHECK (
+        length(title) <= 255
+        AND length(title) > 0
+        AND title = trim(title)
     ),
+    description TEXT CHECK (
+        description IS NULL
+        OR (length(description) > 0 AND description = trim(description))
+    ), 
+    year INTEGER NOT NULL,
     
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_by_id INT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     
-    UNIQUE NULLS NOT DISTINCT (institution_id, year, stage)
+    UNIQUE (institution_id, title, year)
 );
 
 CREATE TABLE topics (

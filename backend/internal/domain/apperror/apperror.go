@@ -39,6 +39,10 @@ const (
 	CodeOpenExerciseListNotFound   Code = "OPEN_EXERCISE_LIST_NOT_FOUND"
 	CodeOpenExerciseListTitleTaken Code = "OPEN_EXERCISE_LIST_TITLE_TAKEN"
 	CodeQuestionNotFound           Code = "QUESTION_NOT_FOUND"
+	CodeInstitutionNotFound        Code = "INSTITUTION_NOT_FOUND"
+	CodeInstitutionNameTaken       Code = "INSTITUTION_NAME_TAKEN"
+	CodeExamNotFound               Code = "EXAM_NOT_FOUND"
+	CodeExamDuplicate              Code = "EXAM_DUPLICATE"
 )
 
 type AppError struct {
@@ -103,4 +107,8 @@ var (
 	ErrOpenExerciseListNotFound   = New(CodeOpenExerciseListNotFound, "The requested exercise list was not found.", http.StatusNotFound)
 	ErrOpenExerciseListTitleTaken = New(CodeOpenExerciseListTitleTaken, "An exercise list with this title already exists.", http.StatusConflict)
 	ErrQuestionNotFound           = New(CodeQuestionNotFound, "The requested question was not found.", http.StatusNotFound)
+	ErrInstitutionNotFound        = New(CodeInstitutionNotFound, "The requested institution was not found.", http.StatusNotFound)
+	ErrInstitutionNameTaken       = New(CodeInstitutionNameTaken, "An institution with this name or acronym already exists.", http.StatusConflict)
+	ErrExamNotFound               = New(CodeExamNotFound, "The requested exam was not found.", http.StatusNotFound)
+	ErrExamDuplicate              = New(CodeExamDuplicate, "An exam with this institution, year, and stage already exists.", http.StatusConflict)
 )

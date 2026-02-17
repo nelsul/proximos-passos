@@ -132,6 +132,8 @@ func main() {
 	videoLessonRepo := postgres.NewVideoLessonRepository(pool)
 	openExerciseListRepo := postgres.NewOpenExerciseListRepository(pool)
 	questionRepo := postgres.NewQuestionRepository(pool)
+	institutionRepo := postgres.NewInstitutionRepository(pool)
+	examRepo := postgres.NewExamRepository(pool)
 	userUC := usecase.NewUserUseCase(userRepo, emailSvc, storageSvc, jwtService, frontendURL, verificationCooldown)
 	authUC := usecase.NewAuthUseCase(userRepo, jwtService)
 	groupUC := usecase.NewGroupUseCase(groupRepo, userRepo, storageSvc)
@@ -141,6 +143,8 @@ func main() {
 	videoLessonUC := usecase.NewVideoLessonUseCase(videoLessonRepo, topicRepo, userRepo, storageSvc)
 	openExerciseListUC := usecase.NewOpenExerciseListUseCase(openExerciseListRepo, topicRepo, userRepo, storageSvc)
 	questionUC := usecase.NewQuestionUseCase(questionRepo, topicRepo, userRepo, storageSvc)
+	institutionUC := usecase.NewInstitutionUseCase(institutionRepo, userRepo)
+	examUC := usecase.NewExamUseCase(examRepo, institutionRepo, userRepo)
 
 	authHandler := handler.NewAuthHandler(authUC, userUC, setupInput)
 	userHandler := handler.NewUserHandler(userUC)
@@ -151,6 +155,8 @@ func main() {
 	videoLessonHandler := handler.NewVideoLessonHandler(videoLessonUC)
 	openExerciseListHandler := handler.NewOpenExerciseListHandler(openExerciseListUC)
 	questionHandler := handler.NewQuestionHandler(questionUC)
+	institutionHandler := handler.NewInstitutionHandler(institutionUC)
+	examHandler := handler.NewExamHandler(examUC)
 
 	adminOnly := func(next http.Handler) http.Handler {
 		return middleware.Auth(jwtService)(middleware.RequireAdmin(userRepo)(next))
@@ -191,6 +197,8 @@ func main() {
 	videoLessonHandler.RegisterRoutes(mux, adminOnly)
 	openExerciseListHandler.RegisterRoutes(mux, adminOnly)
 	questionHandler.RegisterRoutes(mux, adminOnly)
+	institutionHandler.RegisterRoutes(mux, adminOnly)
+	examHandler.RegisterRoutes(mux, adminOnly)
 	mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
 
 	port := os.Getenv("PORT")

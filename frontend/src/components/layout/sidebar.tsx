@@ -10,6 +10,8 @@ import {
   Video,
   ListChecks,
   HelpCircle,
+  Building2,
+  GraduationCap,
   X,
 } from "lucide-react";
 
@@ -55,6 +57,18 @@ const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/questions",
     icon: HelpCircle,
     labelKey: "SIDEBAR_QUESTIONS",
+    adminOnly: true,
+  },
+  {
+    href: "/dashboard/institutions",
+    icon: Building2,
+    labelKey: "SIDEBAR_INSTITUTIONS",
+    adminOnly: true,
+  },
+  {
+    href: "/dashboard/exams",
+    icon: GraduationCap,
+    labelKey: "SIDEBAR_EXAMS",
     adminOnly: true,
   },
 ];
