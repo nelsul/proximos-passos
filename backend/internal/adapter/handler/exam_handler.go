@@ -14,17 +14,19 @@ import (
 )
 
 type ExamHandler struct {
-	uc *usecase.ExamUseCase
+	uc    *usecase.ExamUseCase
+	qRepo repository.QuestionRepository
 }
 
-func NewExamHandler(uc *usecase.ExamUseCase) *ExamHandler {
-	return &ExamHandler{uc: uc}
+func NewExamHandler(uc *usecase.ExamUseCase, qRepo repository.QuestionRepository) *ExamHandler {
+	return &ExamHandler{uc: uc, qRepo: qRepo}
 }
 
 func (h *ExamHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
 	mux.Handle("POST /exams", mw(http.HandlerFunc(h.Create)))
 	mux.Handle("GET /exams", mw(http.HandlerFunc(h.List)))
 	mux.Handle("GET /exams/{id}", mw(http.HandlerFunc(h.GetByID)))
+	mux.Handle("GET /exams/{id}/details", mw(http.HandlerFunc(h.GetDetails)))
 	mux.Handle("PUT /exams/{id}", mw(http.HandlerFunc(h.Update)))
 	mux.Handle("DELETE /exams/{id}", mw(http.HandlerFunc(h.Delete)))
 }
@@ -189,6 +191,49 @@ func (h *ExamHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.JSON(w, http.StatusOK, dto.ExamToResponse(exam))
+}
+
+// GetDetails godoc
+// @Summary     Get exam details
+// @Description Returns an exam with question count and related topic IDs (admin only)
+// @Tags        exams
+// @Produce     json
+// @Security    CookieAuth
+// @Param       id  path     string true "Exam public ID (UUID)"
+// @Success     200 {object} dto.ExamDetailResponse
+// @Failure     401 {object} apperror.AppError
+// @Failure     403 {object} apperror.AppError
+// @Failure     404 {object} apperror.AppError
+// @Failure     500 {object} apperror.AppError
+// @Router      /exams/{id}/details [get]
+func (h *ExamHandler) GetDetails(w http.ResponseWriter, r *http.Request) {
+	publicID := r.PathValue("id")
+
+	exam, err := h.uc.GetByPublicID(r.Context(), publicID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	questionCount, err := h.qRepo.CountByExamID(r.Context(), exam.ID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	topicIDs, err := h.qRepo.TopicPublicIDsByExamID(r.Context(), exam.ID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	resp := dto.ExamDetailResponse{
+		Exam:          dto.ExamToResponse(exam),
+		QuestionCount: questionCount,
+		TopicIDs:      topicIDs,
+	}
+
+	response.JSON(w, http.StatusOK, resp)
 }
 
 // Delete godoc

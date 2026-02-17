@@ -142,7 +142,7 @@ func main() {
 	handoutUC := usecase.NewHandoutUseCase(handoutRepo, topicRepo, userRepo, storageSvc)
 	videoLessonUC := usecase.NewVideoLessonUseCase(videoLessonRepo, topicRepo, userRepo, storageSvc)
 	openExerciseListUC := usecase.NewOpenExerciseListUseCase(openExerciseListRepo, topicRepo, userRepo, storageSvc)
-	questionUC := usecase.NewQuestionUseCase(questionRepo, topicRepo, userRepo, storageSvc)
+	questionUC := usecase.NewQuestionUseCase(questionRepo, topicRepo, examRepo, institutionRepo, userRepo, storageSvc)
 	institutionUC := usecase.NewInstitutionUseCase(institutionRepo, userRepo)
 	examUC := usecase.NewExamUseCase(examRepo, institutionRepo, userRepo)
 
@@ -155,8 +155,8 @@ func main() {
 	videoLessonHandler := handler.NewVideoLessonHandler(videoLessonUC)
 	openExerciseListHandler := handler.NewOpenExerciseListHandler(openExerciseListUC)
 	questionHandler := handler.NewQuestionHandler(questionUC)
-	institutionHandler := handler.NewInstitutionHandler(institutionUC)
-	examHandler := handler.NewExamHandler(examUC)
+	institutionHandler := handler.NewInstitutionHandler(institutionUC, questionRepo)
+	examHandler := handler.NewExamHandler(examUC, questionRepo)
 
 	adminOnly := func(next http.Handler) http.Handler {
 		return middleware.Auth(jwtService)(middleware.RequireAdmin(userRepo)(next))

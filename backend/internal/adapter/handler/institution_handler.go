@@ -14,17 +14,19 @@ import (
 )
 
 type InstitutionHandler struct {
-	uc *usecase.InstitutionUseCase
+	uc    *usecase.InstitutionUseCase
+	qRepo repository.QuestionRepository
 }
 
-func NewInstitutionHandler(uc *usecase.InstitutionUseCase) *InstitutionHandler {
-	return &InstitutionHandler{uc: uc}
+func NewInstitutionHandler(uc *usecase.InstitutionUseCase, qRepo repository.QuestionRepository) *InstitutionHandler {
+	return &InstitutionHandler{uc: uc, qRepo: qRepo}
 }
 
 func (h *InstitutionHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
 	mux.Handle("POST /institutions", mw(http.HandlerFunc(h.Create)))
 	mux.Handle("GET /institutions", mw(http.HandlerFunc(h.List)))
 	mux.Handle("GET /institutions/{id}", mw(http.HandlerFunc(h.GetByID)))
+	mux.Handle("GET /institutions/{id}/details", mw(http.HandlerFunc(h.GetDetails)))
 	mux.Handle("PUT /institutions/{id}", mw(http.HandlerFunc(h.Update)))
 	mux.Handle("DELETE /institutions/{id}", mw(http.HandlerFunc(h.Delete)))
 }
@@ -201,4 +203,47 @@ func (h *InstitutionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// GetDetails godoc
+// @Summary     Get institution details
+// @Description Returns an institution with question count and related topic IDs (admin only)
+// @Tags        institutions
+// @Produce     json
+// @Security    CookieAuth
+// @Param       id  path     string true "Institution public ID (UUID)"
+// @Success     200 {object} dto.InstitutionDetailResponse
+// @Failure     401 {object} apperror.AppError
+// @Failure     403 {object} apperror.AppError
+// @Failure     404 {object} apperror.AppError
+// @Failure     500 {object} apperror.AppError
+// @Router      /institutions/{id}/details [get]
+func (h *InstitutionHandler) GetDetails(w http.ResponseWriter, r *http.Request) {
+	publicID := r.PathValue("id")
+
+	institution, err := h.uc.GetByPublicID(r.Context(), publicID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	questionCount, err := h.qRepo.CountByInstitutionID(r.Context(), institution.ID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	topicIDs, err := h.qRepo.TopicPublicIDsByInstitutionID(r.Context(), institution.ID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	resp := dto.InstitutionDetailResponse{
+		Institution:   dto.InstitutionToResponse(institution),
+		QuestionCount: questionCount,
+		TopicIDs:      topicIDs,
+	}
+
+	response.JSON(w, http.StatusOK, resp)
 }

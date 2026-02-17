@@ -132,16 +132,35 @@ func (r *QuestionRepository) Create(ctx context.Context, q *entity.Question, top
 
 func (r *QuestionRepository) GetByPublicID(ctx context.Context, publicID string) (*entity.Question, error) {
 	var q entity.Question
+	var examPublicID, examTitle, examInstitution *string
+	var examYear *int
 	err := r.pool.QueryRow(ctx,
 		`SELECT q.id, q.public_id, q.type, q.statement,
 		        q.expected_answer_text, q.passing_score, q.exam_id,
-		        q.is_active, q.created_by_id, q.created_at, q.updated_at
+		        q.is_active, q.created_by_id, q.created_at, q.updated_at,
+		        e.public_id, e.title, e.year, i.name
 		 FROM questions q
+		 LEFT JOIN exams e ON e.id = q.exam_id AND e.is_active = true
+		 LEFT JOIN institutions i ON i.id = e.institution_id AND i.is_active = true
 		 WHERE q.public_id = $1 AND q.is_active = true`,
 		publicID,
 	).Scan(&q.ID, &q.PublicID, &q.Type, &q.Statement,
 		&q.ExpectedAnswerText, &q.PassingScore, &q.ExamID,
-		&q.IsActive, &q.CreatedByID, &q.CreatedAt, &q.UpdatedAt)
+		&q.IsActive, &q.CreatedByID, &q.CreatedAt, &q.UpdatedAt,
+		&examPublicID, &examTitle, &examYear, &examInstitution)
+
+	if examPublicID != nil {
+		q.ExamPublicID = *examPublicID
+		if examTitle != nil {
+			q.ExamTitle = *examTitle
+		}
+		if examYear != nil {
+			q.ExamYear = *examYear
+		}
+		if examInstitution != nil {
+			q.ExamInstitution = *examInstitution
+		}
+	}
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -174,9 +193,9 @@ func (r *QuestionRepository) GetByPublicID(ctx context.Context, publicID string)
 func (r *QuestionRepository) Update(ctx context.Context, q *entity.Question) error {
 	_, err := r.pool.Exec(ctx,
 		`UPDATE questions
-		 SET type = $1, statement = $2, expected_answer_text = $3, passing_score = $4, updated_at = NOW()
-		 WHERE public_id = $5 AND is_active = true`,
-		q.Type, q.Statement, q.ExpectedAnswerText, q.PassingScore, q.PublicID,
+		 SET type = $1, statement = $2, expected_answer_text = $3, passing_score = $4, exam_id = $5, updated_at = NOW()
+		 WHERE public_id = $6 AND is_active = true`,
+		q.Type, q.Statement, q.ExpectedAnswerText, q.PassingScore, q.ExamID, q.PublicID,
 	)
 	return err
 }
@@ -274,8 +293,11 @@ func (r *QuestionRepository) List(ctx context.Context, limit, offset int, filter
 	query := fmt.Sprintf(
 		`SELECT q.id, q.public_id, q.type, q.statement,
 		        q.expected_answer_text, q.passing_score, q.exam_id,
-		        q.is_active, q.created_by_id, q.created_at, q.updated_at
+		        q.is_active, q.created_by_id, q.created_at, q.updated_at,
+		        e.public_id, e.title, e.year, i.name
 		 FROM questions q
+		 LEFT JOIN exams e ON e.id = q.exam_id AND e.is_active = true
+		 LEFT JOIN institutions i ON i.id = e.institution_id AND i.is_active = true
 		 WHERE q.is_active = true%s
 		 ORDER BY q.created_at DESC
 		 LIMIT $%d OFFSET $%d`,
@@ -292,10 +314,25 @@ func (r *QuestionRepository) List(ctx context.Context, limit, offset int, filter
 	var questions []entity.Question
 	for rows.Next() {
 		var q entity.Question
+		var examPublicID, examTitle, examInstitution *string
+		var examYear *int
 		if err := rows.Scan(&q.ID, &q.PublicID, &q.Type, &q.Statement,
 			&q.ExpectedAnswerText, &q.PassingScore, &q.ExamID,
-			&q.IsActive, &q.CreatedByID, &q.CreatedAt, &q.UpdatedAt); err != nil {
+			&q.IsActive, &q.CreatedByID, &q.CreatedAt, &q.UpdatedAt,
+			&examPublicID, &examTitle, &examYear, &examInstitution); err != nil {
 			return nil, err
+		}
+		if examPublicID != nil {
+			q.ExamPublicID = *examPublicID
+			if examTitle != nil {
+				q.ExamTitle = *examTitle
+			}
+			if examYear != nil {
+				q.ExamYear = *examYear
+			}
+			if examInstitution != nil {
+				q.ExamInstitution = *examInstitution
+			}
 		}
 		questions = append(questions, q)
 	}
@@ -362,6 +399,18 @@ func buildQuestionFilterClause(filter repository.QuestionFilter) (string, []any)
 	if filter.TopicID != nil {
 		clause += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM question_topics qt2 WHERE qt2.question_id = q.id AND qt2.topic_id IN (WITH RECURSIVE topic_tree AS (SELECT id FROM topics WHERE id = $%d UNION ALL SELECT t.id FROM topics t JOIN topic_tree tt ON t.parent_id = tt.id) SELECT id FROM topic_tree))", argIdx)
 		args = append(args, *filter.TopicID)
+		argIdx++
+	}
+
+	if filter.ExamID != nil {
+		clause += fmt.Sprintf(" AND q.exam_id = $%d", argIdx)
+		args = append(args, *filter.ExamID)
+		argIdx++
+	}
+
+	if filter.InstitutionID != nil {
+		clause += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM exams e2 WHERE e2.id = q.exam_id AND e2.institution_id = $%d AND e2.is_active = true)", argIdx)
+		args = append(args, *filter.InstitutionID)
 		argIdx++
 	}
 
@@ -551,4 +600,76 @@ func (r *QuestionRepository) loadImages(ctx context.Context, questionID int) ([]
 		images = append(images, img)
 	}
 	return images, rows.Err()
+}
+
+func (r *QuestionRepository) CountByExamID(ctx context.Context, examID int) (int, error) {
+	var count int
+	err := r.pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM questions WHERE exam_id = $1 AND is_active = true`,
+		examID,
+	).Scan(&count)
+	return count, err
+}
+
+func (r *QuestionRepository) TopicPublicIDsByExamID(ctx context.Context, examID int) ([]string, error) {
+	rows, err := r.pool.Query(ctx,
+		`SELECT DISTINCT t.public_id
+		 FROM question_topics qt
+		 JOIN questions q ON q.id = qt.question_id
+		 JOIN topics t ON t.id = qt.topic_id
+		 WHERE q.exam_id = $1 AND q.is_active = true AND t.is_active = true`,
+		examID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ids []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
+}
+
+func (r *QuestionRepository) CountByInstitutionID(ctx context.Context, institutionID int) (int, error) {
+	var count int
+	err := r.pool.QueryRow(ctx,
+		`SELECT COUNT(*)
+		 FROM questions q
+		 JOIN exams e ON e.id = q.exam_id
+		 WHERE e.institution_id = $1 AND q.is_active = true AND e.is_active = true`,
+		institutionID,
+	).Scan(&count)
+	return count, err
+}
+
+func (r *QuestionRepository) TopicPublicIDsByInstitutionID(ctx context.Context, institutionID int) ([]string, error) {
+	rows, err := r.pool.Query(ctx,
+		`SELECT DISTINCT t.public_id
+		 FROM question_topics qt
+		 JOIN questions q ON q.id = qt.question_id
+		 JOIN exams e ON e.id = q.exam_id
+		 JOIN topics t ON t.id = qt.topic_id
+		 WHERE e.institution_id = $1 AND q.is_active = true AND e.is_active = true AND t.is_active = true`,
+		institutionID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ids []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
 }

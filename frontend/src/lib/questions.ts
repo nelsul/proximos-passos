@@ -23,12 +23,20 @@ export interface QuestionOptionResponse {
   is_correct: boolean;
 }
 
+export interface QuestionExamResponse {
+  id: string;
+  title: string;
+  year: number;
+  institution: string;
+}
+
 export interface QuestionResponse {
   id: string;
   type: string;
   statement: string;
   expected_answer_text?: string;
   passing_score?: number;
+  exam?: QuestionExamResponse | null;
   images: QuestionImageResponse[];
   options: QuestionOptionResponse[];
   topics: QuestionTopicResponse[];
@@ -56,6 +64,7 @@ export interface UpdateQuestionInput {
   statement?: string;
   expected_answer_text?: string;
   passing_score?: number;
+  exam_id?: string;
   topic_ids?: string[];
   options?: QuestionOptionInput[];
 }
@@ -64,6 +73,8 @@ export interface QuestionFilter {
   statement?: string;
   type?: string;
   topic_id?: string;
+  exam_id?: string;
+  institution_id?: string;
 }
 
 function buildQuery(
@@ -77,6 +88,9 @@ function buildQuery(
   if (filter?.statement) params.set("statement", filter.statement);
   if (filter?.type) params.set("type", filter.type);
   if (filter?.topic_id) params.set("topic_id", filter.topic_id);
+  if (filter?.exam_id) params.set("exam_id", filter.exam_id);
+  if (filter?.institution_id)
+    params.set("institution_id", filter.institution_id);
   return params.toString();
 }
 

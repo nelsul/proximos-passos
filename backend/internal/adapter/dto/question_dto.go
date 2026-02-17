@@ -15,6 +15,7 @@ type UpdateQuestionRequest struct {
 	Statement          *string               `json:"statement,omitempty"`
 	ExpectedAnswerText *string               `json:"expected_answer_text,omitempty"`
 	PassingScore       *int                  `json:"passing_score,omitempty"`
+	ExamID             *string               `json:"exam_id,omitempty"`
 	TopicIDs           []string              `json:"topic_ids,omitempty"`
 	Options            []QuestionOptionInput `json:"options,omitempty"`
 }
@@ -46,12 +47,20 @@ type QuestionOptionResponse struct {
 	IsCorrect     bool                    `json:"is_correct"`
 }
 
+type QuestionExamResponse struct {
+	PublicID    string `json:"id"`
+	Title       string `json:"title"`
+	Year        int    `json:"year"`
+	Institution string `json:"institution"`
+}
+
 type QuestionResponse struct {
 	PublicID           string                   `json:"id"`
 	Type               string                   `json:"type"`
 	Statement          string                   `json:"statement"`
 	ExpectedAnswerText *string                  `json:"expected_answer_text,omitempty"`
 	PassingScore       *int                     `json:"passing_score,omitempty"`
+	Exam               *QuestionExamResponse    `json:"exam"`
 	Images             []QuestionImageResponse  `json:"images"`
 	Options            []QuestionOptionResponse `json:"options"`
 	Topics             []QuestionTopicResponse  `json:"topics"`
@@ -113,12 +122,23 @@ func QuestionToResponse(q *entity.Question) QuestionResponse {
 		}
 	}
 
+	var exam *QuestionExamResponse
+	if q.ExamPublicID != "" {
+		exam = &QuestionExamResponse{
+			PublicID:    q.ExamPublicID,
+			Title:       q.ExamTitle,
+			Year:        q.ExamYear,
+			Institution: q.ExamInstitution,
+		}
+	}
+
 	return QuestionResponse{
 		PublicID:           q.PublicID,
 		Type:               q.Type,
 		Statement:          q.Statement,
 		ExpectedAnswerText: q.ExpectedAnswerText,
 		PassingScore:       q.PassingScore,
+		Exam:               exam,
 		Images:             images,
 		Options:            options,
 		Topics:             topics,

@@ -45,6 +45,12 @@ type ExamListResponse struct {
 	TotalPages int            `json:"total_pages"`
 }
 
+type ExamDetailResponse struct {
+	Exam          ExamResponse `json:"exam"`
+	QuestionCount int          `json:"question_count"`
+	TopicIDs      []string     `json:"topic_ids"`
+}
+
 func ExamToResponse(e *entity.Exam) ExamResponse {
 	return ExamResponse{
 		PublicID: e.PublicID,

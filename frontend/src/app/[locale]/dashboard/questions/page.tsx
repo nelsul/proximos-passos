@@ -20,6 +20,8 @@ import {
   deleteQuestion,
   type QuestionResponse,
 } from "@/lib/questions";
+import { listExams, type ExamResponse } from "@/lib/exams";
+import { listInstitutions, type InstitutionResponse } from "@/lib/institutions";
 import { LatexText } from "@/components/ui/latex-text";
 import { stripImageMarkers } from "@/components/questions/statement-renderer";
 import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
@@ -43,14 +45,30 @@ export default function QuestionsPage() {
     name: string;
   } | null>(null);
   const [showTopicFilter, setShowTopicFilter] = useState(false);
+  const [examFilter, setExamFilter] = useState(
+    searchParams.get("exam_id") ?? "",
+  );
+  const [institutionFilter, setInstitutionFilter] = useState(
+    searchParams.get("institution_id") ?? "",
+  );
+  const [exams, setExams] = useState<ExamResponse[]>([]);
+  const [institutions, setInstitutions] = useState<InstitutionResponse[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Load exams and institutions for filter dropdowns
+  useEffect(() => {
+    listExams(1, 200).then((res) => setExams(res.data ?? []));
+    listInstitutions(1, 200).then((res) => setInstitutions(res.data ?? []));
+  }, []);
 
   const fetchQuestions = useCallback(
     async (
       statement?: string,
       type?: string,
       topicId?: string,
+      examId?: string,
+      institutionId?: string,
       pageNum = 1,
     ) => {
       setLoading(true);
@@ -59,10 +77,14 @@ export default function QuestionsPage() {
           statement?: string;
           type?: string;
           topic_id?: string;
+          exam_id?: string;
+          institution_id?: string;
         } = {};
         if (statement) filter.statement = statement;
         if (type) filter.type = type;
         if (topicId) filter.topic_id = topicId;
+        if (examId) filter.exam_id = examId;
+        if (institutionId) filter.institution_id = institutionId;
         const res = await listQuestions(
           pageNum,
           20,
@@ -84,20 +106,39 @@ export default function QuestionsPage() {
         search || undefined,
         typeFilter || undefined,
         topicFilter?.id,
+        examFilter || undefined,
+        institutionFilter || undefined,
         1,
       );
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, typeFilter, topicFilter, fetchQuestions]);
+  }, [
+    search,
+    typeFilter,
+    topicFilter,
+    examFilter,
+    institutionFilter,
+    fetchQuestions,
+  ]);
 
   useEffect(() => {
     fetchQuestions(
       search || undefined,
       typeFilter || undefined,
       topicFilter?.id,
+      examFilter || undefined,
+      institutionFilter || undefined,
       page,
     );
-  }, [page, fetchQuestions, search, typeFilter, topicFilter]);
+  }, [
+    page,
+    fetchQuestions,
+    search,
+    typeFilter,
+    topicFilter,
+    examFilter,
+    institutionFilter,
+  ]);
 
   // Show toast from URL params (after create/edit redirect)
   useEffect(() => {
@@ -124,6 +165,8 @@ export default function QuestionsPage() {
         search || undefined,
         typeFilter || undefined,
         topicFilter?.id,
+        examFilter || undefined,
+        institutionFilter || undefined,
         page,
       );
     } finally {
@@ -177,6 +220,32 @@ export default function QuestionsPage() {
           <option value="closed_ended">
             {t("QUESTION_TYPE_CLOSED_ENDED")}
           </option>
+        </select>
+
+        <select
+          value={examFilter}
+          onChange={(e) => setExamFilter(e.target.value)}
+          className="shrink-0 rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
+        >
+          <option value="">{t("QUESTION_ALL_EXAMS")}</option>
+          {exams.map((exam) => (
+            <option key={exam.id} value={exam.id}>
+              {exam.institution.name} — {exam.title} ({exam.year})
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={institutionFilter}
+          onChange={(e) => setInstitutionFilter(e.target.value)}
+          className="shrink-0 rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
+        >
+          <option value="">{t("QUESTION_ALL_INSTITUTIONS")}</option>
+          {institutions.map((inst) => (
+            <option key={inst.id} value={inst.id}>
+              {inst.name} ({inst.acronym})
+            </option>
+          ))}
         </select>
 
         {topicFilter ? (
@@ -234,6 +303,14 @@ export default function QuestionsPage() {
                     <span className="rounded-full bg-surface-light px-2 py-0.5">
                       {typeLabel(q.type)}
                     </span>
+                    {q.exam && (
+                      <>
+                        <span>·</span>
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary">
+                          {q.exam.institution} — {q.exam.title} ({q.exam.year})
+                        </span>
+                      </>
+                    )}
                     {q.images.length > 0 && (
                       <>
                         <span>·</span>

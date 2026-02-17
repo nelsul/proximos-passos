@@ -7,9 +7,11 @@ import (
 )
 
 type QuestionFilter struct {
-	Statement string
-	TopicID   *int
-	Type      string // "open_ended", "closed_ended", or "" for any
+	Statement     string
+	TopicID       *int
+	Type          string // "open_ended", "closed_ended", or "" for any
+	ExamID        *int
+	InstitutionID *int
 }
 
 type QuestionRepository interface {
@@ -23,4 +25,8 @@ type QuestionRepository interface {
 	Delete(ctx context.Context, publicID string) error
 	List(ctx context.Context, limit, offset int, filter QuestionFilter) ([]entity.Question, error)
 	Count(ctx context.Context, filter QuestionFilter) (int, error)
+	CountByExamID(ctx context.Context, examID int) (int, error)
+	TopicPublicIDsByExamID(ctx context.Context, examID int) ([]string, error)
+	CountByInstitutionID(ctx context.Context, institutionID int) (int, error)
+	TopicPublicIDsByInstitutionID(ctx context.Context, institutionID int) ([]string, error)
 }

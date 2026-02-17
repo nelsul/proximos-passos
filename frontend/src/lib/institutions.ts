@@ -79,3 +79,15 @@ export async function updateInstitution(
 export async function deleteInstitution(id: string): Promise<void> {
   return api<void>(`/institutions/${id}`, { method: "DELETE" });
 }
+
+export interface InstitutionDetailResponse {
+  institution: InstitutionResponse;
+  question_count: number;
+  topic_ids: string[];
+}
+
+export async function getInstitutionDetails(
+  id: string,
+): Promise<InstitutionDetailResponse> {
+  return api<InstitutionDetailResponse>(`/institutions/${id}/details`);
+}

@@ -88,3 +88,13 @@ export async function updateExam(
 export async function deleteExam(id: string): Promise<void> {
   return api<void>(`/exams/${id}`, { method: "DELETE" });
 }
+
+export interface ExamDetailResponse {
+  exam: ExamResponse;
+  question_count: number;
+  topic_ids: string[];
+}
+
+export async function getExamDetails(id: string): Promise<ExamDetailResponse> {
+  return api<ExamDetailResponse>(`/exams/${id}/details`);
+}

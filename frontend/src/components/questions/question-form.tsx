@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, type FormEvent } from "react";
+import { useState, useRef, useEffect, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
@@ -23,6 +23,7 @@ import {
   type QuestionResponse,
   type QuestionImageResponse,
 } from "@/lib/questions";
+import { listExams, type ExamResponse } from "@/lib/exams";
 import { ApiRequestError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
@@ -201,10 +202,31 @@ export function QuestionForm({
   const [selectedTopics, setSelectedTopics] = useState<
     { id: string; name: string }[]
   >(initialQuestion?.topics.map((tp) => ({ id: tp.id, name: tp.name })) ?? []);
+  const [selectedExamId, setSelectedExamId] = useState<string>(
+    initialQuestion?.exam?.id ?? "",
+  );
+  const [exams, setExams] = useState<ExamResponse[]>([]);
+  const [examsLoading, setExamsLoading] = useState(true);
   const [showTopicPicker, setShowTopicPicker] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Load exams for the picker
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await listExams(1, 200);
+        if (!cancelled) setExams(res.data ?? []);
+      } finally {
+        if (!cancelled) setExamsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // ---- Block operations ----
 
@@ -378,6 +400,7 @@ export function QuestionForm({
       }
 
       selectedTopics.forEach((tp) => formData.append("topic_ids", tp.id));
+      if (selectedExamId) formData.append("exam_id", selectedExamId);
       imageFiles.forEach((f) => formData.append("images", f));
 
       await createQuestion(formData);
@@ -528,6 +551,7 @@ export function QuestionForm({
       const updateData: Record<string, unknown> = {
         type: qType,
         statement: statement.trim(),
+        exam_id: selectedExamId || "",
         topic_ids: selectedTopics.map((tp) => tp.id),
       };
 
@@ -689,6 +713,26 @@ export function QuestionForm({
                 <option value="closed_ended">
                   {t("QUESTION_TYPE_CLOSED_ENDED")}
                 </option>
+              </select>
+            </div>
+
+            {/* Exam */}
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-heading">
+                {t("QUESTION_EXAM_LABEL")}
+              </label>
+              <select
+                value={selectedExamId}
+                onChange={(e) => setSelectedExamId(e.target.value)}
+                disabled={examsLoading}
+                className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-body outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary disabled:opacity-50"
+              >
+                <option value="">{t("QUESTION_EXAM_NONE")}</option>
+                {exams.map((exam) => (
+                  <option key={exam.id} value={exam.id}>
+                    {exam.institution.name} — {exam.title} ({exam.year})
+                  </option>
+                ))}
               </select>
             </div>
 

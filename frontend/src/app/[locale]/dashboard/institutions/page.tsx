@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { Plus, Loader2, Search, Building2, Pencil, Trash2 } from "lucide-react";
 import {
   listInstitutions,
@@ -15,6 +17,8 @@ import { useToast } from "@/components/ui/toast";
 
 export default function InstitutionsPage() {
   const t = useTranslations();
+  const router = useRouter();
+  const locale = useLocale();
   const { toast } = useToast();
   const [institutions, setInstitutions] = useState<InstitutionResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,7 +123,12 @@ export default function InstitutionsPage() {
             {institutions.map((institution) => (
               <div
                 key={institution.id}
-                className="flex items-center gap-3 rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:bg-surface-light"
+                onClick={() =>
+                  router.push(
+                    `/${locale}/dashboard/institutions/${institution.id}`,
+                  )
+                }
+                className="flex cursor-pointer items-center gap-3 rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:border-secondary hover:bg-surface-light"
               >
                 <Building2 className="h-5 w-5 shrink-0 text-secondary" />
                 <div className="min-w-0 flex-1">
@@ -132,13 +141,19 @@ export default function InstitutionsPage() {
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   <button
-                    onClick={() => setEditingInstitution(institution)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingInstitution(institution);
+                    }}
                     className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(institution.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(institution.id);
+                    }}
                     disabled={deletingId === institution.id}
                     className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
                   >

@@ -17,23 +17,29 @@ import (
 )
 
 type QuestionUseCase struct {
-	qRepo      repository.QuestionRepository
-	topicRepo  repository.TopicRepository
-	userRepo   repository.UserRepository
-	storageSvc service.StorageService
+	qRepo           repository.QuestionRepository
+	topicRepo       repository.TopicRepository
+	examRepo        repository.ExamRepository
+	institutionRepo repository.InstitutionRepository
+	userRepo        repository.UserRepository
+	storageSvc      service.StorageService
 }
 
 func NewQuestionUseCase(
 	qRepo repository.QuestionRepository,
 	topicRepo repository.TopicRepository,
+	examRepo repository.ExamRepository,
+	institutionRepo repository.InstitutionRepository,
 	userRepo repository.UserRepository,
 	storageSvc service.StorageService,
 ) *QuestionUseCase {
 	return &QuestionUseCase{
-		qRepo:      qRepo,
-		topicRepo:  topicRepo,
-		userRepo:   userRepo,
-		storageSvc: storageSvc,
+		qRepo:           qRepo,
+		topicRepo:       topicRepo,
+		examRepo:        examRepo,
+		institutionRepo: institutionRepo,
+		userRepo:        userRepo,
+		storageSvc:      storageSvc,
 	}
 }
 
@@ -56,6 +62,7 @@ type UpdateQuestionInput struct {
 	Statement          *string
 	ExpectedAnswerText *string
 	PassingScore       *int
+	ExamID             *string  // exam public ID, empty string to unlink
 	TopicIDs           []string // topic public IDs
 	Options            []OptionInput
 }
@@ -81,6 +88,7 @@ func (uc *QuestionUseCase) Create(
 	statement string,
 	expectedAnswerText *string,
 	passingScore *int,
+	examPublicID string,
 	topicPublicIDs []string,
 	files []*multipart.FileHeader,
 	optionInputs []OptionInput,
@@ -122,11 +130,25 @@ func (uc *QuestionUseCase) Create(
 		return nil, err
 	}
 
+	// Resolve exam ID
+	var examID *int
+	if examPublicID != "" {
+		exam, err := uc.examRepo.GetByPublicID(ctx, examPublicID)
+		if err != nil {
+			return nil, err
+		}
+		if exam == nil {
+			return nil, apperror.ErrExamNotFound
+		}
+		examID = &exam.ID
+	}
+
 	q := &entity.Question{
 		Type:               qType,
 		Statement:          statement,
 		ExpectedAnswerText: expAnswer,
 		PassingScore:       passingScore,
+		ExamID:             examID,
 		CreatedByID:        user.ID,
 	}
 
@@ -309,6 +331,22 @@ func (uc *QuestionUseCase) Update(ctx context.Context, publicID string, input Up
 			return nil, apperror.ErrInvalidInput
 		}
 		q.PassingScore = input.PassingScore
+	}
+
+	if input.ExamID != nil {
+		eid := strings.TrimSpace(*input.ExamID)
+		if eid == "" {
+			q.ExamID = nil
+		} else {
+			exam, err := uc.examRepo.GetByPublicID(ctx, eid)
+			if err != nil {
+				return nil, err
+			}
+			if exam == nil {
+				return nil, apperror.ErrExamNotFound
+			}
+			q.ExamID = &exam.ID
+		}
 	}
 
 	if err := uc.qRepo.Update(ctx, q); err != nil {
@@ -592,6 +630,28 @@ func (uc *QuestionUseCase) ResolveTopicID(ctx context.Context, publicID string) 
 		return 0, apperror.ErrTopicNotFound
 	}
 	return topic.ID, nil
+}
+
+func (uc *QuestionUseCase) ResolveExamID(ctx context.Context, publicID string) (int, error) {
+	exam, err := uc.examRepo.GetByPublicID(ctx, publicID)
+	if err != nil {
+		return 0, err
+	}
+	if exam == nil {
+		return 0, apperror.ErrExamNotFound
+	}
+	return exam.ID, nil
+}
+
+func (uc *QuestionUseCase) ResolveInstitutionID(ctx context.Context, publicID string) (int, error) {
+	institution, err := uc.institutionRepo.GetByPublicID(ctx, publicID)
+	if err != nil {
+		return 0, err
+	}
+	if institution == nil {
+		return 0, apperror.ErrInstitutionNotFound
+	}
+	return institution.ID, nil
 }
 
 func (uc *QuestionUseCase) resolveTopicIDs(ctx context.Context, publicIDs []string) ([]int, error) {

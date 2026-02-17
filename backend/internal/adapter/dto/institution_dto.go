@@ -51,3 +51,9 @@ func InstitutionsToResponse(institutions []entity.Institution) []InstitutionResp
 	}
 	return result
 }
+
+type InstitutionDetailResponse struct {
+	Institution   InstitutionResponse `json:"institution"`
+	QuestionCount int                 `json:"question_count"`
+	TopicIDs      []string            `json:"topic_ids"`
+}

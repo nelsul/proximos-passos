@@ -44,6 +44,7 @@ func (h *QuestionHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handle
 // @Param       statement           formData string   true  "Question statement"
 // @Param       expected_answer_text formData string  false "Expected answer text"
 // @Param       passing_score       formData int      false "Passing score (0-100)"
+// @Param       exam_id             formData string   false "Exam public ID"
 // @Param       topic_ids           formData []string false "Topic public IDs"
 // @Param       images              formData file     false "Image files"
 // @Success     201 {object} dto.QuestionResponse
@@ -76,6 +77,7 @@ func (h *QuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	examPublicID := r.FormValue("exam_id")
 	topicIDs := r.Form["topic_ids"]
 	imageFiles := r.MultipartForm.File["images"]
 
@@ -129,6 +131,7 @@ func (h *QuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		statement,
 		expectedAnswerText,
 		passingScore,
+		examPublicID,
 		topicIDs,
 		imageFiles,
 		optionInputs,
@@ -152,6 +155,7 @@ func (h *QuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Param       statement   query string false "Filter by statement (partial match)"
 // @Param       type        query string false "Filter by type (open_ended or closed_ended)"
 // @Param       topic_id    query string false "Filter by topic public ID (UUID)"
+// @Param       exam_id     query string false "Filter by exam public ID (UUID)"
 // @Success     200 {object} dto.QuestionListResponse
 // @Failure     401 {object} apperror.AppError
 // @Failure     403 {object} apperror.AppError
@@ -173,6 +177,24 @@ func (h *QuestionHandler) List(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		filter.TopicID = &topicID
+	}
+
+	if examPublicID := r.URL.Query().Get("exam_id"); examPublicID != "" {
+		examID, resolveErr := h.uc.ResolveExamID(r.Context(), examPublicID)
+		if resolveErr != nil {
+			response.Error(w, resolveErr)
+			return
+		}
+		filter.ExamID = &examID
+	}
+
+	if institutionPublicID := r.URL.Query().Get("institution_id"); institutionPublicID != "" {
+		institutionID, resolveErr := h.uc.ResolveInstitutionID(r.Context(), institutionPublicID)
+		if resolveErr != nil {
+			response.Error(w, resolveErr)
+			return
+		}
+		filter.InstitutionID = &institutionID
 	}
 
 	questions, totalItems, totalPages, err := h.uc.List(r.Context(), pageNumber, pageSize, filter)
@@ -268,6 +290,9 @@ func (h *QuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 				input.PassingScore = &ps
 			}
 		}
+		if v := r.FormValue("exam_id"); v != "" {
+			input.ExamID = &v
+		}
 		if ids := r.Form["topic_ids"]; len(ids) > 0 {
 			input.TopicIDs = ids
 		}
@@ -303,6 +328,7 @@ func (h *QuestionHandler) Update(w http.ResponseWriter, r *http.Request) {
 			Statement:          req.Statement,
 			ExpectedAnswerText: req.ExpectedAnswerText,
 			PassingScore:       req.PassingScore,
+			ExamID:             req.ExamID,
 			TopicIDs:           req.TopicIDs,
 		}
 

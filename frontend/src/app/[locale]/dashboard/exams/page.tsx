@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import {
   Plus,
   Loader2,
@@ -20,6 +22,8 @@ import { useToast } from "@/components/ui/toast";
 
 export default function ExamsPage() {
   const t = useTranslations();
+  const router = useRouter();
+  const locale = useLocale();
   const { toast } = useToast();
   const [exams, setExams] = useState<ExamResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,7 +183,10 @@ export default function ExamsPage() {
             {filteredExams.map((exam) => (
               <div
                 key={exam.id}
-                className="flex items-center gap-3 rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:bg-surface-light"
+                onClick={() =>
+                  router.push(`/${locale}/dashboard/exams/${exam.id}`)
+                }
+                className="flex cursor-pointer items-center gap-3 rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:border-secondary hover:bg-surface-light"
               >
                 <GraduationCap className="h-5 w-5 shrink-0 text-secondary" />
                 <div className="min-w-0 flex-1">
@@ -192,13 +199,19 @@ export default function ExamsPage() {
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   <button
-                    onClick={() => setEditingExam(exam)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingExam(exam);
+                    }}
                     className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(exam.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(exam.id);
+                    }}
                     disabled={deletingId === exam.id}
                     className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
                   >
