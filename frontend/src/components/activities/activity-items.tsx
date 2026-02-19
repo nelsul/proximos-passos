@@ -38,6 +38,7 @@ import {
   PenLine,
   CheckCircle2,
   XCircle,
+  ExternalLink,
 } from "lucide-react";
 import {
   listActivityItems,
@@ -49,9 +50,9 @@ import {
   type CreateActivityItemInput,
 } from "@/lib/activities";
 import { listQuestions } from "@/lib/questions";
-import { listVideoLessons } from "@/lib/video-lessons";
-import { listHandouts } from "@/lib/handouts";
-import { listExerciseLists } from "@/lib/open-exercise-lists";
+import { listVideoLessons, getVideoLesson } from "@/lib/video-lessons";
+import { listHandouts, getHandout } from "@/lib/handouts";
+import { listExerciseLists, getExerciseList } from "@/lib/open-exercise-lists";
 import { listExams } from "@/lib/exams";
 import { ApiRequestError } from "@/lib/api";
 import {
@@ -391,6 +392,42 @@ function ItemRow({ item, index, activityId, questionStatus, t }: ItemRowProps) {
   const Icon = TYPE_ICONS[item.type] ?? ListChecks;
   const color = TYPE_COLORS[item.type] ?? "text-muted";
   const locale = useLocale();
+  const [opening, setOpening] = useState(false);
+
+  async function handleOpen() {
+    setOpening(true);
+    try {
+      let url: string | undefined;
+      if (item.type === "video_lesson" && item.video_lesson_id) {
+        const vl = await getVideoLesson(item.video_lesson_id);
+        url = vl.video_url || vl.file?.url;
+      } else if (item.type === "handout" && item.handout_id) {
+        const h = await getHandout(item.handout_id);
+        url = h.file?.url;
+      } else if (
+        item.type === "open_exercise_list" &&
+        item.open_exercise_list_id
+      ) {
+        const el = await getExerciseList(item.open_exercise_list_id);
+        url = el.file_url || el.file?.url;
+      }
+      if (url) {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setOpening(false);
+    }
+  }
+
+  const hasOpenAction =
+    (item.type === "video_lesson" && item.video_lesson_id) ||
+    (item.type === "handout" && item.handout_id) ||
+    (item.type === "open_exercise_list" && item.open_exercise_list_id);
+
+  const hasLinkAction =
+    item.type === "simulated_exam" && item.simulated_exam_id;
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-surface-border bg-background p-3">
@@ -444,6 +481,31 @@ function ItemRow({ item, index, activityId, questionStatus, t }: ItemRowProps) {
         >
           <PenLine className="h-3.5 w-3.5" />
           {t("ACTIVITY_ITEM_ANSWER")}
+        </Link>
+      )}
+
+      {hasOpenAction && (
+        <button
+          onClick={handleOpen}
+          disabled={opening}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-surface-border px-2.5 py-1 text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors disabled:opacity-50"
+        >
+          {opening ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <ExternalLink className="h-3.5 w-3.5" />
+          )}
+          {t("ACTIVITY_ITEM_OPEN")}
+        </button>
+      )}
+
+      {hasLinkAction && (
+        <Link
+          href={`/${locale}/dashboard/exams/${item.simulated_exam_id}`}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-surface-border px-2.5 py-1 text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+          {t("ACTIVITY_ITEM_OPEN")}
         </Link>
       )}
 
