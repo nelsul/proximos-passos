@@ -7,7 +7,6 @@ import (
 	"math"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"proximos-passos/backend/internal/domain/apperror"
 	"proximos-passos/backend/internal/domain/entity"
@@ -118,7 +117,7 @@ func (uc *OpenExerciseListUseCase) Create(
 		}
 
 		ext := filepath.Ext(filename)
-		key := fmt.Sprintf("exercise-lists/%d%s", time.Now().UnixNano(), ext)
+		key := fmt.Sprintf("exercise-lists/%s%s", newUUID(), ext)
 
 		_, err = uc.storageSvc.Upload(ctx, key, contentType, body)
 		if err != nil {
@@ -258,7 +257,7 @@ func (uc *OpenExerciseListUseCase) ReplaceFile(
 	}
 
 	ext := filepath.Ext(filename)
-	key := fmt.Sprintf("exercise-lists/%d%s", time.Now().UnixNano(), ext)
+	key := fmt.Sprintf("exercise-lists/%s%s", newUUID(), ext)
 
 	_, err = uc.storageSvc.Upload(ctx, key, contentType, body)
 	if err != nil {

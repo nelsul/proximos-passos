@@ -7,7 +7,6 @@ import (
 	"math"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"proximos-passos/backend/internal/domain/apperror"
 	"proximos-passos/backend/internal/domain/entity"
@@ -574,7 +573,7 @@ func (uc *ActivitySubmissionUseCase) UploadAttachment(ctx context.Context, submi
 	}
 
 	ext := filepath.Ext(filename)
-	key := fmt.Sprintf("activity-submissions/%s/%d%s", submissionPublicID, time.Now().UnixNano(), ext)
+	key := fmt.Sprintf("activity-submissions/%s%s", newUUID(), ext)
 
 	url, err := uc.storageSvc.Upload(ctx, key, contentType, body)
 	if err != nil {

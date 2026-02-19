@@ -371,7 +371,7 @@ func (uc *UserUseCase) UploadAvatar(ctx context.Context, publicID string, filena
 	}
 
 	ext := path.Ext(filename)
-	key := fmt.Sprintf("avatars/%s%s", publicID, ext)
+	key := fmt.Sprintf("avatars/%s%s", newUUID(), ext)
 
 	url, err := uc.storageSvc.Upload(ctx, key, contentType, body)
 	if err != nil {

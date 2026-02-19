@@ -326,7 +326,7 @@ func (uc *GroupUseCase) UploadThumbnail(ctx context.Context, publicID string, fi
 	}
 
 	ext := path.Ext(filename)
-	key := fmt.Sprintf("thumbnails/groups/%s%s", publicID, ext)
+	key := fmt.Sprintf("thumbnails/groups/%s%s", newUUID(), ext)
 
 	url, err := uc.storageSvc.Upload(ctx, key, contentType, body)
 	if err != nil {

@@ -376,7 +376,7 @@ func (uc *ActivityUseCase) UploadAttachment(ctx context.Context, activityPublicI
 	}
 
 	ext := filepath.Ext(filename)
-	key := fmt.Sprintf("activities/%s/%d%s", activityPublicID, time.Now().UnixNano(), ext)
+	key := fmt.Sprintf("activities/%s%s", newUUID(), ext)
 
 	url, err := uc.storageSvc.Upload(ctx, key, contentType, body)
 	if err != nil {

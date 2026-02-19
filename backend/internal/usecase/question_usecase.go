@@ -8,7 +8,6 @@ import (
 	"mime/multipart"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"proximos-passos/backend/internal/domain/apperror"
 	"proximos-passos/backend/internal/domain/entity"
@@ -202,7 +201,7 @@ func (uc *QuestionUseCase) Create(
 					return nil, apperror.ErrInvalidInput
 				}
 				ext := filepath.Ext(imgFile.Filename)
-				key := fmt.Sprintf("question-options/%d%s", time.Now().UnixNano(), ext)
+				key := fmt.Sprintf("question-options/%s%s", newUUID(), ext)
 				_, ferr = uc.storageSvc.Upload(ctx, key, ct, f)
 				f.Close()
 				if ferr != nil {
@@ -247,7 +246,7 @@ func (uc *QuestionUseCase) Create(
 		}
 
 		ext := filepath.Ext(fh.Filename)
-		key := fmt.Sprintf("questions/%d%s", time.Now().UnixNano(), ext)
+		key := fmt.Sprintf("questions/%s%s", newUUID(), ext)
 
 		_, err = uc.storageSvc.Upload(ctx, key, ct, f)
 		f.Close()
@@ -397,7 +396,7 @@ func (uc *QuestionUseCase) Update(ctx context.Context, publicID string, input Up
 					return nil, apperror.ErrInvalidInput
 				}
 				ext := filepath.Ext(imgFile.Filename)
-				key := fmt.Sprintf("question-options/%d%s", time.Now().UnixNano(), ext)
+				key := fmt.Sprintf("question-options/%s%s", newUUID(), ext)
 				_, ferr = uc.storageSvc.Upload(ctx, key, ct, f)
 				f.Close()
 				if ferr != nil {
@@ -513,7 +512,7 @@ func (uc *QuestionUseCase) AddImages(
 		}
 
 		ext := filepath.Ext(fh.Filename)
-		key := fmt.Sprintf("questions/%d%s", time.Now().UnixNano(), ext)
+		key := fmt.Sprintf("questions/%s%s", newUUID(), ext)
 
 		_, err = uc.storageSvc.Upload(ctx, key, ct, f)
 		f.Close()
