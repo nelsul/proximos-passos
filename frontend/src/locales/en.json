@@ -475,5 +475,22 @@
     "LATEX_TIP_PI": "Pi",
     "LATEX_TIP_SIGMA": "Sigma",
     "LATEX_TIP_DELTA_UPPER": "Delta (uppercase)",
-    "LATEX_TIP_OMEGA": "Omega"
+    "LATEX_TIP_OMEGA": "Omega",
+
+    "SIDEBAR_USERS": "Users",
+    "USERS_TITLE": "Users",
+    "USERS_SUBTITLE": "Manage registered users on the platform.",
+    "USERS_EMPTY": "No users found.",
+    "USER_EDIT_TITLE": "Edit user",
+    "USER_NAME_LABEL": "Name",
+    "USER_NAME_PLACEHOLDER": "User name",
+    "USER_EMAIL_LABEL": "Email",
+    "USER_ROLE_LABEL": "Role",
+    "USER_ROLE_ADMIN": "Admin",
+    "USER_ROLE_REGULAR": "Regular",
+    "USER_STATUS_LABEL": "Status",
+    "USER_ACTIVE": "Active",
+    "USER_INACTIVE": "Inactive",
+    "USER_UPDATE_SUCCESS": "User updated successfully.",
+    "USER_SEARCH_PLACEHOLDER": "Search users…"
 }

@@ -91,7 +91,7 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 	pageNumber, _ := strconv.Atoi(r.URL.Query().Get("page_number"))
 	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 
-	users, totalItems, err := h.uc.List(r.Context(), pageNumber, pageSize)
+	users, totalItems, err := h.uc.ListAll(r.Context(), pageNumber, pageSize)
 	if err != nil {
 		response.Error(w, err)
 		return
@@ -172,6 +172,7 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		Name:      req.Name,
 		Email:     req.Email,
 		AvatarURL: req.AvatarURL,
+		IsActive:  req.IsActive,
 	}
 
 	if req.Role != nil {

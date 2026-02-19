@@ -65,6 +65,7 @@ type UpdateUserInput struct {
 	Email     *string
 	AvatarURL *string
 	Role      *entity.UserRole
+	IsActive  *bool
 }
 
 func (uc *UserUseCase) SetupAdmin(ctx context.Context, input SetupAdminInput) (*entity.User, error) {
@@ -258,8 +259,34 @@ func (uc *UserUseCase) List(ctx context.Context, pageNumber, pageSize int) ([]en
 	return users, total, nil
 }
 
+func (uc *UserUseCase) ListAll(ctx context.Context, pageNumber, pageSize int) ([]entity.User, int, error) {
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	if pageNumber < 1 {
+		pageNumber = 1
+	}
+
+	offset := (pageNumber - 1) * pageSize
+
+	users, err := uc.repo.ListAll(ctx, pageSize, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total, err := uc.repo.CountAll(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return users, total, nil
+}
+
 func (uc *UserUseCase) Update(ctx context.Context, publicID string, input UpdateUserInput) (*entity.User, error) {
-	user, err := uc.repo.GetByPublicID(ctx, publicID)
+	user, err := uc.repo.GetByPublicIDUnfiltered(ctx, publicID)
 	if err != nil {
 		return nil, err
 	}
@@ -294,6 +321,10 @@ func (uc *UserUseCase) Update(ctx context.Context, publicID string, input Update
 
 	if input.Role != nil {
 		user.Role = *input.Role
+	}
+
+	if input.IsActive != nil {
+		user.IsActive = *input.IsActive
 	}
 
 	if err := uc.repo.Update(ctx, user); err != nil {

@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { usePathname, Link } from "@/i18n/routing";
 import {
   Users,
+  UserCog,
   BookOpen,
   Layers,
   FileText,
@@ -69,6 +70,12 @@ const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/exams",
     icon: GraduationCap,
     labelKey: "SIDEBAR_EXAMS",
+    adminOnly: true,
+  },
+  {
+    href: "/dashboard/users",
+    icon: UserCog,
+    labelKey: "SIDEBAR_USERS",
     adminOnly: true,
   },
 ];

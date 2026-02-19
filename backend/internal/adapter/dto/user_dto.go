@@ -18,6 +18,7 @@ type UpdateUserRequest struct {
 	Email     *string `json:"email,omitempty"`
 	AvatarURL *string `json:"avatar_url,omitempty"`
 	Role      *string `json:"role,omitempty"`
+	IsActive  *bool   `json:"is_active,omitempty"`
 }
 
 type UpdateMeRequest struct {

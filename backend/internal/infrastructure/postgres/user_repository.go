@@ -70,6 +70,36 @@ func (r *UserRepository) GetByPublicID(ctx context.Context, publicID string) (*e
 	return &user, nil
 }
 
+func (r *UserRepository) GetByPublicIDUnfiltered(ctx context.Context, publicID string) (*entity.User, error) {
+	var user entity.User
+	err := r.pool.QueryRow(ctx,
+		`SELECT id, public_id, role, name, email, email_verified_at,
+		        last_verification_token_sent_at, password_hash, avatar_url,
+		        is_active, created_at, updated_at
+		 FROM users
+		 WHERE public_id = $1`,
+		publicID,
+	).Scan(
+		&user.ID, &user.PublicID, &user.Role, &user.Name, &user.Email,
+		&user.EmailVerifiedAt, &user.LastVerificationTokenSentAt,
+		&user.PasswordHash, &user.AvatarURL,
+		&user.IsActive, &user.CreatedAt, &user.UpdatedAt,
+	)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "22P02" {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user entity.User
 	err := r.pool.QueryRow(ctx,
@@ -129,18 +159,56 @@ func (r *UserRepository) List(ctx context.Context, limit, offset int) ([]entity.
 	return users, rows.Err()
 }
 
+func (r *UserRepository) ListAll(ctx context.Context, limit, offset int) ([]entity.User, error) {
+	rows, err := r.pool.Query(ctx,
+		`SELECT id, public_id, role, name, email, email_verified_at,
+		        last_verification_token_sent_at, password_hash, avatar_url,
+		        is_active, created_at, updated_at
+		 FROM users
+		 ORDER BY created_at DESC
+		 LIMIT $1 OFFSET $2`,
+		limit, offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []entity.User
+	for rows.Next() {
+		var u entity.User
+		if err := rows.Scan(
+			&u.ID, &u.PublicID, &u.Role, &u.Name, &u.Email,
+			&u.EmailVerifiedAt, &u.LastVerificationTokenSentAt,
+			&u.PasswordHash, &u.AvatarURL,
+			&u.IsActive, &u.CreatedAt, &u.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+
+	return users, rows.Err()
+}
+
 func (r *UserRepository) Count(ctx context.Context) (int, error) {
 	var count int
 	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE is_active = true`).Scan(&count)
 	return count, err
 }
 
+func (r *UserRepository) CountAll(ctx context.Context) (int, error) {
+	var count int
+	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM users`).Scan(&count)
+	return count, err
+}
+
 func (r *UserRepository) Update(ctx context.Context, user *entity.User) error {
 	result, err := r.pool.Exec(ctx,
 		`UPDATE users
-		 SET name = $1, email = $2, avatar_url = $3, role = $4
-		 WHERE public_id = $5 AND is_active = true`,
-		user.Name, user.Email, user.AvatarURL, user.Role, user.PublicID,
+		 SET name = $1, email = $2, avatar_url = $3, role = $4, is_active = $5
+		 WHERE public_id = $6`,
+		user.Name, user.Email, user.AvatarURL, user.Role, user.IsActive, user.PublicID,
 	)
 	if err != nil {
 		var pgErr *pgconn.PgError
