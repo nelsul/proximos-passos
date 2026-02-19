@@ -12,6 +12,7 @@ import {
   X,
   ImageIcon,
   Eye,
+  Send,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
@@ -354,6 +355,17 @@ export default function QuestionsPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    onClick={() =>
+                      router.push(
+                        `/${locale}/dashboard/questions/${q.id}/answer`,
+                      )
+                    }
+                    title={t("SUBMISSION_ANSWER_BUTTON")}
+                    className="rounded-lg p-2 text-muted transition-colors hover:bg-secondary/10 hover:text-secondary"
+                  >
+                    <Send className="h-4 w-4" />
+                  </button>
                   <button
                     onClick={() =>
                       window.open(

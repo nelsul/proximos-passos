@@ -134,6 +134,7 @@ func main() {
 	questionRepo := postgres.NewQuestionRepository(pool)
 	institutionRepo := postgres.NewInstitutionRepository(pool)
 	examRepo := postgres.NewExamRepository(pool)
+	questionSubmissionRepo := postgres.NewQuestionSubmissionRepository(pool)
 	userUC := usecase.NewUserUseCase(userRepo, emailSvc, storageSvc, jwtService, frontendURL, verificationCooldown)
 	authUC := usecase.NewAuthUseCase(userRepo, jwtService)
 	groupUC := usecase.NewGroupUseCase(groupRepo, userRepo, storageSvc)
@@ -145,6 +146,7 @@ func main() {
 	questionUC := usecase.NewQuestionUseCase(questionRepo, topicRepo, examRepo, institutionRepo, userRepo, storageSvc)
 	institutionUC := usecase.NewInstitutionUseCase(institutionRepo, userRepo)
 	examUC := usecase.NewExamUseCase(examRepo, institutionRepo, userRepo)
+	questionSubmissionUC := usecase.NewQuestionSubmissionUseCase(questionSubmissionRepo, questionRepo, userRepo)
 
 	authHandler := handler.NewAuthHandler(authUC, userUC, setupInput)
 	userHandler := handler.NewUserHandler(userUC)
@@ -157,6 +159,7 @@ func main() {
 	questionHandler := handler.NewQuestionHandler(questionUC)
 	institutionHandler := handler.NewInstitutionHandler(institutionUC, questionRepo)
 	examHandler := handler.NewExamHandler(examUC, questionRepo)
+	questionSubmissionHandler := handler.NewQuestionSubmissionHandler(questionSubmissionUC)
 
 	adminOnly := func(next http.Handler) http.Handler {
 		return middleware.Auth(jwtService)(middleware.RequireAdmin(userRepo)(next))
@@ -199,6 +202,7 @@ func main() {
 	questionHandler.RegisterRoutes(mux, adminOnly, authOnly)
 	institutionHandler.RegisterRoutes(mux, adminOnly, authOnly)
 	examHandler.RegisterRoutes(mux, adminOnly, authOnly)
+	questionSubmissionHandler.RegisterRoutes(mux, authOnly)
 	mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
 
 	port := os.Getenv("PORT")

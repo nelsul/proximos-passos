@@ -13,6 +13,7 @@ import {
   HelpCircle,
   Building2,
   GraduationCap,
+  ClipboardList,
   X,
 } from "lucide-react";
 
@@ -54,6 +55,11 @@ const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/questions",
     icon: HelpCircle,
     labelKey: "SIDEBAR_QUESTIONS",
+  },
+  {
+    href: "/dashboard/submissions",
+    icon: ClipboardList,
+    labelKey: "SIDEBAR_SUBMISSIONS",
   },
   {
     href: "/dashboard/institutions",
