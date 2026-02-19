@@ -34,6 +34,7 @@ export interface QuestionSubmissionListResponse {
 export interface SubmitAnswerInput {
   question_option_id?: string;
   answer_text?: string;
+  activity_id?: string;
 }
 
 export async function submitAnswer(

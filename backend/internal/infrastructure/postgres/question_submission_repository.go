@@ -157,3 +157,24 @@ func (r *QuestionSubmissionRepository) CountByQuestion(ctx context.Context, ques
 		`SELECT COUNT(*) FROM question_submissions WHERE question_id = $1 AND is_active = true`, questionID).Scan(&count)
 	return count, err
 }
+
+func (r *QuestionSubmissionRepository) ListByActivitySubmission(ctx context.Context, activitySubmissionID int) ([]entity.QuestionSubmission, error) {
+	rows, err := r.pool.Query(ctx,
+		`SELECT `+submissionSelectFields+submissionFromJoins+`
+		 WHERE qs.activity_submission_id = $1 AND qs.is_active = true
+		 ORDER BY qs.submitted_at DESC`, activitySubmissionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []entity.QuestionSubmission
+	for rows.Next() {
+		s, err := scanSubmission(rows)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, *s)
+	}
+	return result, rows.Err()
+}

@@ -48,6 +48,7 @@ func (h *QuestionSubmissionHandler) Submit(w http.ResponseWriter, r *http.Reques
 		UserPublicID:     userPublicID,
 		OptionPublicID:   req.QuestionOptionID,
 		AnswerText:       req.AnswerText,
+		ActivityPublicID: req.ActivityID,
 	}
 
 	sub, err := h.uc.Submit(r.Context(), input)

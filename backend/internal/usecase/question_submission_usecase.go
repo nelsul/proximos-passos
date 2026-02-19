@@ -13,17 +13,20 @@ type QuestionSubmissionUseCase struct {
 	subRepo  repository.QuestionSubmissionRepository
 	qRepo    repository.QuestionRepository
 	userRepo repository.UserRepository
+	actSubUC *ActivitySubmissionUseCase
 }
 
 func NewQuestionSubmissionUseCase(
 	subRepo repository.QuestionSubmissionRepository,
 	qRepo repository.QuestionRepository,
 	userRepo repository.UserRepository,
+	actSubUC *ActivitySubmissionUseCase,
 ) *QuestionSubmissionUseCase {
 	return &QuestionSubmissionUseCase{
 		subRepo:  subRepo,
 		qRepo:    qRepo,
 		userRepo: userRepo,
+		actSubUC: actSubUC,
 	}
 }
 
@@ -32,6 +35,7 @@ type SubmitAnswerInput struct {
 	UserPublicID     string
 	OptionPublicID   *string
 	AnswerText       *string
+	ActivityPublicID *string
 }
 
 func (uc *QuestionSubmissionUseCase) Submit(ctx context.Context, input SubmitAnswerInput) (*entity.QuestionSubmission, error) {
@@ -54,6 +58,15 @@ func (uc *QuestionSubmissionUseCase) Submit(ctx context.Context, input SubmitAns
 	sub := &entity.QuestionSubmission{
 		QuestionID: question.ID,
 		UserID:     user.ID,
+	}
+
+	// Link to activity submission if activity context is provided
+	if input.ActivityPublicID != nil && *input.ActivityPublicID != "" && uc.actSubUC != nil {
+		actSub, err := uc.actSubUC.GetOrCreateSubmission(ctx, *input.ActivityPublicID, input.UserPublicID)
+		if err != nil {
+			return nil, err
+		}
+		sub.ActivitySubmissionID = &actSub.ID
 	}
 
 	if question.Type == "closed_ended" {

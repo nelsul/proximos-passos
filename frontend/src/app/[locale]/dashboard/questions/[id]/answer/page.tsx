@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { Loader2, CheckCircle2, XCircle, ArrowLeft, Send } from "lucide-react";
 import { getQuestion, type QuestionResponse } from "@/lib/questions";
@@ -27,6 +27,8 @@ export default function AnswerQuestionPage({
   const { toast } = useToast();
   const router = useRouter();
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const activityId = searchParams.get("activity") ?? undefined;
   const [question, setQuestion] = useState<QuestionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -67,6 +69,7 @@ export default function AnswerQuestionPage({
           question.type === "closed_ended" ? selectedOption! : undefined,
         answer_text:
           question.type === "open_ended" ? answerText.trim() : undefined,
+        activity_id: activityId,
       });
       setResult(sub);
     } catch {
@@ -97,11 +100,19 @@ export default function AnswerQuestionPage({
   return (
     <div>
       <button
-        onClick={() => router.push(`/${locale}/dashboard/questions`)}
+        onClick={() => {
+          if (activityId) {
+            router.push(`/${locale}/dashboard/activities/${activityId}`);
+          } else {
+            router.push(`/${locale}/dashboard/questions`);
+          }
+        }}
         className="mb-4 inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-heading"
       >
         <ArrowLeft className="h-4 w-4" />
-        {t("SUBMISSION_BACK_TO_QUESTIONS")}
+        {activityId
+          ? t("ACTIVITY_BACK_TO_ACTIVITY")
+          : t("SUBMISSION_BACK_TO_QUESTIONS")}
       </button>
 
       <div className="rounded-lg border border-surface-border bg-surface p-6">

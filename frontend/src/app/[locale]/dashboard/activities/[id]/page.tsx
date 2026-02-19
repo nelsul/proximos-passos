@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   Loader2,
   Clock,
-  AlertTriangle,
   Paperclip,
   Upload,
   Trash2,
@@ -16,6 +15,10 @@ import {
   Image,
   Settings,
   X,
+  Send,
+  CheckCircle2,
+  XCircle,
+  ClockIcon,
 } from "lucide-react";
 import {
   getActivity,
@@ -27,6 +30,17 @@ import {
   type AttachmentResponse,
   type UpdateActivityInput,
 } from "@/lib/activities";
+import {
+  getMyActivitySubmission,
+  submitActivity,
+  updateActivitySubmissionNotes,
+  resubmitActivitySubmission,
+  listSubmissionAttachments,
+  uploadSubmissionAttachment,
+  deleteSubmissionAttachment,
+  type ActivitySubmissionResponse,
+  type SubmissionAttachmentResponse,
+} from "@/lib/activity-submissions";
 import { checkMembership } from "@/lib/groups";
 import { ApiRequestError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -34,6 +48,7 @@ import { InputField } from "@/components/ui/input-field";
 import { LatexText } from "@/components/ui/latex-text";
 import { useToast } from "@/components/ui/toast";
 import { ActivityItems } from "@/components/activities/activity-items";
+import { ActivitySubmissions } from "@/components/activities/activity-submissions";
 
 export default function ActivityDetailPage() {
   const t = useTranslations();
@@ -57,6 +72,20 @@ export default function ActivityDetailPage() {
   // Attachments
   const [uploading, setUploading] = useState(false);
   const [deletingFile, setDeletingFile] = useState<string | null>(null);
+
+  // Submission
+  const [submission, setSubmission] =
+    useState<ActivitySubmissionResponse | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [resubmitting, setResubmitting] = useState(false);
+  const [submissionNotes, setSubmissionNotes] = useState("");
+  const [editingSubNotes, setEditingSubNotes] = useState("");
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [subAttachments, setSubAttachments] = useState<
+    SubmissionAttachmentResponse[]
+  >([]);
+  const [uploadingSubFile, setUploadingSubFile] = useState(false);
+  const [deletingSubFile, setDeletingSubFile] = useState<string | null>(null);
 
   const fetchActivity = useCallback(async () => {
     try {
@@ -84,10 +113,28 @@ export default function ActivityDetailPage() {
         // Not a member — read-only access may still work via backend permission
       }
 
+      // Load user's submission status
+      try {
+        const sub = await getMyActivitySubmission(activityId);
+        if (sub) {
+          setSubmission(sub);
+          setEditingSubNotes(sub.notes ?? "");
+          // Load submission attachments
+          try {
+            const atts = await listSubmissionAttachments(sub.id);
+            setSubAttachments(atts ?? []);
+          } catch {
+            // ignore
+          }
+        }
+      } catch {
+        // ignore — user may not have submitted yet
+      }
+
       setLoading(false);
     }
     load();
-  }, [fetchActivity]);
+  }, [fetchActivity, activityId]);
 
   function openEdit() {
     if (!activity) return;
@@ -98,6 +145,105 @@ export default function ActivityDetailPage() {
     const local = new Date(d.getTime() - offset * 60000);
     setEditDueDate(local.toISOString().slice(0, 16));
     setEditing(true);
+  }
+
+  async function handleSaveSubNotes() {
+    if (!submission || savingNotes) return;
+    setSavingNotes(true);
+    try {
+      const updated = await updateActivitySubmissionNotes(submission.id, {
+        notes: editingSubNotes.trim(),
+      });
+      setSubmission(updated);
+      toast(t("ACTIVITY_SUBMISSION_NOTES_SAVED"));
+    } catch (err) {
+      if (err instanceof ApiRequestError) {
+        toast(t(`ERROR_${err.code}`), "error");
+      } else {
+        toast(t("ERROR_INTERNAL_ERROR"), "error");
+      }
+    } finally {
+      setSavingNotes(false);
+    }
+  }
+
+  async function handleUploadSubAttachment(
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    if (!e.target.files?.[0] || !submission) return;
+    setUploadingSubFile(true);
+    try {
+      await uploadSubmissionAttachment(submission.id, e.target.files[0]);
+      toast(t("ACTIVITY_SUBMISSION_ATTACHMENT_UPLOADED"));
+      const atts = await listSubmissionAttachments(submission.id);
+      setSubAttachments(atts ?? []);
+    } catch (err) {
+      if (err instanceof ApiRequestError) {
+        toast(t(`ERROR_${err.code}`), "error");
+      } else {
+        toast(t("ERROR_INTERNAL_ERROR"), "error");
+      }
+    } finally {
+      setUploadingSubFile(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handleDeleteSubAttachment(fileId: string) {
+    if (!submission) return;
+    setDeletingSubFile(fileId);
+    try {
+      await deleteSubmissionAttachment(submission.id, fileId);
+      toast(t("ACTIVITY_SUBMISSION_ATTACHMENT_DELETED"));
+      setSubAttachments((prev) => prev.filter((a) => a.id !== fileId));
+    } catch (err) {
+      if (err instanceof ApiRequestError) {
+        toast(t(`ERROR_${err.code}`), "error");
+      } else {
+        toast(t("ERROR_INTERNAL_ERROR"), "error");
+      }
+    } finally {
+      setDeletingSubFile(null);
+    }
+  }
+
+  async function handleSubmitActivity() {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const sub = await submitActivity(activityId, {
+        notes: submissionNotes.trim() || undefined,
+      });
+      setSubmission(sub);
+      toast(t("ACTIVITY_SUBMISSION_SUCCESS"));
+    } catch (err) {
+      if (err instanceof ApiRequestError) {
+        toast(t(`ERROR_${err.code}`), "error");
+      } else {
+        toast(t("ERROR_INTERNAL_ERROR"), "error");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleResubmit() {
+    if (!submission || resubmitting) return;
+    setResubmitting(true);
+    try {
+      const updated = await resubmitActivitySubmission(submission.id);
+      setSubmission(updated);
+      setEditingSubNotes(updated.notes ?? "");
+      toast(t("ACTIVITY_SUBMISSION_RESUBMIT_SUCCESS"));
+    } catch (err) {
+      if (err instanceof ApiRequestError) {
+        toast(t(`ERROR_${err.code}`), "error");
+      } else {
+        toast(t("ERROR_INTERNAL_ERROR"), "error");
+      }
+    } finally {
+      setResubmitting(false);
+    }
   }
 
   async function handleSave() {
@@ -185,15 +331,6 @@ export default function ActivityDetailPage() {
     });
   }
 
-  function isOverdue(dateStr: string): boolean {
-    return new Date(dateStr).getTime() < Date.now();
-  }
-
-  function isDueSoon(dateStr: string): boolean {
-    const diff = new Date(dateStr).getTime() - Date.now();
-    return diff > 0 && diff < 48 * 60 * 60 * 1000;
-  }
-
   function formatFileSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -214,9 +351,6 @@ export default function ActivityDetailPage() {
       </div>
     );
   }
-
-  const overdue = isOverdue(activity.due_date);
-  const dueSoon = isDueSoon(activity.due_date);
 
   return (
     <div className="space-y-6">
@@ -273,28 +407,10 @@ export default function ActivityDetailPage() {
         </div>
 
         <div className="mt-4 flex items-center gap-2">
-          {overdue ? (
-            <>
-              <AlertTriangle className="h-4 w-4 text-error" />
-              <span className="text-sm font-medium text-error">
-                {t("ACTIVITY_OVERDUE")} — {formatDueDate(activity.due_date)}
-              </span>
-            </>
-          ) : dueSoon ? (
-            <>
-              <AlertTriangle className="h-4 w-4 text-warning" />
-              <span className="text-sm font-medium text-warning">
-                {formatDueDate(activity.due_date)}
-              </span>
-            </>
-          ) : (
-            <>
-              <Clock className="h-4 w-4 text-muted" />
-              <span className="text-sm text-muted">
-                {formatDueDate(activity.due_date)}
-              </span>
-            </>
-          )}
+          <Clock className="h-4 w-4 text-muted" />
+          <span className="text-sm text-muted">
+            {formatDueDate(activity.due_date)}
+          </span>
         </div>
       </div>
 
@@ -375,6 +491,221 @@ export default function ActivityDetailPage() {
 
       {/* Activity Items */}
       <ActivityItems activityId={activityId} isAdmin={isGroupAdmin} />
+
+      {/* Admin: Student Submissions */}
+      {isGroupAdmin && <ActivitySubmissions activityId={activityId} />}
+
+      {/* Activity Submission */}
+      {!isGroupAdmin && (
+        <div className="rounded-lg border border-surface-border bg-surface p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-heading">
+            <Send className="h-5 w-5 text-secondary" />
+            {t("ACTIVITY_SUBMISSION_TITLE")}
+          </h2>
+
+          {submission ? (
+            <div className="space-y-3">
+              <div
+                className={`flex items-center gap-2 rounded-lg p-3 ${
+                  submission.status === "approved"
+                    ? "border border-green-200 bg-green-50 text-green-800"
+                    : submission.status === "reproved"
+                      ? "border border-red-200 bg-red-50 text-red-800"
+                      : "border border-amber-200 bg-amber-50 text-amber-800"
+                }`}
+              >
+                {submission.status === "approved" ? (
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                ) : submission.status === "reproved" ? (
+                  <XCircle className="h-5 w-5 text-red-600" />
+                ) : (
+                  <ClockIcon className="h-5 w-5 text-amber-600" />
+                )}
+                <span className="font-medium">
+                  {t(
+                    `ACTIVITY_SUBMISSION_STATUS_${submission.status.toUpperCase()}` as Parameters<
+                      typeof t
+                    >[0],
+                  )}
+                </span>
+                <span className="ml-auto text-sm">
+                  {new Date(submission.submitted_at).toLocaleDateString(
+                    undefined,
+                    {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    },
+                  )}
+                </span>
+              </div>
+
+              {/* Editable notes when pending or reproved, read-only when approved */}
+              {submission.status === "pending" ||
+              submission.status === "reproved" ? (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-heading">
+                    {t("ACTIVITY_SUBMISSION_NOTES")}
+                  </label>
+                  <textarea
+                    value={editingSubNotes}
+                    onChange={(e) => setEditingSubNotes(e.target.value)}
+                    rows={3}
+                    placeholder={t("ACTIVITY_SUBMISSION_NOTES_PLACEHOLDER")}
+                    className="w-full rounded-lg border border-surface-border bg-background p-3 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      loading={savingNotes}
+                      onClick={handleSaveSubNotes}
+                      className="w-auto"
+                    >
+                      {t("ACTIVITY_SUBMISSION_SAVE_NOTES")}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                submission.notes && (
+                  <div className="text-sm text-muted">
+                    <span className="font-medium text-heading">
+                      {t("ACTIVITY_SUBMISSION_NOTES")}:
+                    </span>{" "}
+                    {submission.notes}
+                  </div>
+                )
+              )}
+
+              {submission.feedback_notes && (
+                <div className="rounded-lg border border-surface-border bg-background p-3 text-sm">
+                  <span className="font-medium text-heading">
+                    {t("ACTIVITY_SUBMISSION_FEEDBACK")}:
+                  </span>{" "}
+                  <span className="text-body">{submission.feedback_notes}</span>
+                </div>
+              )}
+
+              {/* Submission attachments (visible always, editable when pending or reproved) */}
+              <div className="rounded-lg border border-surface-border bg-background p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold text-heading">
+                    <Paperclip className="h-4 w-4 text-secondary" />
+                    {t("ACTIVITY_SUBMISSION_ATTACHMENTS_TITLE")}
+                  </h3>
+                  {(submission.status === "pending" ||
+                    submission.status === "reproved") && (
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+                        className="hidden"
+                        onChange={handleUploadSubAttachment}
+                        disabled={uploadingSubFile}
+                      />
+                      <span className="inline-flex items-center gap-2 rounded-lg border border-surface-border px-3 py-1.5 text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors">
+                        {uploadingSubFile ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Upload className="h-3 w-3" />
+                        )}
+                        {t("ACTIVITY_SUBMISSION_UPLOAD_ATTACHMENT")}
+                      </span>
+                    </label>
+                  )}
+                </div>
+
+                {subAttachments.length === 0 ? (
+                  <p className="py-4 text-center text-xs text-muted">
+                    {t("ACTIVITY_SUBMISSION_ATTACHMENTS_EMPTY")}
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {subAttachments.map((att) => (
+                      <div
+                        key={att.id}
+                        className="flex items-center justify-between rounded-lg border border-surface-border bg-surface p-2.5"
+                      >
+                        <a
+                          href={att.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex min-w-0 flex-1 items-center gap-3 hover:text-secondary transition-colors"
+                        >
+                          {getFileIcon(att.content_type)}
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-heading truncate">
+                              {att.filename}
+                            </p>
+                            <p className="text-xs text-muted">
+                              {formatFileSize(att.size_bytes)}
+                            </p>
+                          </div>
+                        </a>
+                        {(submission.status === "pending" ||
+                          submission.status === "reproved") && (
+                          <button
+                            onClick={() => handleDeleteSubAttachment(att.id)}
+                            disabled={deletingSubFile === att.id}
+                            className="ml-3 shrink-0 rounded-lg p-1.5 text-muted hover:text-red-400 hover:bg-red-600/10 transition-colors disabled:opacity-50"
+                          >
+                            {deletingSubFile === att.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Resubmit button when reproved */}
+              {submission.status === "reproved" && (
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    loading={resubmitting}
+                    onClick={handleResubmit}
+                    className="w-auto"
+                  >
+                    <Send className="h-4 w-4" />
+                    {t("ACTIVITY_SUBMISSION_RESUBMIT")}
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted">
+                {t("ACTIVITY_SUBMISSION_DESCRIPTION")}
+              </p>
+              <textarea
+                value={submissionNotes}
+                onChange={(e) => setSubmissionNotes(e.target.value)}
+                rows={3}
+                placeholder={t("ACTIVITY_SUBMISSION_NOTES_PLACEHOLDER")}
+                className="w-full rounded-lg border border-surface-border bg-background p-3 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
+              />
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  loading={submitting}
+                  onClick={handleSubmitActivity}
+                  className="w-auto"
+                >
+                  <Send className="h-4 w-4" />
+                  {t("ACTIVITY_SUBMISSION_SUBMIT")}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Edit Modal */}
       {editing && (

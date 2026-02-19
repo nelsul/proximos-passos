@@ -9,6 +9,7 @@ import (
 type SubmitAnswerRequest struct {
 	QuestionOptionID *string `json:"question_option_id,omitempty"`
 	AnswerText       *string `json:"answer_text,omitempty"`
+	ActivityID       *string `json:"activity_id,omitempty"`
 }
 
 type QuestionSubmissionResponse struct {

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
+import Link from "next/link";
 import {
   DndContext,
   closestCenter,
@@ -33,6 +35,9 @@ import {
   X,
   Search,
   Check,
+  PenLine,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import {
   listActivityItems,
@@ -49,6 +54,10 @@ import { listHandouts } from "@/lib/handouts";
 import { listExerciseLists } from "@/lib/open-exercise-lists";
 import { listExams } from "@/lib/exams";
 import { ApiRequestError } from "@/lib/api";
+import {
+  getQuestionStatuses,
+  type QuestionStatusResponse,
+} from "@/lib/activity-submissions";
 import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/ui/input-field";
 import { LatexText } from "@/components/ui/latex-text";
@@ -85,6 +94,9 @@ export function ActivityItems({ activityId, isAdmin }: ActivityItemsProps) {
     null,
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [questionStatuses, setQuestionStatuses] = useState<
+    Record<string, QuestionStatusResponse>
+  >({});
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -105,6 +117,21 @@ export function ActivityItems({ activityId, isAdmin }: ActivityItemsProps) {
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
+
+  // Fetch question answer statuses for non-admin users
+  useEffect(() => {
+    if (isAdmin) return;
+    getQuestionStatuses(activityId)
+      .then((statuses) => {
+        if (!statuses) return;
+        const map: Record<string, QuestionStatusResponse> = {};
+        for (const s of statuses) {
+          map[s.question_id] = s;
+        }
+        setQuestionStatuses(map);
+      })
+      .catch(() => {});
+  }, [activityId, isAdmin, items]);
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -208,7 +235,18 @@ export function ActivityItems({ activityId, isAdmin }: ActivityItemsProps) {
       ) : (
         <div className="space-y-2">
           {items.map((item, idx) => (
-            <ItemRow key={item.id} item={item} index={idx} t={t} />
+            <ItemRow
+              key={item.id}
+              item={item}
+              index={idx}
+              activityId={activityId}
+              questionStatus={
+                item.question_id
+                  ? questionStatuses[item.question_id]
+                  : undefined
+              }
+              t={t}
+            />
           ))}
         </div>
       )}
@@ -344,12 +382,15 @@ function SortableItem({
 interface ItemRowProps {
   item: ActivityItemResponse;
   index: number;
+  activityId: string;
+  questionStatus?: QuestionStatusResponse;
   t: ReturnType<typeof useTranslations>;
 }
 
-function ItemRow({ item, index, t }: ItemRowProps) {
+function ItemRow({ item, index, activityId, questionStatus, t }: ItemRowProps) {
   const Icon = TYPE_ICONS[item.type] ?? ListChecks;
   const color = TYPE_COLORS[item.type] ?? "text-muted";
+  const locale = useLocale();
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-surface-border bg-background p-3">
@@ -371,6 +412,40 @@ function ItemRow({ item, index, t }: ItemRowProps) {
           />
         )}
       </div>
+
+      {item.type === "question" && item.question_id && questionStatus && (
+        <span
+          className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+            questionStatus.passed
+              ? "bg-green-500/10 text-green-400 border border-green-500/20"
+              : "bg-red-500/10 text-red-400 border border-red-500/20"
+          }`}
+          title={
+            questionStatus.passed
+              ? t("ACTIVITY_ITEM_QUESTION_CORRECT")
+              : t("ACTIVITY_ITEM_QUESTION_INCORRECT")
+          }
+        >
+          {questionStatus.passed ? (
+            <CheckCircle2 className="h-3 w-3" />
+          ) : (
+            <XCircle className="h-3 w-3" />
+          )}
+          {questionStatus.passed
+            ? t("ACTIVITY_ITEM_QUESTION_CORRECT")
+            : t("ACTIVITY_ITEM_QUESTION_INCORRECT")}
+        </span>
+      )}
+
+      {item.type === "question" && item.question_id && (
+        <Link
+          href={`/${locale}/dashboard/questions/${item.question_id}/answer?activity=${activityId}`}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-surface-border px-2.5 py-1 text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors"
+        >
+          <PenLine className="h-3.5 w-3.5" />
+          {t("ACTIVITY_ITEM_ANSWER")}
+        </Link>
+      )}
 
       <span className="shrink-0 rounded-full bg-surface-light px-2 py-0.5 text-[10px] font-medium text-muted uppercase">
         {t(

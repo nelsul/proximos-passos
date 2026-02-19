@@ -13,4 +13,5 @@ type QuestionSubmissionRepository interface {
 	CountByUser(ctx context.Context, userID int, statement string) (int, error)
 	ListByQuestion(ctx context.Context, questionID int, limit, offset int) ([]entity.QuestionSubmission, error)
 	CountByQuestion(ctx context.Context, questionID int) (int, error)
+	ListByActivitySubmission(ctx context.Context, activitySubmissionID int) ([]entity.QuestionSubmission, error)
 }
