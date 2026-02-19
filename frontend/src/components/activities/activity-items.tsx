@@ -132,7 +132,7 @@ export function ActivityItems({ activityId, isAdmin }: ActivityItemsProps) {
         setQuestionStatuses(map);
       })
       .catch(() => {});
-  }, [activityId, isAdmin, items]);
+  }, [activityId, isAdmin]);
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;

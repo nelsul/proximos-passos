@@ -124,9 +124,9 @@ export default function AnswerQuestionPage({
               : t("QUESTION_TYPE_CLOSED_ENDED")}
           </span>
           {question.exam && (
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary">
-              {question.exam.institution} — {question.exam.title} (
-              {question.exam.year})
+            <span className="rounded-full border border-surface-border bg-surface-light px-2 py-0.5 text-muted">
+              {question.exam.institution_acronym || question.exam.institution} ·{" "}
+              {question.exam.title} ({question.exam.year})
             </span>
           )}
           {question.topics.map((topic) => (
@@ -189,9 +189,10 @@ export default function AnswerQuestionPage({
               const showResult = result != null;
               const isCorrectOption = opt.is_correct;
               const wasSelected = result?.option_selected?.id === opt.id;
+              const revealCorrect = showResult && result.passed;
 
               let borderClass = "border-surface-border";
-              if (showResult && isCorrectOption) {
+              if (revealCorrect && isCorrectOption) {
                 borderClass = "border-green-400 bg-green-50";
               } else if (showResult && wasSelected && !isCorrectOption) {
                 borderClass = "border-red-400 bg-red-50";
@@ -214,7 +215,7 @@ export default function AnswerQuestionPage({
                     className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
                       !showResult && isSelected
                         ? "border-secondary bg-secondary text-white"
-                        : showResult && isCorrectOption
+                        : revealCorrect && isCorrectOption
                           ? "border-green-500 bg-green-500 text-white"
                           : showResult && wasSelected && !isCorrectOption
                             ? "border-red-500 bg-red-500 text-white"
@@ -234,7 +235,7 @@ export default function AnswerQuestionPage({
                       />
                     ))}
                   </div>
-                  {showResult && isCorrectOption && (
+                  {revealCorrect && isCorrectOption && (
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
                   )}
                   {showResult && wasSelected && !isCorrectOption && (

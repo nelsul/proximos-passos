@@ -81,9 +81,11 @@ function renderLatex(input: string): string {
   result = result.replace(/\\textbf\{([^}]*)}/g, "<strong>$1</strong>");
   result = result.replace(/\\textit\{([^}]*)}/g, "<em>$1</em>");
 
-  // 5. Line breaks: explicit \\ and newlines
+  // 5. Line breaks: explicit \\ becomes <br>; single \n collapses to a space;
+  //    double \n\n (paragraph break) becomes <br><br>
   result = result.replace(/\\\\/g, "<br>");
-  result = result.replace(/\n/g, "<br>");
+  result = result.replace(/\n\n/g, "<br><br>");
+  result = result.replace(/\n/g, " ");
 
   // 6. Restore protected KaTeX blocks
   for (let i = 0; i < protected_.length; i++) {

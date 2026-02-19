@@ -16,10 +16,11 @@ type Question struct {
 	UpdatedAt          time.Time
 
 	// Joined exam fields
-	ExamPublicID    string
-	ExamTitle       string
-	ExamYear        int
-	ExamInstitution string
+	ExamPublicID           string
+	ExamTitle              string
+	ExamYear               int
+	ExamInstitution        string
+	ExamInstitutionAcronym string
 
 	Topics  []TopicRef
 	Images  []QuestionImage

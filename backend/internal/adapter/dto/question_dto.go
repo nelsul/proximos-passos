@@ -48,10 +48,11 @@ type QuestionOptionResponse struct {
 }
 
 type QuestionExamResponse struct {
-	PublicID    string `json:"id"`
-	Title       string `json:"title"`
-	Year        int    `json:"year"`
-	Institution string `json:"institution"`
+	PublicID           string `json:"id"`
+	Title              string `json:"title"`
+	Year               int    `json:"year"`
+	Institution        string `json:"institution"`
+	InstitutionAcronym string `json:"institution_acronym"`
 }
 
 type QuestionResponse struct {
@@ -125,10 +126,11 @@ func QuestionToResponse(q *entity.Question) QuestionResponse {
 	var exam *QuestionExamResponse
 	if q.ExamPublicID != "" {
 		exam = &QuestionExamResponse{
-			PublicID:    q.ExamPublicID,
-			Title:       q.ExamTitle,
-			Year:        q.ExamYear,
-			Institution: q.ExamInstitution,
+			PublicID:           q.ExamPublicID,
+			Title:              q.ExamTitle,
+			Year:               q.ExamYear,
+			Institution:        q.ExamInstitution,
+			InstitutionAcronym: q.ExamInstitutionAcronym,
 		}
 	}
 

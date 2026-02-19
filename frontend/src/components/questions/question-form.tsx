@@ -665,7 +665,7 @@ export function QuestionForm({
               className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:text-heading"
             >
               <ArrowLeft className="h-4 w-4" />
-              {t("QUESTION_PRINT_BACK")}
+              {t("QUESTION_BACK")}
             </button>
             <h1 className="text-xl font-bold text-heading">
               {isCreate ? t("QUESTION_CREATE_TITLE") : t("QUESTION_EDIT_TITLE")}
@@ -1221,9 +1221,20 @@ export function QuestionForm({
           {/* ---------- Preview column ---------- */}
           {showPreview && (
             <div className="rounded-xl border border-surface-border bg-white p-6 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
-              <div className="print-header mb-4">
-                <div className="print-header-line" />
-                <h2 className="print-title">{t("QUESTION_PRINT_TITLE")}</h2>
+              <div className="mb-4">
+                <div
+                  className="mb-2 h-0.5 rounded-full"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #cfa156 0%, #dbb778 50%, #cfa156 100%)",
+                  }}
+                />
+                <h2
+                  className="text-sm font-bold tracking-tight"
+                  style={{ color: "#0f2e2e" }}
+                >
+                  {t("QUESTION_PREVIEW_TITLE")}
+                </h2>
               </div>
 
               <StatementRenderer
@@ -1288,7 +1299,7 @@ export function QuestionForm({
               {qType === "open_ended" && expectedAnswer.trim() && (
                 <div className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
                   <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">
-                    {t("QUESTION_PRINT_EXPECTED_ANSWER")}
+                    {t("QUESTION_PREVIEW_EXPECTED_ANSWER")}
                   </p>
                   <LatexText
                     text={expectedAnswer}
@@ -1298,8 +1309,14 @@ export function QuestionForm({
                 </div>
               )}
 
-              <div className="print-footer mt-6">
-                <div className="print-footer-line" />
+              <div className="mt-6 pt-3">
+                <div
+                  className="h-0.5 rounded-full"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #cfa156 0%, #dbb778 50%, #cfa156 100%)",
+                  }}
+                />
               </div>
             </div>
           )}

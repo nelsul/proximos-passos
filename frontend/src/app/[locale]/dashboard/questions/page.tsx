@@ -11,7 +11,6 @@ import {
   Pencil,
   X,
   ImageIcon,
-  Eye,
   Send,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -311,8 +310,9 @@ export default function QuestionsPage() {
                     {q.exam && (
                       <>
                         <span>·</span>
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary">
-                          {q.exam.institution} — {q.exam.title} ({q.exam.year})
+                        <span className="rounded-full border border-surface-border bg-surface-light px-2 py-0.5 text-muted">
+                          {q.exam.institution_acronym || q.exam.institution} ·{" "}
+                          {q.exam.title} ({q.exam.year})
                         </span>
                       </>
                     )}
@@ -365,18 +365,6 @@ export default function QuestionsPage() {
                     className="rounded-lg p-2 text-muted transition-colors hover:bg-secondary/10 hover:text-secondary"
                   >
                     <Send className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() =>
-                      window.open(
-                        `/${locale}/print/questions/${q.id}`,
-                        "_blank",
-                      )
-                    }
-                    title={t("QUESTION_PRINT_PREVIEW")}
-                    className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
-                  >
-                    <Eye className="h-4 w-4" />
                   </button>
                   {isAdmin && (
                     <button

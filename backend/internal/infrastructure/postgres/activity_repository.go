@@ -278,31 +278,19 @@ func (r *ActivityRepository) GetAttachment(ctx context.Context, activityID int, 
 // ==========================================
 
 func (r *ActivityRepository) CreateItem(ctx context.Context, item *entity.ActivityItem) error {
-	// Get next order_index for this activity
-	var maxIdx *int
-	err := r.pool.QueryRow(ctx,
-		`SELECT MAX(order_index) FROM activity_items WHERE activity_id = $1`,
-		item.ActivityID,
-	).Scan(&maxIdx)
-	if err != nil {
-		return err
-	}
-
-	nextIdx := 0
-	if maxIdx != nil {
-		nextIdx = *maxIdx + 1
-	}
-	item.OrderIndex = nextIdx
-
 	return r.pool.QueryRow(ctx,
 		`INSERT INTO activity_items (activity_id, order_index, title, description,
 		 question_id, video_lesson_id, handout_id, open_exercise_list_id, simulated_exam_id)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-		 RETURNING id, public_id, type`,
-		item.ActivityID, item.OrderIndex, item.Title, item.Description,
+		 VALUES (
+		     $1,
+		     COALESCE((SELECT MAX(order_index) + 1 FROM activity_items WHERE activity_id = $1), 0),
+		     $2, $3, $4, $5, $6, $7, $8
+		 )
+		 RETURNING id, public_id, type, order_index`,
+		item.ActivityID, item.Title, item.Description,
 		item.QuestionID, item.VideoLessonID, item.HandoutID,
 		item.OpenExerciseListID, item.SimulatedExamID,
-	).Scan(&item.ID, &item.PublicID, &item.Type)
+	).Scan(&item.ID, &item.PublicID, &item.Type, &item.OrderIndex)
 }
 
 func (r *ActivityRepository) GetItemByPublicID(ctx context.Context, publicID string) (*entity.ActivityItem, error) {
@@ -335,14 +323,9 @@ func (r *ActivityRepository) GetItemByPublicID(ctx context.Context, publicID str
 func (r *ActivityRepository) UpdateItem(ctx context.Context, item *entity.ActivityItem) error {
 	_, err := r.pool.Exec(ctx,
 		`UPDATE activity_items
-		 SET title = $1, description = $2,
-		     question_id = $3, video_lesson_id = $4, handout_id = $5,
-		     open_exercise_list_id = $6, simulated_exam_id = $7
-		 WHERE id = $8`,
-		item.Title, item.Description,
-		item.QuestionID, item.VideoLessonID, item.HandoutID,
-		item.OpenExerciseListID, item.SimulatedExamID,
-		item.ID,
+		 SET title = $1, description = $2
+		 WHERE id = $3`,
+		item.Title, item.Description, item.ID,
 	)
 	return err
 }

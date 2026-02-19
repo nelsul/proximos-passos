@@ -28,6 +28,7 @@ export interface QuestionExamResponse {
   title: string;
   year: number;
   institution: string;
+  institution_acronym?: string;
 }
 
 export interface QuestionResponse {

@@ -132,13 +132,13 @@ func (r *QuestionRepository) Create(ctx context.Context, q *entity.Question, top
 
 func (r *QuestionRepository) GetByPublicID(ctx context.Context, publicID string) (*entity.Question, error) {
 	var q entity.Question
-	var examPublicID, examTitle, examInstitution *string
+	var examPublicID, examTitle, examInstitution, examInstitutionAcronym *string
 	var examYear *int
 	err := r.pool.QueryRow(ctx,
 		`SELECT q.id, q.public_id, q.type, q.statement,
 		        q.expected_answer_text, q.passing_score, q.exam_id,
 		        q.is_active, q.created_by_id, q.created_at, q.updated_at,
-		        e.public_id, e.title, e.year, i.name
+		        e.public_id, e.title, e.year, i.name, i.acronym
 		 FROM questions q
 		 LEFT JOIN exams e ON e.id = q.exam_id AND e.is_active = true
 		 LEFT JOIN institutions i ON i.id = e.institution_id AND i.is_active = true
@@ -147,7 +147,7 @@ func (r *QuestionRepository) GetByPublicID(ctx context.Context, publicID string)
 	).Scan(&q.ID, &q.PublicID, &q.Type, &q.Statement,
 		&q.ExpectedAnswerText, &q.PassingScore, &q.ExamID,
 		&q.IsActive, &q.CreatedByID, &q.CreatedAt, &q.UpdatedAt,
-		&examPublicID, &examTitle, &examYear, &examInstitution)
+		&examPublicID, &examTitle, &examYear, &examInstitution, &examInstitutionAcronym)
 
 	if examPublicID != nil {
 		q.ExamPublicID = *examPublicID
@@ -159,6 +159,9 @@ func (r *QuestionRepository) GetByPublicID(ctx context.Context, publicID string)
 		}
 		if examInstitution != nil {
 			q.ExamInstitution = *examInstitution
+		}
+		if examInstitutionAcronym != nil {
+			q.ExamInstitutionAcronym = *examInstitutionAcronym
 		}
 	}
 
@@ -294,7 +297,7 @@ func (r *QuestionRepository) List(ctx context.Context, limit, offset int, filter
 		`SELECT q.id, q.public_id, q.type, q.statement,
 		        q.expected_answer_text, q.passing_score, q.exam_id,
 		        q.is_active, q.created_by_id, q.created_at, q.updated_at,
-		        e.public_id, e.title, e.year, i.name
+		        e.public_id, e.title, e.year, i.name, i.acronym
 		 FROM questions q
 		 LEFT JOIN exams e ON e.id = q.exam_id AND e.is_active = true
 		 LEFT JOIN institutions i ON i.id = e.institution_id AND i.is_active = true
@@ -314,12 +317,12 @@ func (r *QuestionRepository) List(ctx context.Context, limit, offset int, filter
 	var questions []entity.Question
 	for rows.Next() {
 		var q entity.Question
-		var examPublicID, examTitle, examInstitution *string
+		var examPublicID, examTitle, examInstitution, examInstitutionAcronym *string
 		var examYear *int
 		if err := rows.Scan(&q.ID, &q.PublicID, &q.Type, &q.Statement,
 			&q.ExpectedAnswerText, &q.PassingScore, &q.ExamID,
 			&q.IsActive, &q.CreatedByID, &q.CreatedAt, &q.UpdatedAt,
-			&examPublicID, &examTitle, &examYear, &examInstitution); err != nil {
+			&examPublicID, &examTitle, &examYear, &examInstitution, &examInstitutionAcronym); err != nil {
 			return nil, err
 		}
 		if examPublicID != nil {
@@ -332,6 +335,9 @@ func (r *QuestionRepository) List(ctx context.Context, limit, offset int, filter
 			}
 			if examInstitution != nil {
 				q.ExamInstitution = *examInstitution
+			}
+			if examInstitutionAcronym != nil {
+				q.ExamInstitutionAcronym = *examInstitutionAcronym
 			}
 		}
 		questions = append(questions, q)
