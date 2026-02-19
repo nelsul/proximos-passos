@@ -22,6 +22,7 @@ import {
 } from "@/components/topics/topic-drag-context";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { useIsAdmin } from "@/contexts/user-context";
 
 export default function TopicDetailPage() {
   return (
@@ -35,6 +36,7 @@ function TopicDetailContent() {
   const t = useTranslations();
   const router = useRouter();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
   const params = useParams<{ id: string }>();
   const topicId = params.id;
   const { draggedTopic, removedChildId, notifyMoved, clearMoved, endDrag } =
@@ -233,22 +235,24 @@ function TopicDetailContent() {
               <p className="mt-2 text-sm text-muted">{topic.description}</p>
             )}
           </div>
-          <div className="flex shrink-0 gap-2">
-            <button
-              onClick={() => setShowEdit(true)}
-              className="rounded-lg border border-surface-border p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
-              title={t("TOPIC_EDIT_TITLE")}
-            >
-              <Edit2 className="h-4 w-4" />
-            </button>
-            <button
-              onClick={handleDeleteClick}
-              className="rounded-lg border border-surface-border p-2 text-muted transition-colors hover:bg-error/10 hover:text-error"
-              title={t("TOPIC_DELETE_BUTTON")}
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
+          {isAdmin && (
+            <div className="flex shrink-0 gap-2">
+              <button
+                onClick={() => setShowEdit(true)}
+                className="rounded-lg border border-surface-border p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
+                title={t("TOPIC_EDIT_TITLE")}
+              >
+                <Edit2 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                className="rounded-lg border border-surface-border p-2 text-muted transition-colors hover:bg-error/10 hover:text-error"
+                title={t("TOPIC_DELETE_BUTTON")}
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -257,10 +261,12 @@ function TopicDetailContent() {
         <h2 className="text-lg font-semibold text-heading">
           {t("TOPIC_CHILDREN_TITLE")}
         </h2>
-        <Button size="sm" onClick={() => setShowCreate(true)}>
-          <Plus className="h-4 w-4" />
-          {t("TOPIC_CREATE_BUTTON")}
-        </Button>
+        {isAdmin && (
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4" />
+            {t("TOPIC_CREATE_BUTTON")}
+          </Button>
+        )}
       </div>
 
       {children.length === 0 ? (

@@ -31,7 +31,9 @@ import { checkMembership } from "@/lib/groups";
 import { ApiRequestError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/ui/input-field";
+import { LatexText } from "@/components/ui/latex-text";
 import { useToast } from "@/components/ui/toast";
+import { ActivityItems } from "@/components/activities/activity-items";
 
 export default function ActivityDetailPage() {
   const t = useTranslations();
@@ -241,9 +243,11 @@ export default function ActivityDetailPage() {
               {activity.title}
             </h1>
             {activity.description && (
-              <p className="mt-2 text-sm text-muted whitespace-pre-wrap">
-                {activity.description}
-              </p>
+              <LatexText
+                text={activity.description}
+                as="div"
+                className="mt-2 text-sm text-muted whitespace-pre-wrap"
+              />
             )}
           </div>
           {isGroupAdmin && (
@@ -369,6 +373,9 @@ export default function ActivityDetailPage() {
         )}
       </div>
 
+      {/* Activity Items */}
+      <ActivityItems activityId={activityId} isAdmin={isGroupAdmin} />
+
       {/* Edit Modal */}
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -404,6 +411,9 @@ export default function ActivityDetailPage() {
                   rows={3}
                   className="w-full rounded-lg border border-surface-border bg-surface px-4 py-2 text-sm text-body placeholder-muted outline-none focus:border-secondary"
                 />
+                <p className="mt-1 text-xs text-muted">
+                  {t("QUESTION_LATEX_HINT")}
+                </p>
               </div>
 
               <div>

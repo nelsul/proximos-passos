@@ -27,3 +27,33 @@ type ActivityAttachment struct {
 	URL          string
 	CreatedAt    time.Time
 }
+
+type ActivityItemType string
+
+const (
+	ActivityItemTypeQuestion         ActivityItemType = "question"
+	ActivityItemTypeVideoLesson      ActivityItemType = "video_lesson"
+	ActivityItemTypeHandout          ActivityItemType = "handout"
+	ActivityItemTypeOpenExerciseList ActivityItemType = "open_exercise_list"
+	ActivityItemTypeSimulatedExam    ActivityItemType = "simulated_exam"
+)
+
+type ActivityItem struct {
+	ID                       int
+	PublicID                 string
+	ActivityID               int
+	OrderIndex               int
+	Title                    string
+	Description              *string
+	Type                     ActivityItemType
+	QuestionID               *int
+	VideoLessonID            *int
+	HandoutID                *int
+	OpenExerciseListID       *int
+	SimulatedExamID          *int
+	QuestionPublicID         *string
+	VideoLessonPublicID      *string
+	HandoutPublicID          *string
+	OpenExerciseListPublicID *string
+	SimulatedExamPublicID    *string
+}

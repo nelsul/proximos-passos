@@ -22,13 +22,13 @@ func NewExamHandler(uc *usecase.ExamUseCase, qRepo repository.QuestionRepository
 	return &ExamHandler{uc: uc, qRepo: qRepo}
 }
 
-func (h *ExamHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
-	mux.Handle("POST /exams", mw(http.HandlerFunc(h.Create)))
-	mux.Handle("GET /exams", mw(http.HandlerFunc(h.List)))
-	mux.Handle("GET /exams/{id}", mw(http.HandlerFunc(h.GetByID)))
-	mux.Handle("GET /exams/{id}/details", mw(http.HandlerFunc(h.GetDetails)))
-	mux.Handle("PUT /exams/{id}", mw(http.HandlerFunc(h.Update)))
-	mux.Handle("DELETE /exams/{id}", mw(http.HandlerFunc(h.Delete)))
+func (h *ExamHandler) RegisterRoutes(mux *http.ServeMux, adminMW, authMW func(http.Handler) http.Handler) {
+	mux.Handle("POST /exams", adminMW(http.HandlerFunc(h.Create)))
+	mux.Handle("GET /exams", authMW(http.HandlerFunc(h.List)))
+	mux.Handle("GET /exams/{id}", authMW(http.HandlerFunc(h.GetByID)))
+	mux.Handle("GET /exams/{id}/details", authMW(http.HandlerFunc(h.GetDetails)))
+	mux.Handle("PUT /exams/{id}", adminMW(http.HandlerFunc(h.Update)))
+	mux.Handle("DELETE /exams/{id}", adminMW(http.HandlerFunc(h.Delete)))
 }
 
 // Create godoc

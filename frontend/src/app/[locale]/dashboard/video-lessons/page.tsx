@@ -23,10 +23,12 @@ import { EditVideoLessonModal } from "@/components/video-lessons/edit-video-less
 import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { useIsAdmin } from "@/contexts/user-context";
 
 export default function VideoLessonsPage() {
   const t = useTranslations();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
   const [lessons, setLessons] = useState<VideoLessonResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -123,10 +125,12 @@ export default function VideoLessonsPage() {
             {t("VIDEO_LESSONS_SUBTITLE")}
           </p>
         </div>
-        <Button size="sm" onClick={() => setShowCreate(true)}>
-          <Plus className="h-4 w-4" />
-          {t("VIDEO_LESSON_CREATE_BUTTON")}
-        </Button>
+        {isAdmin && (
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4" />
+            {t("VIDEO_LESSON_CREATE_BUTTON")}
+          </Button>
+        )}
       </div>
 
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -242,19 +246,23 @@ export default function VideoLessonsPage() {
                       <ExternalLink className="h-4 w-4" />
                     </a>
                   )}
-                  <button
-                    onClick={() => setEditingLesson(lesson)}
-                    className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(lesson.id)}
-                    disabled={deletingId === lesson.id}
-                    className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setEditingLesson(lesson)}
+                      className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDelete(lesson.id)}
+                      disabled={deletingId === lesson.id}
+                      className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

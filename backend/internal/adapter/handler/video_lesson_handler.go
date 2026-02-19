@@ -21,13 +21,13 @@ func NewVideoLessonHandler(uc *usecase.VideoLessonUseCase) *VideoLessonHandler {
 	return &VideoLessonHandler{uc: uc}
 }
 
-func (h *VideoLessonHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
-	mux.Handle("POST /video-lessons", mw(http.HandlerFunc(h.Create)))
-	mux.Handle("GET /video-lessons", mw(http.HandlerFunc(h.List)))
-	mux.Handle("GET /video-lessons/{id}", mw(http.HandlerFunc(h.GetByID)))
-	mux.Handle("PUT /video-lessons/{id}", mw(http.HandlerFunc(h.Update)))
-	mux.Handle("POST /video-lessons/{id}/file", mw(http.HandlerFunc(h.ReplaceFile)))
-	mux.Handle("DELETE /video-lessons/{id}", mw(http.HandlerFunc(h.Delete)))
+func (h *VideoLessonHandler) RegisterRoutes(mux *http.ServeMux, adminMW, authMW func(http.Handler) http.Handler) {
+	mux.Handle("POST /video-lessons", adminMW(http.HandlerFunc(h.Create)))
+	mux.Handle("GET /video-lessons", authMW(http.HandlerFunc(h.List)))
+	mux.Handle("GET /video-lessons/{id}", authMW(http.HandlerFunc(h.GetByID)))
+	mux.Handle("PUT /video-lessons/{id}", adminMW(http.HandlerFunc(h.Update)))
+	mux.Handle("POST /video-lessons/{id}/file", adminMW(http.HandlerFunc(h.ReplaceFile)))
+	mux.Handle("DELETE /video-lessons/{id}", adminMW(http.HandlerFunc(h.Delete)))
 }
 
 // Create godoc

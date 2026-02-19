@@ -21,13 +21,13 @@ func NewOpenExerciseListHandler(uc *usecase.OpenExerciseListUseCase) *OpenExerci
 	return &OpenExerciseListHandler{uc: uc}
 }
 
-func (h *OpenExerciseListHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
-	mux.Handle("POST /exercise-lists", mw(http.HandlerFunc(h.Create)))
-	mux.Handle("GET /exercise-lists", mw(http.HandlerFunc(h.List)))
-	mux.Handle("GET /exercise-lists/{id}", mw(http.HandlerFunc(h.GetByID)))
-	mux.Handle("PUT /exercise-lists/{id}", mw(http.HandlerFunc(h.Update)))
-	mux.Handle("POST /exercise-lists/{id}/file", mw(http.HandlerFunc(h.ReplaceFile)))
-	mux.Handle("DELETE /exercise-lists/{id}", mw(http.HandlerFunc(h.Delete)))
+func (h *OpenExerciseListHandler) RegisterRoutes(mux *http.ServeMux, adminMW, authMW func(http.Handler) http.Handler) {
+	mux.Handle("POST /exercise-lists", adminMW(http.HandlerFunc(h.Create)))
+	mux.Handle("GET /exercise-lists", authMW(http.HandlerFunc(h.List)))
+	mux.Handle("GET /exercise-lists/{id}", authMW(http.HandlerFunc(h.GetByID)))
+	mux.Handle("PUT /exercise-lists/{id}", adminMW(http.HandlerFunc(h.Update)))
+	mux.Handle("POST /exercise-lists/{id}/file", adminMW(http.HandlerFunc(h.ReplaceFile)))
+	mux.Handle("DELETE /exercise-lists/{id}", adminMW(http.HandlerFunc(h.Delete)))
 }
 
 // Create godoc

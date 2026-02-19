@@ -27,10 +27,12 @@ import { stripImageMarkers } from "@/components/questions/statement-renderer";
 import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { useIsAdmin } from "@/contexts/user-context";
 
 export default function QuestionsPage() {
   const t = useTranslations();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
   const router = useRouter();
   const locale = useLocale();
   const searchParams = useSearchParams();
@@ -189,13 +191,15 @@ export default function QuestionsPage() {
           </h1>
           <p className="mt-1 text-sm text-muted">{t("QUESTIONS_SUBTITLE")}</p>
         </div>
-        <Button
-          size="sm"
-          onClick={() => router.push(`/${locale}/dashboard/questions/new`)}
-        >
-          <Plus className="h-4 w-4" />
-          {t("QUESTION_CREATE_BUTTON")}
-        </Button>
+        {isAdmin && (
+          <Button
+            size="sm"
+            onClick={() => router.push(`/${locale}/dashboard/questions/new`)}
+          >
+            <Plus className="h-4 w-4" />
+            {t("QUESTION_CREATE_BUTTON")}
+          </Button>
+        )}
       </div>
 
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -362,21 +366,27 @@ export default function QuestionsPage() {
                   >
                     <Eye className="h-4 w-4" />
                   </button>
-                  <button
-                    onClick={() =>
-                      router.push(`/${locale}/dashboard/questions/${q.id}/edit`)
-                    }
-                    className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(q.id)}
-                    disabled={deletingId === q.id}
-                    className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() =>
+                        router.push(
+                          `/${locale}/dashboard/questions/${q.id}/edit`,
+                        )
+                      }
+                      className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDelete(q.id)}
+                      disabled={deletingId === q.id}
+                      className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

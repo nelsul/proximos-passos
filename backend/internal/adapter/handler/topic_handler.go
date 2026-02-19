@@ -21,12 +21,12 @@ func NewTopicHandler(uc *usecase.TopicUseCase) *TopicHandler {
 	return &TopicHandler{uc: uc}
 }
 
-func (h *TopicHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
-	mux.Handle("POST /topics", mw(http.HandlerFunc(h.Create)))
-	mux.Handle("GET /topics", mw(http.HandlerFunc(h.List)))
-	mux.Handle("GET /topics/{id}", mw(http.HandlerFunc(h.GetByID)))
-	mux.Handle("PUT /topics/{id}", mw(http.HandlerFunc(h.Update)))
-	mux.Handle("DELETE /topics/{id}", mw(http.HandlerFunc(h.Delete)))
+func (h *TopicHandler) RegisterRoutes(mux *http.ServeMux, adminMW, authMW func(http.Handler) http.Handler) {
+	mux.Handle("POST /topics", adminMW(http.HandlerFunc(h.Create)))
+	mux.Handle("GET /topics", authMW(http.HandlerFunc(h.List)))
+	mux.Handle("GET /topics/{id}", authMW(http.HandlerFunc(h.GetByID)))
+	mux.Handle("PUT /topics/{id}", adminMW(http.HandlerFunc(h.Update)))
+	mux.Handle("DELETE /topics/{id}", adminMW(http.HandlerFunc(h.Delete)))
 }
 
 // Create godoc

@@ -8,11 +8,13 @@ import { listTopics, type TopicResponse } from "@/lib/topics";
 import { CreateTopicModal } from "@/components/topics/create-topic-modal";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { useIsAdmin } from "@/contexts/user-context";
 
 export default function TopicsPage() {
   const t = useTranslations();
   const router = useRouter();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
   const [topics, setTopics] = useState<TopicResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -53,10 +55,12 @@ export default function TopicsPage() {
           </h1>
           <p className="mt-1 text-sm text-muted">{t("TOPICS_SUBTITLE")}</p>
         </div>
-        <Button size="sm" onClick={() => setShowCreate(true)}>
-          <Plus className="h-4 w-4" />
-          {t("TOPIC_CREATE_BUTTON")}
-        </Button>
+        {isAdmin && (
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4" />
+            {t("TOPIC_CREATE_BUTTON")}
+          </Button>
+        )}
       </div>
 
       <div className="mb-4">

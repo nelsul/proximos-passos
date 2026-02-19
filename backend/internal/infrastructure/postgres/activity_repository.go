@@ -51,6 +51,27 @@ func (r *ActivityRepository) GetByPublicID(ctx context.Context, publicID string)
 	return &a, nil
 }
 
+func (r *ActivityRepository) GetByID(ctx context.Context, id int) (*entity.Activity, error) {
+	var a entity.Activity
+	err := r.pool.QueryRow(ctx,
+		`SELECT a.id, a.public_id, a.group_id, g.public_id, a.title, a.description, a.due_date,
+		        a.is_active, a.created_by_id, a.created_at, a.updated_at
+		 FROM activities a
+		 JOIN groups g ON g.id = a.group_id
+		 WHERE a.id = $1 AND a.is_active = true`,
+		id,
+	).Scan(&a.ID, &a.PublicID, &a.GroupID, &a.GroupPublicID, &a.Title, &a.Description, &a.DueDate,
+		&a.IsActive, &a.CreatedByID, &a.CreatedAt, &a.UpdatedAt)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &a, nil
+}
+
 func (r *ActivityRepository) Update(ctx context.Context, activity *entity.Activity) error {
 	_, err := r.pool.Exec(ctx,
 		`UPDATE activities
@@ -250,4 +271,148 @@ func (r *ActivityRepository) GetAttachment(ctx context.Context, activityID int, 
 		return nil, err
 	}
 	return &a, nil
+}
+
+// ==========================================
+// Activity Items
+// ==========================================
+
+func (r *ActivityRepository) CreateItem(ctx context.Context, item *entity.ActivityItem) error {
+	// Get next order_index for this activity
+	var maxIdx *int
+	err := r.pool.QueryRow(ctx,
+		`SELECT MAX(order_index) FROM activity_items WHERE activity_id = $1`,
+		item.ActivityID,
+	).Scan(&maxIdx)
+	if err != nil {
+		return err
+	}
+
+	nextIdx := 0
+	if maxIdx != nil {
+		nextIdx = *maxIdx + 1
+	}
+	item.OrderIndex = nextIdx
+
+	return r.pool.QueryRow(ctx,
+		`INSERT INTO activity_items (activity_id, order_index, title, description,
+		 question_id, video_lesson_id, handout_id, open_exercise_list_id, simulated_exam_id)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		 RETURNING id, public_id, type`,
+		item.ActivityID, item.OrderIndex, item.Title, item.Description,
+		item.QuestionID, item.VideoLessonID, item.HandoutID,
+		item.OpenExerciseListID, item.SimulatedExamID,
+	).Scan(&item.ID, &item.PublicID, &item.Type)
+}
+
+func (r *ActivityRepository) GetItemByPublicID(ctx context.Context, publicID string) (*entity.ActivityItem, error) {
+	var item entity.ActivityItem
+	err := r.pool.QueryRow(ctx,
+		`SELECT ai.id, ai.public_id, ai.activity_id, ai.order_index, ai.title, ai.description, ai.type,
+		        ai.question_id, ai.video_lesson_id, ai.handout_id, ai.open_exercise_list_id, ai.simulated_exam_id,
+		        q.public_id, vl.public_id, h.public_id, oel.public_id, se.public_id
+		 FROM activity_items ai
+		 LEFT JOIN questions q ON q.id = ai.question_id
+		 LEFT JOIN video_lessons vl ON vl.id = ai.video_lesson_id
+		 LEFT JOIN handouts h ON h.id = ai.handout_id
+		 LEFT JOIN open_exercise_lists oel ON oel.id = ai.open_exercise_list_id
+		 LEFT JOIN simulated_exams se ON se.id = ai.simulated_exam_id
+		 WHERE ai.public_id = $1`,
+		publicID,
+	).Scan(&item.ID, &item.PublicID, &item.ActivityID, &item.OrderIndex, &item.Title, &item.Description, &item.Type,
+		&item.QuestionID, &item.VideoLessonID, &item.HandoutID, &item.OpenExerciseListID, &item.SimulatedExamID,
+		&item.QuestionPublicID, &item.VideoLessonPublicID, &item.HandoutPublicID, &item.OpenExerciseListPublicID, &item.SimulatedExamPublicID)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &item, nil
+}
+
+func (r *ActivityRepository) UpdateItem(ctx context.Context, item *entity.ActivityItem) error {
+	_, err := r.pool.Exec(ctx,
+		`UPDATE activity_items
+		 SET title = $1, description = $2,
+		     question_id = $3, video_lesson_id = $4, handout_id = $5,
+		     open_exercise_list_id = $6, simulated_exam_id = $7
+		 WHERE id = $8`,
+		item.Title, item.Description,
+		item.QuestionID, item.VideoLessonID, item.HandoutID,
+		item.OpenExerciseListID, item.SimulatedExamID,
+		item.ID,
+	)
+	return err
+}
+
+func (r *ActivityRepository) DeleteItem(ctx context.Context, publicID string) error {
+	_, err := r.pool.Exec(ctx,
+		`DELETE FROM activity_items WHERE public_id = $1`,
+		publicID,
+	)
+	return err
+}
+
+func (r *ActivityRepository) ListItems(ctx context.Context, activityID int) ([]entity.ActivityItem, error) {
+	rows, err := r.pool.Query(ctx,
+		`SELECT ai.id, ai.public_id, ai.activity_id, ai.order_index, ai.title, ai.description, ai.type,
+		        ai.question_id, ai.video_lesson_id, ai.handout_id, ai.open_exercise_list_id, ai.simulated_exam_id,
+		        q.public_id, vl.public_id, h.public_id, oel.public_id, se.public_id
+		 FROM activity_items ai
+		 LEFT JOIN questions q ON q.id = ai.question_id
+		 LEFT JOIN video_lessons vl ON vl.id = ai.video_lesson_id
+		 LEFT JOIN handouts h ON h.id = ai.handout_id
+		 LEFT JOIN open_exercise_lists oel ON oel.id = ai.open_exercise_list_id
+		 LEFT JOIN simulated_exams se ON se.id = ai.simulated_exam_id
+		 WHERE ai.activity_id = $1
+		 ORDER BY ai.order_index ASC`,
+		activityID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []entity.ActivityItem
+	for rows.Next() {
+		var item entity.ActivityItem
+		if err := rows.Scan(&item.ID, &item.PublicID, &item.ActivityID, &item.OrderIndex, &item.Title, &item.Description, &item.Type,
+			&item.QuestionID, &item.VideoLessonID, &item.HandoutID, &item.OpenExerciseListID, &item.SimulatedExamID,
+			&item.QuestionPublicID, &item.VideoLessonPublicID, &item.HandoutPublicID, &item.OpenExerciseListPublicID, &item.SimulatedExamPublicID); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+func (r *ActivityRepository) ReorderItems(ctx context.Context, activityID int, orderedIDs []string) error {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	// Temporarily set all order_index to negative to avoid unique constraint violations
+	_, err = tx.Exec(ctx,
+		`UPDATE activity_items SET order_index = -1 - order_index WHERE activity_id = $1`,
+		activityID,
+	)
+	if err != nil {
+		return err
+	}
+
+	for i, publicID := range orderedIDs {
+		_, err := tx.Exec(ctx,
+			`UPDATE activity_items SET order_index = $1 WHERE public_id = $2 AND activity_id = $3`,
+			i, publicID, activityID,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
 }

@@ -43,6 +43,7 @@ const (
 	CodeInstitutionNameTaken       Code = "INSTITUTION_NAME_TAKEN"
 	CodeExamNotFound               Code = "EXAM_NOT_FOUND"
 	CodeExamDuplicate              Code = "EXAM_DUPLICATE"
+	CodeActivityItemNotFound       Code = "ACTIVITY_ITEM_NOT_FOUND"
 )
 
 type AppError struct {
@@ -111,4 +112,5 @@ var (
 	ErrInstitutionNameTaken       = New(CodeInstitutionNameTaken, "An institution with this name or acronym already exists.", http.StatusConflict)
 	ErrExamNotFound               = New(CodeExamNotFound, "The requested exam was not found.", http.StatusNotFound)
 	ErrExamDuplicate              = New(CodeExamDuplicate, "An exam with this institution, year, and stage already exists.", http.StatusConflict)
+	ErrActivityItemNotFound       = New(CodeActivityItemNotFound, "The requested activity item was not found.", http.StatusNotFound)
 )

@@ -117,3 +117,62 @@ func AttachmentToResponse(a *entity.ActivityAttachment) AttachmentResponse {
 		URL:         a.URL,
 	}
 }
+
+// ==========================================
+// Activity Item DTOs
+// ==========================================
+
+type CreateActivityItemRequest struct {
+	Title              string  `json:"title"`
+	Description        *string `json:"description,omitempty"`
+	QuestionID         *string `json:"question_id,omitempty"`
+	VideoLessonID      *string `json:"video_lesson_id,omitempty"`
+	HandoutID          *string `json:"handout_id,omitempty"`
+	OpenExerciseListID *string `json:"open_exercise_list_id,omitempty"`
+	SimulatedExamID    *string `json:"simulated_exam_id,omitempty"`
+}
+
+type UpdateActivityItemRequest struct {
+	Title       *string `json:"title,omitempty"`
+	Description *string `json:"description,omitempty"`
+}
+
+type ReorderActivityItemsRequest struct {
+	OrderedIDs []string `json:"ordered_ids"`
+}
+
+type ActivityItemResponse struct {
+	PublicID           string  `json:"id"`
+	OrderIndex         int     `json:"order_index"`
+	Title              string  `json:"title"`
+	Description        *string `json:"description,omitempty"`
+	Type               string  `json:"type"`
+	QuestionID         *string `json:"question_id,omitempty"`
+	VideoLessonID      *string `json:"video_lesson_id,omitempty"`
+	HandoutID          *string `json:"handout_id,omitempty"`
+	OpenExerciseListID *string `json:"open_exercise_list_id,omitempty"`
+	SimulatedExamID    *string `json:"simulated_exam_id,omitempty"`
+}
+
+func ActivityItemToResponse(item *entity.ActivityItem) ActivityItemResponse {
+	return ActivityItemResponse{
+		PublicID:           item.PublicID,
+		OrderIndex:         item.OrderIndex,
+		Title:              item.Title,
+		Description:        item.Description,
+		Type:               string(item.Type),
+		QuestionID:         item.QuestionPublicID,
+		VideoLessonID:      item.VideoLessonPublicID,
+		HandoutID:          item.HandoutPublicID,
+		OpenExerciseListID: item.OpenExerciseListPublicID,
+		SimulatedExamID:    item.SimulatedExamPublicID,
+	}
+}
+
+func ActivityItemsToResponse(items []entity.ActivityItem) []ActivityItemResponse {
+	result := make([]ActivityItemResponse, len(items))
+	for i := range items {
+		result[i] = ActivityItemToResponse(&items[i])
+	}
+	return result
+}

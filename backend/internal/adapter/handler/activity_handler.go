@@ -32,6 +32,13 @@ func (h *ActivityHandler) RegisterRoutes(mux *http.ServeMux, authMW func(http.Ha
 	mux.Handle("DELETE /activities/{id}", authMW(http.HandlerFunc(h.Delete)))
 	mux.Handle("POST /activities/{id}/attachments", authMW(http.HandlerFunc(h.UploadAttachment)))
 	mux.Handle("DELETE /activities/{id}/attachments/{fileId}", authMW(http.HandlerFunc(h.DeleteAttachment)))
+
+	// Activity Items
+	mux.Handle("POST /activities/{id}/items", authMW(http.HandlerFunc(h.CreateItem)))
+	mux.Handle("GET /activities/{id}/items", authMW(http.HandlerFunc(h.ListItems)))
+	mux.Handle("PUT /activities/{id}/items/reorder", authMW(http.HandlerFunc(h.ReorderItems)))
+	mux.Handle("PUT /activity-items/{itemId}", authMW(http.HandlerFunc(h.UpdateItem)))
+	mux.Handle("DELETE /activity-items/{itemId}", authMW(http.HandlerFunc(h.DeleteItem)))
 }
 
 // Create godoc
@@ -345,6 +352,127 @@ func (h *ActivityHandler) DeleteAttachment(w http.ResponseWriter, r *http.Reques
 	}
 
 	if err := h.uc.DeleteAttachment(r.Context(), activityPublicID, filePublicID, requesterPublicID); err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ==========================================
+// Activity Items
+// ==========================================
+
+func (h *ActivityHandler) CreateItem(w http.ResponseWriter, r *http.Request) {
+	activityPublicID := r.PathValue("id")
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req dto.CreateActivityItemRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, apperror.ErrInvalidBody)
+		return
+	}
+
+	input := usecase.CreateActivityItemInput{
+		Title:              req.Title,
+		Description:        req.Description,
+		QuestionID:         req.QuestionID,
+		VideoLessonID:      req.VideoLessonID,
+		HandoutID:          req.HandoutID,
+		OpenExerciseListID: req.OpenExerciseListID,
+		SimulatedExamID:    req.SimulatedExamID,
+	}
+
+	item, err := h.uc.CreateItem(r.Context(), activityPublicID, requesterPublicID, input)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusCreated, dto.ActivityItemToResponse(item))
+}
+
+func (h *ActivityHandler) ListItems(w http.ResponseWriter, r *http.Request) {
+	activityPublicID := r.PathValue("id")
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	requesterRole := middleware.UserRole(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	items, err := h.uc.ListItems(r.Context(), activityPublicID, requesterPublicID, requesterRole)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, dto.ActivityItemsToResponse(items))
+}
+
+func (h *ActivityHandler) UpdateItem(w http.ResponseWriter, r *http.Request) {
+	itemPublicID := r.PathValue("itemId")
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req dto.UpdateActivityItemRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, apperror.ErrInvalidBody)
+		return
+	}
+
+	input := usecase.UpdateActivityItemInput{
+		Title:       req.Title,
+		Description: req.Description,
+	}
+
+	item, err := h.uc.UpdateItem(r.Context(), itemPublicID, requesterPublicID, input)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, dto.ActivityItemToResponse(item))
+}
+
+func (h *ActivityHandler) DeleteItem(w http.ResponseWriter, r *http.Request) {
+	itemPublicID := r.PathValue("itemId")
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	if err := h.uc.DeleteItem(r.Context(), itemPublicID, requesterPublicID); err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *ActivityHandler) ReorderItems(w http.ResponseWriter, r *http.Request) {
+	activityPublicID := r.PathValue("id")
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req dto.ReorderActivityItemsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, apperror.ErrInvalidBody)
+		return
+	}
+
+	if err := h.uc.ReorderItems(r.Context(), activityPublicID, requesterPublicID, req.OrderedIDs); err != nil {
 		response.Error(w, err)
 		return
 	}

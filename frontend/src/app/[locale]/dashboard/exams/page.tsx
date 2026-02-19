@@ -19,12 +19,14 @@ import { CreateExamModal } from "@/components/exams/create-exam-modal";
 import { EditExamModal } from "@/components/exams/edit-exam-modal";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { useIsAdmin } from "@/contexts/user-context";
 
 export default function ExamsPage() {
   const t = useTranslations();
   const router = useRouter();
   const locale = useLocale();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
   const [exams, setExams] = useState<ExamResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -123,10 +125,12 @@ export default function ExamsPage() {
           </h1>
           <p className="mt-1 text-sm text-muted">{t("EXAMS_SUBTITLE")}</p>
         </div>
-        <Button size="sm" onClick={() => setShowCreate(true)}>
-          <Plus className="h-4 w-4" />
-          {t("EXAM_CREATE_BUTTON")}
-        </Button>
+        {isAdmin && (
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4" />
+            {t("EXAM_CREATE_BUTTON")}
+          </Button>
+        )}
       </div>
 
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -198,25 +202,29 @@ export default function ExamsPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingExam(exam);
-                    }}
-                    className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(exam.id);
-                    }}
-                    disabled={deletingId === exam.id}
-                    className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingExam(exam);
+                      }}
+                      className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(exam.id);
+                      }}
+                      disabled={deletingId === exam.id}
+                      className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

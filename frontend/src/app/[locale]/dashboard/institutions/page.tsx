@@ -14,12 +14,14 @@ import { CreateInstitutionModal } from "@/components/institutions/create-institu
 import { EditInstitutionModal } from "@/components/institutions/edit-institution-modal";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { useIsAdmin } from "@/contexts/user-context";
 
 export default function InstitutionsPage() {
   const t = useTranslations();
   const router = useRouter();
   const locale = useLocale();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
   const [institutions, setInstitutions] = useState<InstitutionResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -89,10 +91,12 @@ export default function InstitutionsPage() {
             {t("INSTITUTIONS_SUBTITLE")}
           </p>
         </div>
-        <Button size="sm" onClick={() => setShowCreate(true)}>
-          <Plus className="h-4 w-4" />
-          {t("INSTITUTION_CREATE_BUTTON")}
-        </Button>
+        {isAdmin && (
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4" />
+            {t("INSTITUTION_CREATE_BUTTON")}
+          </Button>
+        )}
       </div>
 
       <div className="mb-4">
@@ -140,25 +144,29 @@ export default function InstitutionsPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingInstitution(institution);
-                    }}
-                    className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(institution.id);
-                    }}
-                    disabled={deletingId === institution.id}
-                    className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingInstitution(institution);
+                      }}
+                      className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(institution.id);
+                      }}
+                      disabled={deletingId === institution.id}
+                      className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

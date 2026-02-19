@@ -13,6 +13,7 @@ type ActivityFilter struct {
 type ActivityRepository interface {
 	Create(ctx context.Context, activity *entity.Activity) error
 	GetByPublicID(ctx context.Context, publicID string) (*entity.Activity, error)
+	GetByID(ctx context.Context, id int) (*entity.Activity, error)
 	Update(ctx context.Context, activity *entity.Activity) error
 	Delete(ctx context.Context, publicID string) error
 
@@ -26,4 +27,12 @@ type ActivityRepository interface {
 	DeleteFile(ctx context.Context, fileID int) error
 	ListAttachments(ctx context.Context, activityID int) ([]entity.ActivityAttachment, error)
 	GetAttachment(ctx context.Context, activityID int, filePublicID string) (*entity.ActivityAttachment, error)
+
+	// Activity Items
+	CreateItem(ctx context.Context, item *entity.ActivityItem) error
+	GetItemByPublicID(ctx context.Context, publicID string) (*entity.ActivityItem, error)
+	UpdateItem(ctx context.Context, item *entity.ActivityItem) error
+	DeleteItem(ctx context.Context, publicID string) error
+	ListItems(ctx context.Context, activityID int) ([]entity.ActivityItem, error)
+	ReorderItems(ctx context.Context, activityID int, orderedIDs []string) error
 }

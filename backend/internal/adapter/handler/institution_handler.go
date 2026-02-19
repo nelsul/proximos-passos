@@ -22,13 +22,13 @@ func NewInstitutionHandler(uc *usecase.InstitutionUseCase, qRepo repository.Ques
 	return &InstitutionHandler{uc: uc, qRepo: qRepo}
 }
 
-func (h *InstitutionHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
-	mux.Handle("POST /institutions", mw(http.HandlerFunc(h.Create)))
-	mux.Handle("GET /institutions", mw(http.HandlerFunc(h.List)))
-	mux.Handle("GET /institutions/{id}", mw(http.HandlerFunc(h.GetByID)))
-	mux.Handle("GET /institutions/{id}/details", mw(http.HandlerFunc(h.GetDetails)))
-	mux.Handle("PUT /institutions/{id}", mw(http.HandlerFunc(h.Update)))
-	mux.Handle("DELETE /institutions/{id}", mw(http.HandlerFunc(h.Delete)))
+func (h *InstitutionHandler) RegisterRoutes(mux *http.ServeMux, adminMW, authMW func(http.Handler) http.Handler) {
+	mux.Handle("POST /institutions", adminMW(http.HandlerFunc(h.Create)))
+	mux.Handle("GET /institutions", authMW(http.HandlerFunc(h.List)))
+	mux.Handle("GET /institutions/{id}", authMW(http.HandlerFunc(h.GetByID)))
+	mux.Handle("GET /institutions/{id}/details", authMW(http.HandlerFunc(h.GetDetails)))
+	mux.Handle("PUT /institutions/{id}", adminMW(http.HandlerFunc(h.Update)))
+	mux.Handle("DELETE /institutions/{id}", adminMW(http.HandlerFunc(h.Delete)))
 }
 
 // Create godoc

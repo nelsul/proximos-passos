@@ -22,10 +22,12 @@ import { EditHandoutModal } from "@/components/handouts/edit-handout-modal";
 import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { useIsAdmin } from "@/contexts/user-context";
 
 export default function HandoutsPage() {
   const t = useTranslations();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
   const [handouts, setHandouts] = useState<HandoutResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -114,10 +116,12 @@ export default function HandoutsPage() {
           </h1>
           <p className="mt-1 text-sm text-muted">{t("HANDOUTS_SUBTITLE")}</p>
         </div>
-        <Button size="sm" onClick={() => setShowCreate(true)}>
-          <Plus className="h-4 w-4" />
-          {t("HANDOUT_CREATE_BUTTON")}
-        </Button>
+        {isAdmin && (
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4" />
+            {t("HANDOUT_CREATE_BUTTON")}
+          </Button>
+        )}
       </div>
 
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -214,19 +218,23 @@ export default function HandoutsPage() {
                   >
                     <ExternalLink className="h-4 w-4" />
                   </a>
-                  <button
-                    onClick={() => setEditingHandout(handout)}
-                    className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(handout.id)}
-                    disabled={deletingId === handout.id}
-                    className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setEditingHandout(handout)}
+                      className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  )}
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDelete(handout.id)}
+                      disabled={deletingId === handout.id}
+                      className="rounded-lg p-2 text-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

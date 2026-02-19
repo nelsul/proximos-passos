@@ -34,43 +34,36 @@ const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/topics",
     icon: Layers,
     labelKey: "SIDEBAR_TOPICS",
-    adminOnly: true,
   },
   {
     href: "/dashboard/handouts",
     icon: FileText,
     labelKey: "SIDEBAR_HANDOUTS",
-    adminOnly: true,
   },
   {
     href: "/dashboard/video-lessons",
     icon: Video,
     labelKey: "SIDEBAR_VIDEO_LESSONS",
-    adminOnly: true,
   },
   {
     href: "/dashboard/exercise-lists",
     icon: ListChecks,
     labelKey: "SIDEBAR_EXERCISE_LISTS",
-    adminOnly: true,
   },
   {
     href: "/dashboard/questions",
     icon: HelpCircle,
     labelKey: "SIDEBAR_QUESTIONS",
-    adminOnly: true,
   },
   {
     href: "/dashboard/institutions",
     icon: Building2,
     labelKey: "SIDEBAR_INSTITUTIONS",
-    adminOnly: true,
   },
   {
     href: "/dashboard/exams",
     icon: GraduationCap,
     labelKey: "SIDEBAR_EXAMS",
-    adminOnly: true,
   },
   {
     href: "/dashboard/users",

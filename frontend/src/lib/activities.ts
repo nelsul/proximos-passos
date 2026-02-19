@@ -142,3 +142,77 @@ export async function deleteAttachment(
     method: "DELETE",
   });
 }
+
+// ==========================================
+// Activity Items
+// ==========================================
+
+export interface ActivityItemResponse {
+  id: string;
+  order_index: number;
+  title: string;
+  description?: string;
+  type: string;
+  question_id?: string;
+  video_lesson_id?: string;
+  handout_id?: string;
+  open_exercise_list_id?: string;
+  simulated_exam_id?: string;
+}
+
+export interface CreateActivityItemInput {
+  title: string;
+  description?: string;
+  question_id?: string;
+  video_lesson_id?: string;
+  handout_id?: string;
+  open_exercise_list_id?: string;
+  simulated_exam_id?: string;
+}
+
+export interface UpdateActivityItemInput {
+  title?: string;
+  description?: string;
+}
+
+export async function listActivityItems(
+  activityId: string,
+): Promise<ActivityItemResponse[]> {
+  return api<ActivityItemResponse[]>(`/activities/${activityId}/items`);
+}
+
+export async function createActivityItem(
+  activityId: string,
+  input: CreateActivityItemInput,
+): Promise<ActivityItemResponse> {
+  return api<ActivityItemResponse>(`/activities/${activityId}/items`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateActivityItem(
+  itemId: string,
+  input: UpdateActivityItemInput,
+): Promise<ActivityItemResponse> {
+  return api<ActivityItemResponse>(`/activity-items/${itemId}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function deleteActivityItem(itemId: string): Promise<void> {
+  return api<void>(`/activity-items/${itemId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function reorderActivityItems(
+  activityId: string,
+  orderedIds: string[],
+): Promise<void> {
+  return api<void>(`/activities/${activityId}/items/reorder`, {
+    method: "PUT",
+    body: JSON.stringify({ ordered_ids: orderedIds }),
+  });
+}

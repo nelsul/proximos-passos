@@ -23,14 +23,14 @@ func NewQuestionHandler(uc *usecase.QuestionUseCase) *QuestionHandler {
 	return &QuestionHandler{uc: uc}
 }
 
-func (h *QuestionHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
-	mux.Handle("POST /questions", mw(http.HandlerFunc(h.Create)))
-	mux.Handle("GET /questions", mw(http.HandlerFunc(h.List)))
-	mux.Handle("GET /questions/{id}", mw(http.HandlerFunc(h.GetByID)))
-	mux.Handle("PUT /questions/{id}", mw(http.HandlerFunc(h.Update)))
-	mux.Handle("POST /questions/{id}/images", mw(http.HandlerFunc(h.AddImages)))
-	mux.Handle("DELETE /questions/{id}/images/{imageId}", mw(http.HandlerFunc(h.RemoveImage)))
-	mux.Handle("DELETE /questions/{id}", mw(http.HandlerFunc(h.Delete)))
+func (h *QuestionHandler) RegisterRoutes(mux *http.ServeMux, adminMW, authMW func(http.Handler) http.Handler) {
+	mux.Handle("POST /questions", adminMW(http.HandlerFunc(h.Create)))
+	mux.Handle("GET /questions", authMW(http.HandlerFunc(h.List)))
+	mux.Handle("GET /questions/{id}", authMW(http.HandlerFunc(h.GetByID)))
+	mux.Handle("PUT /questions/{id}", adminMW(http.HandlerFunc(h.Update)))
+	mux.Handle("POST /questions/{id}/images", adminMW(http.HandlerFunc(h.AddImages)))
+	mux.Handle("DELETE /questions/{id}/images/{imageId}", adminMW(http.HandlerFunc(h.RemoveImage)))
+	mux.Handle("DELETE /questions/{id}", adminMW(http.HandlerFunc(h.Delete)))
 }
 
 // Create godoc

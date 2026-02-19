@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "@/i18n/routing";
 import { getMe, type UserResponse } from "@/lib/auth";
+import { UserProvider } from "@/contexts/user-context";
 import { Navbar } from "@/components/layout/navbar";
 import { Sidebar } from "@/components/layout/sidebar";
 
@@ -46,7 +47,9 @@ export default function DashboardLayout({
           onMobileClose={() => setSidebarOpen(false)}
           userRole={user.role}
         />
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1">
+          <UserProvider role={user.role}>{children}</UserProvider>
+        </main>
       </div>
     </div>
   );

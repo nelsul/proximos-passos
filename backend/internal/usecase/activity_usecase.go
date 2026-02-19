@@ -16,23 +16,35 @@ import (
 )
 
 type ActivityUseCase struct {
-	activityRepo repository.ActivityRepository
-	groupRepo    repository.GroupRepository
-	userRepo     repository.UserRepository
-	storageSvc   service.StorageService
+	activityRepo     repository.ActivityRepository
+	groupRepo        repository.GroupRepository
+	userRepo         repository.UserRepository
+	questionRepo     repository.QuestionRepository
+	videoLessonRepo  repository.VideoLessonRepository
+	handoutRepo      repository.HandoutRepository
+	exerciseListRepo repository.OpenExerciseListRepository
+	storageSvc       service.StorageService
 }
 
 func NewActivityUseCase(
 	activityRepo repository.ActivityRepository,
 	groupRepo repository.GroupRepository,
 	userRepo repository.UserRepository,
+	questionRepo repository.QuestionRepository,
+	videoLessonRepo repository.VideoLessonRepository,
+	handoutRepo repository.HandoutRepository,
+	exerciseListRepo repository.OpenExerciseListRepository,
 	storageSvc service.StorageService,
 ) *ActivityUseCase {
 	return &ActivityUseCase{
-		activityRepo: activityRepo,
-		groupRepo:    groupRepo,
-		userRepo:     userRepo,
-		storageSvc:   storageSvc,
+		activityRepo:     activityRepo,
+		groupRepo:        groupRepo,
+		userRepo:         userRepo,
+		questionRepo:     questionRepo,
+		videoLessonRepo:  videoLessonRepo,
+		handoutRepo:      handoutRepo,
+		exerciseListRepo: exerciseListRepo,
+		storageSvc:       storageSvc,
 	}
 }
 
@@ -416,4 +428,245 @@ func (uc *ActivityUseCase) DeleteAttachment(ctx context.Context, activityPublicI
 	_ = uc.storageSvc.Delete(ctx, attachment.Key)
 
 	return uc.activityRepo.DeleteFile(ctx, attachment.FileID)
+}
+
+// ==========================================
+// Activity Items
+// ==========================================
+
+type CreateActivityItemInput struct {
+	Title              string
+	Description        *string
+	QuestionID         *string
+	VideoLessonID      *string
+	HandoutID          *string
+	OpenExerciseListID *string
+	SimulatedExamID    *string
+}
+
+type UpdateActivityItemInput struct {
+	Title       *string
+	Description *string
+}
+
+func (uc *ActivityUseCase) CreateItem(ctx context.Context, activityPublicID string, requesterPublicID string, input CreateActivityItemInput) (*entity.ActivityItem, error) {
+	activity, err := uc.activityRepo.GetByPublicID(ctx, activityPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if activity == nil {
+		return nil, apperror.ErrActivityNotFound
+	}
+
+	isAdmin, _, err := uc.isGroupAdmin(ctx, activity.GroupID, requesterPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, apperror.ErrForbidden
+	}
+
+	title := strings.TrimSpace(input.Title)
+	if title == "" {
+		return nil, apperror.ErrInvalidInput
+	}
+
+	var desc *string
+	if input.Description != nil {
+		d := strings.TrimSpace(*input.Description)
+		if d != "" {
+			desc = &d
+		}
+	}
+
+	item := &entity.ActivityItem{
+		ActivityID:  activity.ID,
+		Title:       title,
+		Description: desc,
+	}
+
+	// Resolve content references — exactly one must be provided (or none for a text-only item)
+	count := 0
+
+	if input.QuestionID != nil {
+		q, err := uc.questionRepo.GetByPublicID(ctx, *input.QuestionID)
+		if err != nil {
+			return nil, err
+		}
+		if q == nil {
+			return nil, apperror.ErrQuestionNotFound
+		}
+		item.QuestionID = &q.ID
+		count++
+	}
+
+	if input.VideoLessonID != nil {
+		vl, err := uc.videoLessonRepo.GetByPublicID(ctx, *input.VideoLessonID)
+		if err != nil {
+			return nil, err
+		}
+		if vl == nil {
+			return nil, apperror.ErrVideoLessonNotFound
+		}
+		item.VideoLessonID = &vl.ID
+		count++
+	}
+
+	if input.HandoutID != nil {
+		h, err := uc.handoutRepo.GetByPublicID(ctx, *input.HandoutID)
+		if err != nil {
+			return nil, err
+		}
+		if h == nil {
+			return nil, apperror.ErrHandoutNotFound
+		}
+		item.HandoutID = &h.ID
+		count++
+	}
+
+	if input.OpenExerciseListID != nil {
+		oel, err := uc.exerciseListRepo.GetByPublicID(ctx, *input.OpenExerciseListID)
+		if err != nil {
+			return nil, err
+		}
+		if oel == nil {
+			return nil, apperror.ErrOpenExerciseListNotFound
+		}
+		item.OpenExerciseListID = &oel.ID
+		count++
+	}
+
+	// For now simulated_exam is accepted as an ID but not validated (no repo yet)
+	if input.SimulatedExamID != nil {
+		count++
+	}
+
+	if count != 1 {
+		return nil, apperror.ErrInvalidInput
+	}
+
+	if err := uc.activityRepo.CreateItem(ctx, item); err != nil {
+		return nil, err
+	}
+
+	return item, nil
+}
+
+func (uc *ActivityUseCase) UpdateItem(ctx context.Context, itemPublicID string, requesterPublicID string, input UpdateActivityItemInput) (*entity.ActivityItem, error) {
+	item, err := uc.activityRepo.GetItemByPublicID(ctx, itemPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if item == nil {
+		return nil, apperror.ErrActivityItemNotFound
+	}
+
+	activity, err := uc.activityRepo.GetByID(ctx, item.ActivityID)
+	if err != nil {
+		return nil, err
+	}
+	if activity == nil {
+		return nil, apperror.ErrActivityNotFound
+	}
+
+	isAdmin, _, err := uc.isGroupAdmin(ctx, activity.GroupID, requesterPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, apperror.ErrForbidden
+	}
+
+	if input.Title != nil {
+		t := strings.TrimSpace(*input.Title)
+		if t == "" {
+			return nil, apperror.ErrInvalidInput
+		}
+		item.Title = t
+	}
+
+	if input.Description != nil {
+		d := strings.TrimSpace(*input.Description)
+		if d == "" {
+			item.Description = nil
+		} else {
+			item.Description = &d
+		}
+	}
+
+	if err := uc.activityRepo.UpdateItem(ctx, item); err != nil {
+		return nil, err
+	}
+
+	return item, nil
+}
+
+func (uc *ActivityUseCase) DeleteItem(ctx context.Context, itemPublicID string, requesterPublicID string) error {
+	item, err := uc.activityRepo.GetItemByPublicID(ctx, itemPublicID)
+	if err != nil {
+		return err
+	}
+	if item == nil {
+		return apperror.ErrActivityItemNotFound
+	}
+
+	activity, err := uc.activityRepo.GetByID(ctx, item.ActivityID)
+	if err != nil {
+		return err
+	}
+	if activity == nil {
+		return apperror.ErrActivityNotFound
+	}
+
+	isAdmin, _, err := uc.isGroupAdmin(ctx, activity.GroupID, requesterPublicID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return apperror.ErrForbidden
+	}
+
+	return uc.activityRepo.DeleteItem(ctx, itemPublicID)
+}
+
+func (uc *ActivityUseCase) ListItems(ctx context.Context, activityPublicID string, requesterPublicID string, requesterRole entity.UserRole) ([]entity.ActivityItem, error) {
+	activity, err := uc.activityRepo.GetByPublicID(ctx, activityPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if activity == nil {
+		return nil, apperror.ErrActivityNotFound
+	}
+
+	if requesterRole != entity.UserRoleAdmin {
+		isMember, _, err := uc.isMember(ctx, activity.GroupID, requesterPublicID)
+		if err != nil {
+			return nil, err
+		}
+		if !isMember {
+			return nil, apperror.ErrForbidden
+		}
+	}
+
+	return uc.activityRepo.ListItems(ctx, activity.ID)
+}
+
+func (uc *ActivityUseCase) ReorderItems(ctx context.Context, activityPublicID string, requesterPublicID string, orderedIDs []string) error {
+	activity, err := uc.activityRepo.GetByPublicID(ctx, activityPublicID)
+	if err != nil {
+		return err
+	}
+	if activity == nil {
+		return apperror.ErrActivityNotFound
+	}
+
+	isAdmin, _, err := uc.isGroupAdmin(ctx, activity.GroupID, requesterPublicID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return apperror.ErrForbidden
+	}
+
+	return uc.activityRepo.ReorderItems(ctx, activity.ID, orderedIDs)
 }

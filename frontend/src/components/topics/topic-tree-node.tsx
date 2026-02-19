@@ -24,6 +24,7 @@ import { EditTopicModal } from "@/components/topics/edit-topic-modal";
 import { useTopicDrag } from "@/components/topics/topic-drag-context";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { useIsAdmin } from "@/contexts/user-context";
 
 interface TopicTreeNodeProps {
   topic: TopicResponse;
@@ -42,6 +43,7 @@ export function TopicTreeNode({
 }: TopicTreeNodeProps) {
   const t = useTranslations();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
   const {
     draggedTopic,
     startDrag,
@@ -240,7 +242,9 @@ export function TopicTreeNode({
         onDrop={handleDrop}
       >
         {/* Drag handle */}
-        <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-muted/40" />
+        {isAdmin && (
+          <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-muted/40" />
+        )}
 
         {/* Expand/collapse toggle */}
         <button
@@ -267,27 +271,33 @@ export function TopicTreeNode({
 
         {/* Actions (visible on hover) */}
         <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-          <button
-            onClick={() => setShowCreate(true)}
-            className="rounded p-1 text-muted transition-colors hover:bg-surface-border hover:text-secondary"
-            title={t("TOPIC_CREATE_BUTTON")}
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => setShowEdit(true)}
-            className="rounded p-1 text-muted transition-colors hover:bg-surface-border hover:text-heading"
-            title={t("TOPIC_EDIT_TITLE")}
-          >
-            <Edit2 className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={handleDeleteClick}
-            className="rounded p-1 text-muted transition-colors hover:bg-error/10 hover:text-error"
-            title={t("TOPIC_DELETE_BUTTON")}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="rounded p-1 text-muted transition-colors hover:bg-surface-border hover:text-secondary"
+              title={t("TOPIC_CREATE_BUTTON")}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={() => setShowEdit(true)}
+              className="rounded p-1 text-muted transition-colors hover:bg-surface-border hover:text-heading"
+              title={t("TOPIC_EDIT_TITLE")}
+            >
+              <Edit2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={handleDeleteClick}
+              className="rounded p-1 text-muted transition-colors hover:bg-error/10 hover:text-error"
+              title={t("TOPIC_DELETE_BUTTON")}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       </div>
 

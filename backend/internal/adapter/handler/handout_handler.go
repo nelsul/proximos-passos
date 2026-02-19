@@ -21,13 +21,13 @@ func NewHandoutHandler(uc *usecase.HandoutUseCase) *HandoutHandler {
 	return &HandoutHandler{uc: uc}
 }
 
-func (h *HandoutHandler) RegisterRoutes(mux *http.ServeMux, mw func(http.Handler) http.Handler) {
-	mux.Handle("POST /handouts", mw(http.HandlerFunc(h.Create)))
-	mux.Handle("GET /handouts", mw(http.HandlerFunc(h.List)))
-	mux.Handle("GET /handouts/{id}", mw(http.HandlerFunc(h.GetByID)))
-	mux.Handle("PUT /handouts/{id}", mw(http.HandlerFunc(h.Update)))
-	mux.Handle("POST /handouts/{id}/file", mw(http.HandlerFunc(h.ReplaceFile)))
-	mux.Handle("DELETE /handouts/{id}", mw(http.HandlerFunc(h.Delete)))
+func (h *HandoutHandler) RegisterRoutes(mux *http.ServeMux, adminMW, authMW func(http.Handler) http.Handler) {
+	mux.Handle("POST /handouts", adminMW(http.HandlerFunc(h.Create)))
+	mux.Handle("GET /handouts", authMW(http.HandlerFunc(h.List)))
+	mux.Handle("GET /handouts/{id}", authMW(http.HandlerFunc(h.GetByID)))
+	mux.Handle("PUT /handouts/{id}", adminMW(http.HandlerFunc(h.Update)))
+	mux.Handle("POST /handouts/{id}/file", adminMW(http.HandlerFunc(h.ReplaceFile)))
+	mux.Handle("DELETE /handouts/{id}", adminMW(http.HandlerFunc(h.Delete)))
 }
 
 // Create godoc
