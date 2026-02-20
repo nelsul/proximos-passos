@@ -27,27 +27,50 @@ jobs:
       - name: Export image to tar.gz
         run: docker save proximos-passos-frontend:latest | gzip > frontend.tar.gz
 
-      - name: Copy image to VPS
+      - name: Generate .env file
+        run: |
+          echo "PORT=${{ vars.PORT }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_PORT=${{ vars.DB_PORT }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> .env
+          echo "RESEND_FROM_EMAIL=${{ secrets.RESEND_FROM_EMAIL }}" >> .env
+          echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >> .env
+          echo "LOGO_FULL_URL=${{ vars.LOGO_FULL_URL }}" >> .env
+          echo "R2_ACCOUNT_ID=${{ secrets.R2_ACCOUNT_ID }}" >> .env
+          echo "R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }}" >> .env
+          echo "R2_ACCESS_KEY_SECRET=${{ secrets.R2_ACCESS_KEY_SECRET }}" >> .env
+          echo "R2_BUCKET=${{ secrets.R2_BUCKET }}" >> .env
+          echo "R2_PUBLIC_URL=${{ secrets.R2_PUBLIC_URL }}" >> .env
+          echo "ADMIN_NAME=${{ secrets.ADMIN_NAME }}" >> .env
+          echo "ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}" >> .env
+          echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
+          echo "VERIFICATION_COOLDOWN_SECONDS=${{ vars.VERIFICATION_COOLDOWN_SECONDS }}" >> .env
+          echo "FRONTEND_PORT=${{ vars.FRONTEND_PORT }}" >> .env
+
+      - name: Copy image, compose and env to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST_IP }}
           username: ${{ secrets.HOST_USER }}
           key: ${{ secrets.HOST_SSH_KEY }}
-          source: frontend.tar.gz
+          port: ${{ secrets.HOST_SSH_PORT }}
+          source: "frontend.tar.gz,docker-compose.prod.yml,.env"
           target: /var/www/${{ secrets.HOST_MAIN_FOLDER }}
 
       - name: Load and deploy on VPS
         uses: appleboy/ssh-action@v1
-        env:
-          FRONTEND_PORT: ${{ vars.FRONTEND_PORT }}
         with:
           host: ${{ secrets.HOST_IP }}
           username: ${{ secrets.HOST_USER }}
           key: ${{ secrets.HOST_SSH_KEY }}
-          envs: FRONTEND_PORT
+          port: ${{ secrets.HOST_SSH_PORT }}
           script: |
             cd /var/www/${{ secrets.HOST_MAIN_FOLDER }}
+            chmod 600 .env
             docker load < frontend.tar.gz
-            docker compose -f docker-compose.prod.yml up -d frontend
+            docker compose -f docker-compose.prod.yml up -d --no-deps frontend
             rm -f frontend.tar.gz
             docker image prune -f

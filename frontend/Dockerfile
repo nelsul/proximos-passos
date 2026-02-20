@@ -4,7 +4,7 @@ FROM node:22-alpine AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm install -g npm@latest && npm ci
 
 # ─── Stage 2: Build ──────────────────────────────────────────────────────────
 FROM node:22-alpine AS builder
@@ -20,6 +20,8 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
+# Ensure public/ exists so the runner COPY never fails
+RUN mkdir -p /app/public
 
 # ─── Stage 3: Runtime ────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner
