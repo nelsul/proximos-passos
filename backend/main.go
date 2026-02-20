@@ -11,7 +11,7 @@ import (
 
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	_ "proximos-passos/backend/docs"
+	docs "proximos-passos/backend/docs"
 	"proximos-passos/backend/internal/adapter/handler"
 	"proximos-passos/backend/internal/adapter/middleware"
 	"proximos-passos/backend/internal/infrastructure/jwt"
@@ -214,8 +214,21 @@ func main() {
 		log.Fatal("PORT environment variable is required")
 	}
 
+	// Configure Swagger host at runtime. If SWAGGER_HOST is empty, leave Host blank
+	// so Swagger UI uses the current origin (relative paths).
+	swaggerHost := os.Getenv("SWAGGER_HOST")
+	if swaggerHost != "" {
+		docs.SwaggerInfo.Host = swaggerHost
+	} else {
+		docs.SwaggerInfo.Host = ""
+	}
+
 	log.Printf("Backend listening on :%s", port)
-	log.Printf("Swagger UI available at http://localhost:%s/swagger/index.html", port)
+	if swaggerHost != "" {
+		log.Printf("Swagger UI available at https://%s/swagger/index.html", swaggerHost)
+	} else {
+		log.Printf("Swagger UI available at http://localhost:%s/swagger/index.html", port)
+	}
 	if err := http.ListenAndServe(":"+port, middleware.CORS(mux)); err != nil {
 		log.Fatal(err)
 	}
