@@ -1,0 +1,53 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/deploy-frontend.yml"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }} \
+            -t proximos-passos-frontend:latest \
+            ./frontend
+
+      - name: Export image to tar.gz
+        run: docker save proximos-passos-frontend:latest | gzip > frontend.tar.gz
+
+      - name: Copy image to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ${{ secrets.HOST_USER }}
+          key: ${{ secrets.HOST_SSH_KEY }}
+          source: frontend.tar.gz
+          target: /var/www/${{ secrets.HOST_MAIN_FOLDER }}
+
+      - name: Load and deploy on VPS
+        uses: appleboy/ssh-action@v1
+        env:
+          FRONTEND_PORT: ${{ vars.FRONTEND_PORT }}
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ${{ secrets.HOST_USER }}
+          key: ${{ secrets.HOST_SSH_KEY }}
+          envs: FRONTEND_PORT
+          script: |
+            cd /var/www/${{ secrets.HOST_MAIN_FOLDER }}
+            docker load < frontend.tar.gz
+            docker compose -f docker-compose.prod.yml up -d frontend
+            rm -f frontend.tar.gz
+            docker image prune -f

@@ -1,0 +1,67 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t proximos-passos-backend:latest ./backend
+
+      - name: Export image to tar.gz
+        run: docker save proximos-passos-backend:latest | gzip > backend.tar.gz
+
+      - name: Copy image to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ${{ secrets.HOST_USER }}
+          key: ${{ secrets.HOST_SSH_KEY }}
+          source: backend.tar.gz
+          target: /var/www/${{ secrets.HOST_MAIN_FOLDER }}
+
+      - name: Load and deploy on VPS
+        uses: appleboy/ssh-action@v1
+        env:
+          PORT: ${{ vars.PORT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ vars.DB_PORT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          LOGO_FULL_URL: ${{ vars.LOGO_FULL_URL }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_ACCESS_KEY_SECRET: ${{ secrets.R2_ACCESS_KEY_SECRET }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          VERIFICATION_COOLDOWN_SECONDS: ${{ vars.VERIFICATION_COOLDOWN_SECONDS }}
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: ${{ secrets.HOST_USER }}
+          key: ${{ secrets.HOST_SSH_KEY }}
+          envs: PORT,DATABASE_URL,DB_USER,DB_PASSWORD,DB_NAME,DB_PORT,JWT_SECRET,RESEND_API_KEY,RESEND_FROM_EMAIL,FRONTEND_URL,LOGO_FULL_URL,R2_ACCOUNT_ID,R2_ACCESS_KEY_ID,R2_ACCESS_KEY_SECRET,R2_BUCKET,R2_PUBLIC_URL,ADMIN_NAME,ADMIN_EMAIL,ADMIN_PASSWORD,VERIFICATION_COOLDOWN_SECONDS
+          script: |
+            cd /var/www/${{ secrets.HOST_MAIN_FOLDER }}
+            docker load < backend.tar.gz
+            docker compose -f docker-compose.prod.yml up -d backend
+            rm -f backend.tar.gz
+            docker image prune -f

@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${DB_PORT}:${DB_PORT}"
+
+  backend:
+    image: proximos-passos-backend:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "127.0.0.1:${PORT}:${PORT}"
+    environment:
+      PORT: ${PORT}
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:${DB_PORT}/${DB_NAME}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      LOGO_FULL_URL: ${LOGO_FULL_URL}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_ACCESS_KEY_SECRET: ${R2_ACCESS_KEY_SECRET}
+      R2_BUCKET: ${R2_BUCKET}
+      R2_PUBLIC_URL: ${R2_PUBLIC_URL}
+      ADMIN_NAME: ${ADMIN_NAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      VERIFICATION_COOLDOWN_SECONDS: ${VERIFICATION_COOLDOWN_SECONDS}
+
+  frontend:
+    image: proximos-passos-frontend:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT}:${FRONTEND_PORT}"
+    environment:
+      PORT: ${FRONTEND_PORT}
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
