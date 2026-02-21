@@ -12,6 +12,8 @@ import {
     PenLine,
     ExternalLink,
     Loader2,
+    Brain,
+    Cpu,
 } from "lucide-react";
 import { type ActivityItemResponse } from "@/lib/activities";
 import { getVideoLesson } from "@/lib/video-lessons";
@@ -177,6 +179,47 @@ export function ItemRow({ item, index, activityId, questionStatus, t }: ItemRowP
                         <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                         {t("ACTIVITY_ITEM_OPEN")}
                     </Link>
+                )}
+
+                {item.type === "question" && item.median_difficulty !== undefined && item.median_difficulty !== null && (
+                    <div className="flex gap-1 flex-wrap">
+                        {item.median_logic !== undefined && item.median_logic !== null && (
+                            <span
+                                className={`group/logic relative inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium uppercase cursor-default ${item.median_logic >= 2.25 ? "bg-red-500/10 text-red-400" :
+                                    item.median_logic >= 1.25 ? "bg-amber-500/10 text-amber-400" :
+                                        "bg-green-500/10 text-green-400"
+                                    }`}
+                            >
+                                <Brain className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                                {item.median_logic >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : item.median_logic >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
+                                <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[9px] text-white opacity-0 transition-opacity group-hover/logic:opacity-100">{t("FEEDBACK_LOGIC")}</span>
+                            </span>
+                        )}
+                        {item.median_labor !== undefined && item.median_labor !== null && (
+                            <span
+                                className={`group/labor relative inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium uppercase cursor-default ${item.median_labor >= 2.25 ? "bg-red-500/10 text-red-400" :
+                                    item.median_labor >= 1.25 ? "bg-amber-500/10 text-amber-400" :
+                                        "bg-green-500/10 text-green-400"
+                                    }`}
+                            >
+                                <Cpu className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                                {item.median_labor >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : item.median_labor >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
+                                <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[9px] text-white opacity-0 transition-opacity group-hover/labor:opacity-100">{t("FEEDBACK_LABOR")}</span>
+                            </span>
+                        )}
+                        {item.median_theory !== undefined && item.median_theory !== null && (
+                            <span
+                                className={`group/theory relative inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium uppercase cursor-default ${item.median_theory >= 2.25 ? "bg-red-500/10 text-red-400" :
+                                    item.median_theory >= 1.25 ? "bg-amber-500/10 text-amber-400" :
+                                        "bg-green-500/10 text-green-400"
+                                    }`}
+                            >
+                                <BookOpen className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                                {item.median_theory >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : item.median_theory >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
+                                <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[9px] text-white opacity-0 transition-opacity group-hover/theory:opacity-100">{t("FEEDBACK_THEORY")}</span>
+                            </span>
+                        )}
+                    </div>
                 )}
 
                 <span className="shrink-0 rounded-full bg-surface-light px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium text-muted uppercase">

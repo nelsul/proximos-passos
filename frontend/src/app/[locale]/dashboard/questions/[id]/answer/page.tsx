@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
-import { Loader2, CheckCircle2, XCircle, ArrowLeft, Send } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, ArrowLeft, Send, Brain, Cpu, BookOpen } from "lucide-react";
 import { getQuestion, type QuestionResponse } from "@/lib/questions";
 import {
   submitAnswer,
@@ -14,6 +14,7 @@ import { LatexText } from "@/components/ui/latex-text";
 import { StatementRenderer } from "@/components/questions/statement-renderer";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { createQuestionFeedback } from "@/lib/questions";
 
 const OPTION_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -36,6 +37,13 @@ export default function AnswerQuestionPage({
   const [answerText, setAnswerText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<QuestionSubmissionResponse | null>(null);
+
+  // Feedback State
+  const [feedbackLogic, setFeedbackLogic] = useState<number>(2);
+  const [feedbackLabor, setFeedbackLabor] = useState<number>(2);
+  const [feedbackTheory, setFeedbackTheory] = useState<number>(2);
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -79,6 +87,24 @@ export default function AnswerQuestionPage({
     }
   }
 
+  async function handleFeedbackSubmit() {
+    if (!question || feedbackSubmitting || feedbackSubmitted) return;
+    setFeedbackSubmitting(true);
+    try {
+      await createQuestionFeedback(question.id, {
+        difficulty_logic: feedbackLogic,
+        difficulty_labor: feedbackLabor,
+        difficulty_theory: feedbackTheory,
+      });
+      setFeedbackSubmitted(true);
+      toast(t("FEEDBACK_SUBMITTED_SUCCESS"));
+    } catch {
+      toast(t("ERROR_INTERNAL_ERROR"));
+    } finally {
+      setFeedbackSubmitting(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -115,7 +141,7 @@ export default function AnswerQuestionPage({
           : t("SUBMISSION_BACK_TO_QUESTIONS")}
       </button>
 
-      <div className="rounded-lg border border-surface-border bg-surface p-6">
+      <div className="rounded-lg border border-surface-border bg-surface p-4 sm:p-6">
         {/* Question metadata */}
         <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-muted">
           <span className="rounded-full bg-surface-light px-2 py-0.5">
@@ -128,6 +154,52 @@ export default function AnswerQuestionPage({
               {question.exam.institution_acronym || question.exam.institution} ·{" "}
               {question.exam.title} ({question.exam.year})
             </span>
+          )}
+          {question.median_difficulty !== undefined && question.median_difficulty !== null && (
+            <div className="flex gap-1.5 flex-wrap">
+              {question.median_logic !== undefined && question.median_logic !== null && (
+                <span
+                  className={`group/logic relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase cursor-default ${question.median_logic >= 2.25
+                    ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                    : question.median_logic >= 1.25
+                      ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                      : "bg-green-500/10 text-green-400 border border-green-500/20"
+                    }`}
+                >
+                  <Brain className="h-3 w-3" />
+                  {question.median_logic >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : question.median_logic >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
+                  <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[10px] text-white opacity-0 transition-opacity group-hover/logic:opacity-100">{t("FEEDBACK_LOGIC")}</span>
+                </span>
+              )}
+              {question.median_labor !== undefined && question.median_labor !== null && (
+                <span
+                  className={`group/labor relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase cursor-default ${question.median_labor >= 2.25
+                    ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                    : question.median_labor >= 1.25
+                      ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                      : "bg-green-500/10 text-green-400 border border-green-500/20"
+                    }`}
+                >
+                  <Cpu className="h-3 w-3" />
+                  {question.median_labor >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : question.median_labor >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
+                  <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[10px] text-white opacity-0 transition-opacity group-hover/labor:opacity-100">{t("FEEDBACK_LABOR")}</span>
+                </span>
+              )}
+              {question.median_theory !== undefined && question.median_theory !== null && (
+                <span
+                  className={`group/theory relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase cursor-default ${question.median_theory >= 2.25
+                    ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                    : question.median_theory >= 1.25
+                      ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                      : "bg-green-500/10 text-green-400 border border-green-500/20"
+                    }`}
+                >
+                  <BookOpen className="h-3 w-3" />
+                  {question.median_theory >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : question.median_theory >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
+                  <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[10px] text-white opacity-0 transition-opacity group-hover/theory:opacity-100">{t("FEEDBACK_THEORY")}</span>
+                </span>
+              )}
+            </div>
           )}
           {question.topics.map((topic) => (
             <span
@@ -149,11 +221,10 @@ export default function AnswerQuestionPage({
         {/* Result banner */}
         {result && (
           <div
-            className={`mb-6 rounded-lg p-4 ${
-              result.passed
-                ? "border border-green-200 bg-green-50 text-green-800"
-                : "border border-red-200 bg-red-50 text-red-800"
-            }`}
+            className={`mb-6 rounded-lg p-4 ${result.passed
+              ? "border border-green-200 bg-green-50 text-green-800"
+              : "border border-red-200 bg-red-50 text-red-800"
+              }`}
           >
             <div className="flex items-center gap-2">
               {result.passed ? (
@@ -205,22 +276,20 @@ export default function AnswerQuestionPage({
                   key={opt.id}
                   disabled={result != null}
                   onClick={() => setSelectedOption(opt.id)}
-                  className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors ${borderClass} ${
-                    result == null
-                      ? "hover:border-secondary hover:bg-secondary/5"
-                      : ""
-                  } disabled:cursor-default`}
+                  className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors ${borderClass} ${result == null
+                    ? "hover:border-secondary hover:bg-secondary/5"
+                    : ""
+                    } disabled:cursor-default`}
                 >
                   <span
-                    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
-                      !showResult && isSelected
-                        ? "border-secondary bg-secondary text-white"
-                        : revealCorrect && isCorrectOption
-                          ? "border-green-500 bg-green-500 text-white"
-                          : showResult && wasSelected && !isCorrectOption
-                            ? "border-red-500 bg-red-500 text-white"
-                            : "border-surface-border text-muted"
-                    }`}
+                    className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${!showResult && isSelected
+                      ? "border-secondary bg-secondary text-white"
+                      : revealCorrect && isCorrectOption
+                        ? "border-green-500 bg-green-500 text-white"
+                        : showResult && wasSelected && !isCorrectOption
+                          ? "border-red-500 bg-red-500 text-white"
+                          : "border-surface-border text-muted"
+                      }`}
                   >
                     {OPTION_LETTERS[idx] ?? idx + 1}
                   </span>
@@ -276,29 +345,122 @@ export default function AnswerQuestionPage({
           </div>
         )}
 
-        {/* After submission actions */}
+        {/* After submission actions & Feedback Block */}
         {result && (
-          <div className="mt-4 flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setResult(null);
-                setSelectedOption(null);
-                setAnswerText("");
-              }}
-              className="w-auto"
-            >
-              {t("SUBMISSION_TRY_AGAIN")}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => router.push(`/${locale}/dashboard/submissions`)}
-              className="w-auto"
-            >
-              {t("SUBMISSION_VIEW_HISTORY")}
-            </Button>
+          <div className="mt-8 border-t border-surface-border pt-6">
+            {!feedbackSubmitted ? (
+              <div className="mb-8 rounded-lg border border-surface-border bg-surface-light p-4 animate-in fade-in slide-in-from-bottom-2">
+                <h4 className="mb-5 text-sm font-semibold text-heading">
+                  {t("SUBMISSION_FEEDBACK_TITLE", { defaultValue: "How difficult was this question?" })}
+                </h4>
+                <div className="space-y-6">
+                  {/* Logic Feedback */}
+                  <div>
+                    <div className="mb-3 flex justify-between text-xs font-medium text-heading">
+                      <span>{t("FEEDBACK_LOGIC", { defaultValue: "Logic/Reasoning" })}</span>
+                    </div>
+                    <div className="flex w-full overflow-hidden rounded-lg border border-surface-border bg-surface">
+                      {[1, 2, 3].map((val) => (
+                        <button
+                          key={`logic-${val}`}
+                          onClick={() => setFeedbackLogic(val)}
+                          className={`flex-1 py-2 text-xs font-medium transition-colors ${feedbackLogic === val
+                            ? "bg-secondary text-primary-dark font-bold shadow-md"
+                            : "text-muted hover:bg-surface-light hover:text-heading"
+                            }`}
+                        >
+                          {val === 1 ? t("FEEDBACK_LEVEL_LOW", { defaultValue: "Low" }) : val === 2 ? t("FEEDBACK_LEVEL_MEDIUM", { defaultValue: "Medium" }) : t("FEEDBACK_LEVEL_HIGH", { defaultValue: "High" })}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Labor Feedback */}
+                  <div>
+                    <div className="mb-3 flex justify-between text-xs font-medium text-heading">
+                      <span>{t("FEEDBACK_LABOR", { defaultValue: "Computational Labor" })}</span>
+                    </div>
+                    <div className="flex w-full overflow-hidden rounded-lg border border-surface-border bg-surface">
+                      {[1, 2, 3].map((val) => (
+                        <button
+                          key={`labor-${val}`}
+                          onClick={() => setFeedbackLabor(val)}
+                          className={`flex-1 py-2 text-xs font-medium transition-colors ${feedbackLabor === val
+                            ? "bg-secondary text-primary-dark font-bold shadow-md"
+                            : "text-muted hover:bg-surface-light hover:text-heading"
+                            }`}
+                        >
+                          {val === 1 ? t("FEEDBACK_LEVEL_LOW", { defaultValue: "Low" }) : val === 2 ? t("FEEDBACK_LEVEL_MEDIUM", { defaultValue: "Medium" }) : t("FEEDBACK_LEVEL_HIGH", { defaultValue: "High" })}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Theory Feedback */}
+                  <div>
+                    <div className="mb-3 flex justify-between text-xs font-medium text-heading">
+                      <span>{t("FEEDBACK_THEORY", { defaultValue: "Theoretical Knowledge" })}</span>
+                    </div>
+                    <div className="flex w-full overflow-hidden rounded-lg border border-surface-border bg-surface">
+                      {[1, 2, 3].map((val) => (
+                        <button
+                          key={`theory-${val}`}
+                          onClick={() => setFeedbackTheory(val)}
+                          className={`flex-1 py-2 text-xs font-medium transition-colors ${feedbackTheory === val
+                            ? "bg-secondary text-primary-dark font-bold shadow-md"
+                            : "text-muted hover:bg-surface-light hover:text-heading"
+                            }`}
+                        >
+                          {val === 1 ? t("FEEDBACK_LEVEL_LOW", { defaultValue: "Low" }) : val === 2 ? t("FEEDBACK_LEVEL_MEDIUM", { defaultValue: "Medium" }) : t("FEEDBACK_LEVEL_HIGH", { defaultValue: "High" })}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <Button
+                      size="sm"
+                      loading={feedbackSubmitting}
+                      onClick={handleFeedbackSubmit}
+                      className="w-full sm:w-auto shadow-md"
+                    >
+                      {t("FEEDBACK_SUBMIT_BUTTON", { defaultValue: "Send Feedback" })}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-8 rounded-lg bg-green-500/10 p-3 text-center text-sm font-medium text-green-500 border border-green-500/20">
+                {t("FEEDBACK_SUBMITTED_MESSAGE", { defaultValue: "Thank you for your feedback!" })}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setResult(null);
+                  setSelectedOption(null);
+                  setAnswerText("");
+                  setFeedbackSubmitted(false);
+                  setFeedbackLogic(2);
+                  setFeedbackLabor(2);
+                  setFeedbackTheory(2);
+                }}
+                className="w-auto"
+              >
+                {t("SUBMISSION_TRY_AGAIN")}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => router.push(`/${locale}/dashboard/submissions`)}
+                className="w-auto"
+              >
+                {t("SUBMISSION_VIEW_HISTORY")}
+              </Button>
+            </div>
           </div>
         )}
       </div>

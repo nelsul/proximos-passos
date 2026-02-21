@@ -42,8 +42,26 @@ export interface QuestionResponse {
   options: QuestionOptionResponse[];
   topics: QuestionTopicResponse[];
   is_active: boolean;
+  median_difficulty?: number;
+  median_logic?: number;
+  median_labor?: number;
+  median_theory?: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface CreateQuestionFeedbackRequest {
+  difficulty_logic: number;
+  difficulty_labor: number;
+  difficulty_theory: number;
+}
+
+export interface QuestionFeedbackResponse {
+  id: string;
+  difficulty_logic: number;
+  difficulty_labor: number;
+  difficulty_theory: number;
+  created_at: string;
 }
 
 export interface QuestionListResponse {
@@ -218,4 +236,14 @@ export async function removeQuestionImage(
 
 export async function deleteQuestion(id: string): Promise<void> {
   return api<void>(`/questions/${id}`, { method: "DELETE" });
+}
+
+export async function createQuestionFeedback(
+  questionId: string,
+  input: CreateQuestionFeedbackRequest,
+): Promise<QuestionFeedbackResponse> {
+  return api<QuestionFeedbackResponse>(`/questions/${questionId}/feedback`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }

@@ -154,6 +154,10 @@ export interface ActivityItemResponse {
   description?: string;
   type: string;
   content_subtitle?: string;
+  median_difficulty?: number;
+  median_logic?: number;
+  median_labor?: number;
+  median_theory?: number;
   question_id?: string;
   video_lesson_id?: string;
   handout_id?: string;

@@ -12,8 +12,8 @@
 
   /* Modern Dark Mode Surfaces */
   --color-background: #050808;
-  --color-surface: rgba(15, 46, 46, 0.4);
-  --color-surface-light: rgba(26, 74, 74, 0.5);
+  --color-surface: #0f2e2e;
+  --color-surface-light: #1a4a4a;
   --color-surface-border: rgba(255, 255, 255, 0.05);
 
   /* Dark Mode Text */

@@ -22,6 +22,7 @@ type QuestionRepository interface {
 	RemoveImage(ctx context.Context, questionID int, filePublicID string) error
 	SetTopics(ctx context.Context, questionID int, topicIDs []int) error
 	SetOptions(ctx context.Context, questionID int, options []entity.QuestionOption, createdByID int) error
+	CreateFeedback(ctx context.Context, feedback *entity.QuestionFeedback) error
 	Delete(ctx context.Context, publicID string) error
 	List(ctx context.Context, limit, offset int, filter QuestionFilter) ([]entity.Question, error)
 	Count(ctx context.Context, filter QuestionFilter) (int, error)

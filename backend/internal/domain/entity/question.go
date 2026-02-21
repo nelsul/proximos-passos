@@ -22,9 +22,13 @@ type Question struct {
 	ExamInstitution        string
 	ExamInstitutionAcronym string
 
-	Topics  []TopicRef
-	Images  []QuestionImage
-	Options []QuestionOption
+	Topics           []TopicRef
+	Images           []QuestionImage
+	Options          []QuestionOption
+	MedianDifficulty *float64
+	MedianLogic      *float64
+	MedianLabor      *float64
+	MedianTheory     *float64
 }
 
 type QuestionImage struct {

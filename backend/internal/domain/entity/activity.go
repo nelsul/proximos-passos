@@ -61,4 +61,8 @@ type ActivityItem struct {
 	HandoutTitle             *string
 	OpenExerciseListTitle    *string
 	SimulatedExamTitle       *string
+	MedianDifficulty         *float64
+	MedianLogic              *float64
+	MedianLabor              *float64
+	MedianTheory             *float64
 }

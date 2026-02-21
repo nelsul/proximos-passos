@@ -21,14 +21,12 @@
     "CTA_DESCRIPTION": "Join students who are already organizing their studies in a smarter and more efficient way.",
     "CTA_BUTTON": "Create my account",
     "FOOTER_RIGHTS": "© {year} Próximos Passos. All rights reserved.",
-
     "LOGIN_SUBTITLE": "Sign in to your account to continue.",
     "LOGIN_EMAIL_LABEL": "Email",
     "LOGIN_EMAIL_PLACEHOLDER": "you@email.com",
     "LOGIN_PASSWORD_LABEL": "Password",
     "LOGIN_PASSWORD_PLACEHOLDER": "Your password",
     "LOGIN_SUBMIT": "Sign in",
-
     "VERIFY_EMAIL_LOADING": "Verifying your email...",
     "VERIFY_EMAIL_SUCCESS_TITLE": "Email verified!",
     "VERIFY_EMAIL_SUCCESS_DESCRIPTION": "Your email has been verified successfully. You can now sign in.",
@@ -36,7 +34,6 @@
     "VERIFY_EMAIL_NO_TOKEN_TITLE": "Invalid link",
     "VERIFY_EMAIL_NO_TOKEN_DESCRIPTION": "The verification link does not contain a valid token. Please check the link from your email.",
     "VERIFY_EMAIL_LOGIN_BUTTON": "Go to login",
-
     "REGISTER_SUBTITLE": "Create your account to get started.",
     "REGISTER_NAME_LABEL": "Full name",
     "REGISTER_NAME_PLACEHOLDER": "Your full name",
@@ -49,7 +46,6 @@
     "REGISTER_SUCCESS_DESCRIPTION": "We sent a verification link to your email. Please check your inbox and verify your account.",
     "REGISTER_LOGIN_LINK": "Already have an account? Sign in",
     "LOGIN_REGISTER_LINK": "Don't have an account? Sign up",
-
     "RESEND_SUBTITLE": "Enter your email to receive a new verification link.",
     "RESEND_EMAIL_LABEL": "Email",
     "RESEND_EMAIL_PLACEHOLDER": "you@email.com",
@@ -58,7 +54,6 @@
     "RESEND_SUCCESS_DESCRIPTION": "If an account with that email exists and is not yet verified, you will receive a verification link shortly.",
     "RESEND_LOGIN_LINK": "Back to login",
     "LOGIN_RESEND_LINK": "Didn't receive the verification email?",
-
     "ERROR_INVALID_CREDENTIALS": "Invalid email or password.",
     "ERROR_INVALID_VERIFICATION_TOKEN": "The verification token is invalid or expired.",
     "ERROR_EMAIL_ALREADY_VERIFIED": "This email has already been verified.",
@@ -67,10 +62,8 @@
     "ERROR_INVALID_INPUT": "Please fill in all required fields.",
     "ERROR_VERIFICATION_COOLDOWN": "Please wait a few minutes before requesting another verification email.",
     "ERROR_EMAIL_NOT_VERIFIED": "Please verify your email before logging in.",
-
     "MENU_EDIT_PROFILE": "Edit profile",
     "MENU_LOGOUT": "Log out",
-
     "PROFILE_TITLE": "Edit profile",
     "PROFILE_NAME_LABEL": "Name",
     "PROFILE_NAME_PLACEHOLDER": "Your name",
@@ -79,9 +72,7 @@
     "PROFILE_CANCEL": "Cancel",
     "PROFILE_SAVE": "Save",
     "PROFILE_SUCCESS": "Profile updated successfully.",
-
     "LOGOUT_SUCCESS": "You have been logged out.",
-
     "SIDEBAR_GROUPS": "Groups",
     "SIDEBAR_MY_GROUPS": "My Groups",
     "SIDEBAR_TOPICS": "Topics",
@@ -91,15 +82,12 @@
     "SIDEBAR_QUESTIONS": "Questions",
     "SIDEBAR_INSTITUTIONS": "Institutions",
     "SIDEBAR_EXAMS": "Exams",
-
     "GROUPS_TITLE": "Groups",
     "GROUPS_SUBTITLE": "Browse public groups available on the platform.",
     "GROUPS_EMPTY": "No public groups available yet.",
-
     "MY_GROUPS_TITLE": "My Groups",
     "MY_GROUPS_SUBTITLE": "Groups you are a member of.",
     "MY_GROUPS_EMPTY": "You are not a member of any group yet.",
-
     "GROUP_CREATE_BUTTON": "New group",
     "GROUP_CREATE_TITLE": "Create group",
     "GROUP_NAME_LABEL": "Group name",
@@ -114,7 +102,6 @@
     "GROUP_ACCESS_CLOSED": "Closed",
     "GROUP_CREATE_SUBMIT": "Create",
     "GROUP_CREATE_SUCCESS": "Group created successfully.",
-
     "GROUP_DETAIL_ADMINS": "Administrators",
     "GROUP_DETAIL_MEMBERS": "Members",
     "GROUP_DETAIL_NO_MEMBERS": "No members found.",
@@ -123,7 +110,6 @@
     "GROUP_TAB_ACTIVITIES": "Activities",
     "GROUP_TAB_PAST_ACTIVITIES": "Past Activities",
     "GROUP_TAB_MEMBERS": "Members",
-
     "GROUP_JOIN_BUTTON": "Join group",
     "GROUP_REQUEST_BUTTON": "Request to join",
     "GROUP_JOIN_SUCCESS": "You have joined the group.",
@@ -131,7 +117,6 @@
     "GROUP_ALREADY_MEMBER": "Already a member",
     "GROUP_REQUEST_PENDING": "Request pending",
     "ERROR_MEMBER_ALREADY_EXISTS": "You are already a member of this group.",
-
     "GROUP_BACK_TO_MY_GROUPS": "Back to my groups",
     "GROUP_EDIT_BUTTON": "Edit",
     "GROUP_EDIT_TITLE": "Edit group",
@@ -147,18 +132,15 @@
     "GROUP_MEMBER_REJECTED": "Request rejected.",
     "GROUP_MEMBER_REMOVED": "Member removed successfully.",
     "GROUP_REMOVE_MEMBER_BUTTON": "Remove member",
-
     "GROUP_INVITE_BUTTON": "Invite",
     "GROUP_INVITE_TITLE": "Invite to group",
     "GROUP_INVITE_DESCRIPTION": "Share the link or QR Code below to invite people to the group {name}.",
     "GROUP_INVITE_COPY": "Copy",
     "GROUP_INVITE_COPIED": "Copied!",
     "GROUP_NOT_FOUND": "Group not found.",
-
     "FILTER_NAME_PLACEHOLDER": "Search by name…",
     "FILTER_ACCESS_ALL": "All access types",
     "FILTER_VISIBILITY_ALL": "All visibilities",
-
     "ACTIVITY_UPCOMING_TITLE": "Upcoming Activities",
     "ACTIVITY_PAST_TITLE": "Past Activities",
     "ACTIVITY_EMPTY_UPCOMING": "No upcoming activities.",
@@ -190,7 +172,6 @@
     "ERROR_ACTIVITY_NOT_FOUND": "Activity not found.",
     "ERROR_ATTACHMENT_NOT_FOUND": "Attachment not found.",
     "ERROR_ACTIVITY_TITLE_TAKEN": "An activity with this title already exists in the group.",
-
     "ACTIVITY_ITEMS_TITLE": "Items",
     "ACTIVITY_ITEMS_EMPTY": "No items added yet.",
     "ACTIVITY_ITEM_ADD": "Add item",
@@ -215,7 +196,6 @@
     "ACTIVITY_ITEM_UPDATE_SUCCESS": "Item updated successfully.",
     "ACTIVITY_ITEM_DELETE_SUCCESS": "Item removed successfully.",
     "ERROR_ACTIVITY_ITEM_NOT_FOUND": "Activity item not found.",
-
     "TOPICS_TITLE": "Topics",
     "TOPICS_SUBTITLE": "Manage the topic taxonomy for the platform.",
     "TOPICS_EMPTY": "No topics created yet.",
@@ -247,7 +227,6 @@
     "ERROR_TOPIC_NOT_FOUND": "Topic not found.",
     "ERROR_TOPIC_NAME_TAKEN": "A topic with this name already exists under the same parent.",
     "ERROR_TOPIC_HAS_CHILDREN": "Cannot delete a topic that has subtopics.",
-
     "HANDOUTS_TITLE": "Handouts",
     "HANDOUTS_SUBTITLE": "Manage PDF handouts for the platform.",
     "HANDOUTS_EMPTY": "No handouts created yet.",
@@ -278,7 +257,6 @@
     "TOPIC_PICKER_CLOSE": "Close",
     "ERROR_HANDOUT_NOT_FOUND": "Handout not found.",
     "ERROR_HANDOUT_TITLE_TAKEN": "A handout with this title already exists.",
-
     "INSTITUTIONS_TITLE": "Institutions",
     "INSTITUTIONS_SUBTITLE": "Manage institutions for the platform.",
     "INSTITUTIONS_EMPTY": "No institutions created yet.",
@@ -301,7 +279,6 @@
     "INSTITUTION_DETAIL_TOPICS": "Topics covered",
     "INSTITUTION_DETAIL_TOPIC_TREE": "Topic tree",
     "INSTITUTION_DETAIL_NO_TOPICS": "No topics found for this institution.",
-
     "EXAMS_TITLE": "Exams",
     "EXAMS_SUBTITLE": "Manage exams for the platform.",
     "EXAMS_EMPTY": "No exams created yet.",
@@ -329,7 +306,6 @@
     "EXAM_DETAIL_TOPICS": "Topics covered",
     "EXAM_DETAIL_TOPIC_TREE": "Topic tree",
     "EXAM_DETAIL_NO_TOPICS": "No topics found for this exam.",
-
     "VIDEO_LESSONS_TITLE": "Video Lessons",
     "VIDEO_LESSONS_SUBTITLE": "Manage video lessons for the platform.",
     "VIDEO_LESSONS_EMPTY": "No video lessons created yet.",
@@ -395,7 +371,6 @@
     "EXERCISE_LIST_PAGE_NEXT": "Next",
     "ERROR_OPEN_EXERCISE_LIST_NOT_FOUND": "Exercise list not found.",
     "ERROR_OPEN_EXERCISE_LIST_TITLE_TAKEN": "An exercise list with this title already exists.",
-
     "QUESTIONS_TITLE": "Questions",
     "QUESTIONS_SUBTITLE": "Manage questions for the platform.",
     "QUESTIONS_EMPTY": "No questions created yet.",
@@ -454,7 +429,6 @@
     "QUESTION_BLOCK_MOVE_DOWN": "Move down",
     "QUESTION_BLOCK_IMAGE_EMPTY": "No image selected",
     "ERROR_QUESTION_NOT_FOUND": "Question not found.",
-
     "LATEX_SHOW_MORE": "More ▾",
     "LATEX_SHOW_LESS": "Less ▴",
     "LATEX_CAT_STRUCTURE": "Structure",
@@ -496,7 +470,6 @@
     "LATEX_TIP_SIGMA": "Sigma",
     "LATEX_TIP_DELTA_UPPER": "Delta (uppercase)",
     "LATEX_TIP_OMEGA": "Omega",
-
     "SIDEBAR_USERS": "Users",
     "USERS_TITLE": "Users",
     "USERS_SUBTITLE": "Manage registered users on the platform.",
@@ -513,7 +486,6 @@
     "USER_INACTIVE": "Inactive",
     "USER_UPDATE_SUCCESS": "User updated successfully.",
     "USER_SEARCH_PLACEHOLDER": "Search users…",
-
     "SIDEBAR_SUBMISSIONS": "My Submissions",
     "SUBMISSIONS_TITLE": "My Submissions",
     "SUBMISSIONS_SUBTITLE": "View your past question answers and scores.",
@@ -584,5 +556,16 @@
     "ERROR_ACTIVITY_SUBMISSION_NOT_FOUND": "Activity submission not found.",
     "ERROR_ACTIVITY_SUBMISSION_NOT_PENDING": "This submission is no longer pending and cannot be edited.",
     "ERROR_ACTIVITY_ALREADY_SUBMITTED": "You have already submitted this activity.",
-    "ERROR_ACTIVITY_SUBMISSION_NOT_REPROVED": "This submission is not reproved and cannot be resubmitted."
+    "ERROR_ACTIVITY_SUBMISSION_NOT_REPROVED": "This submission is not reproved and cannot be resubmitted.",
+    "SUBMISSION_FEEDBACK_TITLE": "How difficult was this question?",
+    "FEEDBACK_LOGIC": "Logic/Reasoning",
+    "FEEDBACK_LABOR": "Computational Labor",
+    "FEEDBACK_THEORY": "Theoretical Knowledge",
+    "FEEDBACK_SUBMIT_BUTTON": "Send Feedback",
+    "FEEDBACK_SUBMITTED_MESSAGE": "Thank you for your feedback! Your rating helps us improve the platform.",
+    "FEEDBACK_LEVEL_LOW": "Low",
+    "FEEDBACK_LEVEL_MEDIUM": "Medium",
+    "FEEDBACK_LEVEL_HIGH": "High",
+    "DIFFICULTY": "Difficulty",
+    "QUESTION_MEDIAN_DIFFICULTY": "Average Difficulty: {value}"
 }

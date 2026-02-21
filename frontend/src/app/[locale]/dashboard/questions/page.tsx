@@ -12,6 +12,9 @@ import {
   X,
   ImageIcon,
   Send,
+  Brain,
+  Cpu,
+  BookOpen,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
@@ -184,9 +187,9 @@ export default function QuestionsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-heading">
+          <h1 className="text-xl sm:text-2xl font-bold text-heading">
             {t("QUESTIONS_TITLE")}
           </h1>
           <p className="mt-1 text-sm text-muted">{t("QUESTIONS_SUBTITLE")}</p>
@@ -202,8 +205,8 @@ export default function QuestionsPage() {
         )}
       </div>
 
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
+      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:items-center">
+        <div className="relative sm:col-span-2 lg:flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
           <input
             type="text"
@@ -217,7 +220,7 @@ export default function QuestionsPage() {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="shrink-0 rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
+          className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
         >
           <option value="">{t("QUESTION_ALL_TYPES")}</option>
           <option value="open_ended">{t("QUESTION_TYPE_OPEN_ENDED")}</option>
@@ -229,7 +232,7 @@ export default function QuestionsPage() {
         <select
           value={examFilter}
           onChange={(e) => setExamFilter(e.target.value)}
-          className="shrink-0 rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
+          className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
         >
           <option value="">{t("QUESTION_ALL_EXAMS")}</option>
           {exams.map((exam) => (
@@ -242,7 +245,7 @@ export default function QuestionsPage() {
         <select
           value={institutionFilter}
           onChange={(e) => setInstitutionFilter(e.target.value)}
-          className="shrink-0 rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
+          className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
         >
           <option value="">{t("QUESTION_ALL_INSTITUTIONS")}</option>
           {institutions.map((inst) => (
@@ -255,7 +258,7 @@ export default function QuestionsPage() {
         {topicFilter ? (
           <button
             onClick={() => setTopicFilter(null)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-3 py-2 text-xs font-medium text-secondary transition-colors hover:bg-secondary/20"
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-secondary/10 px-3 py-2 text-xs font-medium text-secondary transition-colors hover:bg-secondary/20"
           >
             {topicFilter.name}
             <X className="h-3.5 w-3.5" />
@@ -263,7 +266,7 @@ export default function QuestionsPage() {
         ) : (
           <button
             onClick={() => setShowTopicFilter(true)}
-            className="shrink-0 rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
+            className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
           >
             {t("QUESTION_FILTER_BY_TOPIC")}
           </button>
@@ -296,65 +299,110 @@ export default function QuestionsPage() {
             {questions.map((q) => (
               <div
                 key={q.id}
-                className="flex items-center gap-3 rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:bg-surface-light"
+                className="flex flex-col gap-2 rounded-lg border border-surface-border bg-surface p-3 sm:p-4 transition-colors hover:bg-surface-light sm:flex-row sm:items-center sm:gap-3"
               >
-                <HelpCircle className="h-5 w-5 shrink-0 text-secondary" />
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-medium text-heading line-clamp-2">
-                    <LatexText text={stripImageMarkers(q.statement)} />
-                  </h3>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
-                    <span className="rounded-full bg-surface-light px-2 py-0.5">
-                      {typeLabel(q.type)}
-                    </span>
-                    {q.exam && (
-                      <>
-                        <span>·</span>
-                        <span className="rounded-full border border-surface-border bg-surface-light px-2 py-0.5 text-muted">
-                          {q.exam.institution_acronym || q.exam.institution} ·{" "}
-                          {q.exam.title} ({q.exam.year})
-                        </span>
-                      </>
-                    )}
-                    {q.images.length > 0 && (
-                      <>
-                        <span>·</span>
-                        <span className="inline-flex items-center gap-1">
-                          <ImageIcon className="h-3 w-3" />
-                          {q.images.length}
-                        </span>
-                      </>
-                    )}
-                    {q.passing_score != null && (
-                      <>
-                        <span>·</span>
-                        <span>{q.passing_score}%</span>
-                      </>
-                    )}
-                    {q.options.length > 0 && (
-                      <>
-                        <span>·</span>
-                        <span>
-                          {q.options.length} {t("QUESTION_OPTIONS_COUNT")}
-                        </span>
-                      </>
-                    )}
-                    {q.topics.length > 0 && (
-                      <>
-                        <span>·</span>
-                        {q.topics.map((topic) => (
-                          <span
-                            key={topic.id}
-                            className="rounded-full bg-secondary/10 px-2 py-0.5 text-secondary"
-                          >
-                            {topic.name}
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                  <HelpCircle className="h-5 w-5 shrink-0 text-secondary mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium text-heading line-clamp-2">
+                      <LatexText text={stripImageMarkers(q.statement)} />
+                    </h3>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+                      <span className="rounded-full bg-surface-light px-2 py-0.5">
+                        {typeLabel(q.type)}
+                      </span>
+                      {q.exam && (
+                        <>
+                          <span>·</span>
+                          <span className="rounded-full border border-surface-border bg-surface-light px-2 py-0.5 text-muted">
+                            {q.exam.institution_acronym || q.exam.institution} ·{" "}
+                            {q.exam.title} ({q.exam.year})
                           </span>
-                        ))}
-                      </>
-                    )}
+                        </>
+                      )}
+                      {q.images.length > 0 && (
+                        <>
+                          <span>·</span>
+                          <span className="inline-flex items-center gap-1">
+                            <ImageIcon className="h-3 w-3" />
+                            {q.images.length}
+                          </span>
+                        </>
+                      )}
+                      {q.passing_score != null && (
+                        <>
+                          <span>·</span>
+                          <span>{q.passing_score}%</span>
+                        </>
+                      )}
+                      {q.options.length > 0 && (
+                        <>
+                          <span>·</span>
+                          <span>
+                            {q.options.length} {t("QUESTION_OPTIONS_COUNT")}
+                          </span>
+                        </>
+                      )}
+                      {q.median_difficulty !== undefined && q.median_difficulty !== null && (
+                        <>
+                          <span>·</span>
+                          <div className="flex gap-1.5 flex-wrap">
+                            {q.median_logic !== undefined && q.median_logic !== null && (
+                              <span
+                                className={`group/logic relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium uppercase cursor-default ${q.median_logic >= 2.25 ? "bg-red-500/10 text-red-400 border border-red-500/20" :
+                                  q.median_logic >= 1.25 ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                                    "bg-green-500/10 text-green-400 border border-green-500/20"
+                                  }`}
+                              >
+                                <Brain className="h-3 w-3" />
+                                {q.median_logic >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : q.median_logic >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
+                                <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[10px] text-white opacity-0 transition-opacity group-hover/logic:opacity-100">{t("FEEDBACK_LOGIC")}</span>
+                              </span>
+                            )}
+                            {q.median_labor !== undefined && q.median_labor !== null && (
+                              <span
+                                className={`group/labor relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium uppercase cursor-default ${q.median_labor >= 2.25 ? "bg-red-500/10 text-red-400 border border-red-500/20" :
+                                  q.median_labor >= 1.25 ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                                    "bg-green-500/10 text-green-400 border border-green-500/20"
+                                  }`}
+                              >
+                                <Cpu className="h-3 w-3" />
+                                {q.median_labor >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : q.median_labor >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
+                                <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[10px] text-white opacity-0 transition-opacity group-hover/labor:opacity-100">{t("FEEDBACK_LABOR")}</span>
+                              </span>
+                            )}
+                            {q.median_theory !== undefined && q.median_theory !== null && (
+                              <span
+                                className={`group/theory relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium uppercase cursor-default ${q.median_theory >= 2.25 ? "bg-red-500/10 text-red-400 border border-red-500/20" :
+                                  q.median_theory >= 1.25 ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                                    "bg-green-500/10 text-green-400 border border-green-500/20"
+                                  }`}
+                              >
+                                <BookOpen className="h-3 w-3" />
+                                {q.median_theory >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : q.median_theory >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
+                                <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[10px] text-white opacity-0 transition-opacity group-hover/theory:opacity-100">{t("FEEDBACK_THEORY")}</span>
+                              </span>
+                            )}
+                          </div>
+                        </>
+                      )}
+                      {q.topics.length > 0 && (
+                        <>
+                          <span>·</span>
+                          {q.topics.map((topic) => (
+                            <span
+                              key={topic.id}
+                              className="rounded-full bg-secondary/10 px-2 py-0.5 text-secondary"
+                            >
+                              {topic.name}
+                            </span>
+                          ))}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="flex shrink-0 items-center gap-1 self-end sm:self-center">
                   <button
                     onClick={() =>
                       router.push(
@@ -416,7 +464,8 @@ export default function QuestionsPage() {
             </div>
           )}
         </>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 }

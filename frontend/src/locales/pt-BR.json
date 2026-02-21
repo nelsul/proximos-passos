@@ -21,14 +21,12 @@
     "CTA_DESCRIPTION": "Junte-se a estudantes que já estão organizando seus estudos de forma mais inteligente e eficiente.",
     "CTA_BUTTON": "Criar minha conta",
     "FOOTER_RIGHTS": "© {year} Próximos Passos. Todos os direitos reservados.",
-
     "LOGIN_SUBTITLE": "Entre na sua conta para continuar.",
     "LOGIN_EMAIL_LABEL": "E-mail",
     "LOGIN_EMAIL_PLACEHOLDER": "seu@email.com",
     "LOGIN_PASSWORD_LABEL": "Senha",
     "LOGIN_PASSWORD_PLACEHOLDER": "Sua senha",
     "LOGIN_SUBMIT": "Entrar",
-
     "VERIFY_EMAIL_LOADING": "Verificando seu e-mail...",
     "VERIFY_EMAIL_SUCCESS_TITLE": "E-mail verificado!",
     "VERIFY_EMAIL_SUCCESS_DESCRIPTION": "Seu e-mail foi verificado com sucesso. Você já pode fazer login.",
@@ -36,7 +34,6 @@
     "VERIFY_EMAIL_NO_TOKEN_TITLE": "Link inválido",
     "VERIFY_EMAIL_NO_TOKEN_DESCRIPTION": "O link de verificação não contém um token válido. Verifique o link recebido por e-mail.",
     "VERIFY_EMAIL_LOGIN_BUTTON": "Ir para o login",
-
     "REGISTER_SUBTITLE": "Crie sua conta para começar.",
     "REGISTER_NAME_LABEL": "Nome completo",
     "REGISTER_NAME_PLACEHOLDER": "Seu nome completo",
@@ -49,7 +46,6 @@
     "REGISTER_SUCCESS_DESCRIPTION": "Enviamos um link de verificação para o seu e-mail. Verifique sua caixa de entrada e confirme sua conta.",
     "REGISTER_LOGIN_LINK": "Já tem uma conta? Entre",
     "LOGIN_REGISTER_LINK": "Não tem uma conta? Cadastre-se",
-
     "RESEND_SUBTITLE": "Informe seu e-mail para receber um novo link de verificação.",
     "RESEND_EMAIL_LABEL": "E-mail",
     "RESEND_EMAIL_PLACEHOLDER": "seu@email.com",
@@ -58,7 +54,6 @@
     "RESEND_SUCCESS_DESCRIPTION": "Se uma conta com esse e-mail existir e ainda não estiver verificada, você receberá um link de verificação em breve.",
     "RESEND_LOGIN_LINK": "Voltar para o login",
     "LOGIN_RESEND_LINK": "Não recebeu o e-mail de verificação?",
-
     "ERROR_INVALID_CREDENTIALS": "E-mail ou senha inválidos.",
     "ERROR_INVALID_VERIFICATION_TOKEN": "O token de verificação é inválido ou expirou.",
     "ERROR_EMAIL_ALREADY_VERIFIED": "Este e-mail já foi verificado.",
@@ -67,10 +62,8 @@
     "ERROR_INVALID_INPUT": "Preencha todos os campos obrigatórios.",
     "ERROR_VERIFICATION_COOLDOWN": "Aguarde alguns minutos antes de solicitar outro e-mail de verificação.",
     "ERROR_EMAIL_NOT_VERIFIED": "Verifique seu e-mail antes de fazer login.",
-
     "MENU_EDIT_PROFILE": "Editar perfil",
     "MENU_LOGOUT": "Sair",
-
     "PROFILE_TITLE": "Editar perfil",
     "PROFILE_NAME_LABEL": "Nome",
     "PROFILE_NAME_PLACEHOLDER": "Seu nome",
@@ -79,9 +72,7 @@
     "PROFILE_CANCEL": "Cancelar",
     "PROFILE_SAVE": "Salvar",
     "PROFILE_SUCCESS": "Perfil atualizado com sucesso.",
-
     "LOGOUT_SUCCESS": "Você saiu da sua conta.",
-
     "SIDEBAR_GROUPS": "Grupos",
     "SIDEBAR_MY_GROUPS": "Meus Grupos",
     "SIDEBAR_TOPICS": "Tópicos",
@@ -91,15 +82,12 @@
     "SIDEBAR_QUESTIONS": "Questões",
     "SIDEBAR_INSTITUTIONS": "Instituições",
     "SIDEBAR_EXAMS": "Provas",
-
     "GROUPS_TITLE": "Grupos",
     "GROUPS_SUBTITLE": "Explore os grupos públicos disponíveis na plataforma.",
     "GROUPS_EMPTY": "Nenhum grupo público disponível ainda.",
-
     "MY_GROUPS_TITLE": "Meus Grupos",
     "MY_GROUPS_SUBTITLE": "Grupos dos quais você é membro.",
     "MY_GROUPS_EMPTY": "Você ainda não é membro de nenhum grupo.",
-
     "GROUP_CREATE_BUTTON": "Novo grupo",
     "GROUP_CREATE_TITLE": "Criar grupo",
     "GROUP_NAME_LABEL": "Nome do grupo",
@@ -114,7 +102,6 @@
     "GROUP_ACCESS_CLOSED": "Fechado",
     "GROUP_CREATE_SUBMIT": "Criar",
     "GROUP_CREATE_SUCCESS": "Grupo criado com sucesso.",
-
     "GROUP_DETAIL_ADMINS": "Administradores",
     "GROUP_DETAIL_MEMBERS": "Membros",
     "GROUP_DETAIL_NO_MEMBERS": "Nenhum membro encontrado.",
@@ -123,7 +110,6 @@
     "GROUP_TAB_ACTIVITIES": "Atividades",
     "GROUP_TAB_PAST_ACTIVITIES": "Atividades Anteriores",
     "GROUP_TAB_MEMBERS": "Membros",
-
     "GROUP_JOIN_BUTTON": "Entrar no grupo",
     "GROUP_REQUEST_BUTTON": "Solicitar entrada",
     "GROUP_JOIN_SUCCESS": "Você entrou no grupo.",
@@ -131,7 +117,6 @@
     "GROUP_ALREADY_MEMBER": "Já é membro",
     "GROUP_REQUEST_PENDING": "Solicitação pendente",
     "ERROR_MEMBER_ALREADY_EXISTS": "Você já é membro deste grupo.",
-
     "GROUP_BACK_TO_MY_GROUPS": "Voltar para meus grupos",
     "GROUP_EDIT_BUTTON": "Editar",
     "GROUP_EDIT_TITLE": "Editar grupo",
@@ -147,18 +132,15 @@
     "GROUP_MEMBER_REJECTED": "Solicitação recusada.",
     "GROUP_MEMBER_REMOVED": "Membro removido com sucesso.",
     "GROUP_REMOVE_MEMBER_BUTTON": "Remover membro",
-
     "GROUP_INVITE_BUTTON": "Convidar",
     "GROUP_INVITE_TITLE": "Convidar para o grupo",
     "GROUP_INVITE_DESCRIPTION": "Compartilhe o link ou QR Code abaixo para convidar pessoas para o grupo {name}.",
     "GROUP_INVITE_COPY": "Copiar",
     "GROUP_INVITE_COPIED": "Copiado!",
     "GROUP_NOT_FOUND": "Grupo não encontrado.",
-
     "FILTER_NAME_PLACEHOLDER": "Buscar por nome…",
     "FILTER_ACCESS_ALL": "Todos os tipos de acesso",
     "FILTER_VISIBILITY_ALL": "Todas as visibilidades",
-
     "ACTIVITY_UPCOMING_TITLE": "Atividades Próximas",
     "ACTIVITY_PAST_TITLE": "Atividades Anteriores",
     "ACTIVITY_EMPTY_UPCOMING": "Nenhuma atividade próxima.",
@@ -190,7 +172,6 @@
     "ERROR_ACTIVITY_NOT_FOUND": "Atividade não encontrada.",
     "ERROR_ATTACHMENT_NOT_FOUND": "Anexo não encontrado.",
     "ERROR_ACTIVITY_TITLE_TAKEN": "Já existe uma atividade com este título no grupo.",
-
     "ACTIVITY_ITEMS_TITLE": "Itens",
     "ACTIVITY_ITEMS_EMPTY": "Nenhum item adicionado ainda.",
     "ACTIVITY_ITEM_ADD": "Adicionar item",
@@ -215,7 +196,6 @@
     "ACTIVITY_ITEM_UPDATE_SUCCESS": "Item atualizado com sucesso.",
     "ACTIVITY_ITEM_DELETE_SUCCESS": "Item removido com sucesso.",
     "ERROR_ACTIVITY_ITEM_NOT_FOUND": "Item da atividade não encontrado.",
-
     "TOPICS_TITLE": "Tópicos",
     "TOPICS_SUBTITLE": "Gerencie a taxonomia de tópicos da plataforma.",
     "TOPICS_EMPTY": "Nenhum tópico criado ainda.",
@@ -247,7 +227,6 @@
     "ERROR_TOPIC_NOT_FOUND": "Tópico não encontrado.",
     "ERROR_TOPIC_NAME_TAKEN": "Já existe um tópico com este nome sob o mesmo pai.",
     "ERROR_TOPIC_HAS_CHILDREN": "Não é possível excluir um tópico que possui subtópicos.",
-
     "HANDOUTS_TITLE": "Apostilas",
     "HANDOUTS_SUBTITLE": "Gerencie as apostilas em PDF da plataforma.",
     "HANDOUTS_EMPTY": "Nenhuma apostila criada ainda.",
@@ -278,7 +257,6 @@
     "TOPIC_PICKER_CLOSE": "Fechar",
     "ERROR_HANDOUT_NOT_FOUND": "Apostila não encontrada.",
     "ERROR_HANDOUT_TITLE_TAKEN": "Já existe uma apostila com este título.",
-
     "INSTITUTIONS_TITLE": "Instituições",
     "INSTITUTIONS_SUBTITLE": "Gerencie as instituições da plataforma.",
     "INSTITUTIONS_EMPTY": "Nenhuma instituição criada ainda.",
@@ -301,7 +279,6 @@
     "INSTITUTION_DETAIL_TOPICS": "Tópicos abordados",
     "INSTITUTION_DETAIL_TOPIC_TREE": "Árvore de tópicos",
     "INSTITUTION_DETAIL_NO_TOPICS": "Nenhum tópico encontrado para esta instituição.",
-
     "EXAMS_TITLE": "Provas",
     "EXAMS_SUBTITLE": "Gerencie as provas da plataforma.",
     "EXAMS_EMPTY": "Nenhuma prova criada ainda.",
@@ -329,7 +306,6 @@
     "EXAM_DETAIL_TOPICS": "Tópicos abordados",
     "EXAM_DETAIL_TOPIC_TREE": "Árvore de tópicos",
     "EXAM_DETAIL_NO_TOPICS": "Nenhum tópico encontrado para esta prova.",
-
     "VIDEO_LESSONS_TITLE": "Videoaulas",
     "VIDEO_LESSONS_SUBTITLE": "Gerencie as videoaulas da plataforma.",
     "VIDEO_LESSONS_EMPTY": "Nenhuma videoaula criada ainda.",
@@ -395,7 +371,6 @@
     "EXERCISE_LIST_PAGE_NEXT": "Próxima",
     "ERROR_OPEN_EXERCISE_LIST_NOT_FOUND": "Lista de exercícios não encontrada.",
     "ERROR_OPEN_EXERCISE_LIST_TITLE_TAKEN": "Já existe uma lista de exercícios com este título.",
-
     "QUESTIONS_TITLE": "Questões",
     "QUESTIONS_SUBTITLE": "Gerencie as questões da plataforma.",
     "QUESTIONS_EMPTY": "Nenhuma questão criada ainda.",
@@ -454,7 +429,6 @@
     "QUESTION_BLOCK_MOVE_DOWN": "Mover para baixo",
     "QUESTION_BLOCK_IMAGE_EMPTY": "Nenhuma imagem selecionada",
     "ERROR_QUESTION_NOT_FOUND": "Questão não encontrada.",
-
     "LATEX_SHOW_MORE": "Mais ▾",
     "LATEX_SHOW_LESS": "Menos ▴",
     "LATEX_CAT_STRUCTURE": "Estrutura",
@@ -496,7 +470,6 @@
     "LATEX_TIP_SIGMA": "Sigma",
     "LATEX_TIP_DELTA_UPPER": "Delta (maiúsculo)",
     "LATEX_TIP_OMEGA": "Ômega",
-
     "SIDEBAR_USERS": "Usuários",
     "USERS_TITLE": "Usuários",
     "USERS_SUBTITLE": "Gerencie os usuários cadastrados na plataforma.",
@@ -513,7 +486,6 @@
     "USER_INACTIVE": "Inativo",
     "USER_UPDATE_SUCCESS": "Usuário atualizado com sucesso.",
     "USER_SEARCH_PLACEHOLDER": "Buscar usuários…",
-
     "SIDEBAR_SUBMISSIONS": "Minhas Respostas",
     "SUBMISSIONS_TITLE": "Minhas Respostas",
     "SUBMISSIONS_SUBTITLE": "Veja suas respostas anteriores e pontuações.",
@@ -584,5 +556,16 @@
     "ERROR_ACTIVITY_SUBMISSION_NOT_FOUND": "Entrega de atividade não encontrada.",
     "ERROR_ACTIVITY_SUBMISSION_NOT_PENDING": "Esta entrega não está mais pendente e não pode ser editada.",
     "ERROR_ACTIVITY_ALREADY_SUBMITTED": "Você já entregou esta atividade.",
-    "ERROR_ACTIVITY_SUBMISSION_NOT_REPROVED": "Esta entrega não está reprovada e não pode ser reenviada."
+    "ERROR_ACTIVITY_SUBMISSION_NOT_REPROVED": "Esta entrega não está reprovada e não pode ser reenviada.",
+    "SUBMISSION_FEEDBACK_TITLE": "Qual a dificuldade desta questão?",
+    "FEEDBACK_LOGIC": "Lógica e Raciocínio",
+    "FEEDBACK_LABOR": "Trabalho Computacional",
+    "FEEDBACK_THEORY": "Conhecimento Teórico",
+    "FEEDBACK_SUBMIT_BUTTON": "Enviar Feedback",
+    "FEEDBACK_SUBMITTED_MESSAGE": "Obrigado pelo seu feedback! Sua avaliação nos ajuda a melhorar a plataforma.",
+    "FEEDBACK_LEVEL_LOW": "Baixa",
+    "FEEDBACK_LEVEL_MEDIUM": "Média",
+    "FEEDBACK_LEVEL_HIGH": "Alta",
+    "DIFFICULTY": "Dificuldade",
+    "QUESTION_MEDIAN_DIFFICULTY": "Dificuldade Média: {value}"
 }

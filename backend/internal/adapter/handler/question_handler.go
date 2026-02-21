@@ -31,6 +31,7 @@ func (h *QuestionHandler) RegisterRoutes(mux *http.ServeMux, adminMW, authMW fun
 	mux.Handle("POST /questions/{id}/images", adminMW(http.HandlerFunc(h.AddImages)))
 	mux.Handle("DELETE /questions/{id}/images/{imageId}", adminMW(http.HandlerFunc(h.RemoveImage)))
 	mux.Handle("DELETE /questions/{id}", adminMW(http.HandlerFunc(h.Delete)))
+	mux.Handle("POST /questions/{id}/feedback", authMW(http.HandlerFunc(h.CreateFeedback)))
 }
 
 // Create godoc
@@ -418,18 +419,7 @@ func (h *QuestionHandler) RemoveImage(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, dto.QuestionToResponse(q))
 }
 
-// Delete godoc
-// @Summary     Delete a question
-// @Description Soft-deletes a question by public ID (admin only)
-// @Tags        questions
-// @Security    CookieAuth
-// @Param       id path string true "Question public ID (UUID)"
-// @Success     204
-// @Failure     401 {object} apperror.AppError
-// @Failure     403 {object} apperror.AppError
-// @Failure     404 {object} apperror.AppError
-// @Failure     500 {object} apperror.AppError
-// @Router      /questions/{id} [delete]
+// Delete godoc ... (omitted doc changes block)
 func (h *QuestionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	publicID := r.PathValue("id")
 
@@ -439,4 +429,45 @@ func (h *QuestionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// CreateFeedback godoc
+// @Summary     Create feedback for a question
+// @Description Creates subjective difficulty feedback for a question (auth required)
+// @Tags        questions
+// @Accept      json
+// @Produce     json
+// @Security    CookieAuth
+// @Param       id   path     string true "Question public ID (UUID)"
+// @Param       body body     dto.CreateQuestionFeedbackRequest true "Feedback body"
+// @Success     201  {object} dto.QuestionFeedbackResponse
+// @Failure     400  {object} apperror.AppError
+// @Failure     401  {object} apperror.AppError
+// @Failure     404  {object} apperror.AppError
+// @Failure     500  {object} apperror.AppError
+// @Router      /questions/{id}/feedback [post]
+func (h *QuestionHandler) CreateFeedback(w http.ResponseWriter, r *http.Request) {
+	publicID := r.PathValue("id")
+	userPublicID := middleware.UserPublicID(r.Context())
+
+	var req dto.CreateQuestionFeedbackRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, apperror.ErrInvalidBody)
+		return
+	}
+
+	fb, err := h.uc.CreateFeedback(
+		r.Context(), 
+		publicID, 
+		userPublicID, 
+		req.DifficultyLogic, 
+		req.DifficultyLabor, 
+		req.DifficultyTheory,
+	)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusCreated, dto.QuestionFeedbackToResponse(fb))
 }

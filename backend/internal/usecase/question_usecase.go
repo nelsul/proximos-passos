@@ -692,3 +692,43 @@ func (uc *QuestionUseCase) cleanupFiles(ctx context.Context, keys []string) {
 		_ = uc.storageSvc.Delete(ctx, k)
 	}
 }
+
+func (uc *QuestionUseCase) CreateFeedback(
+	ctx context.Context,
+	questionPublicID string,
+	userPublicID string,
+	logic int,
+	labor int,
+	theory int,
+) (*entity.QuestionFeedback, error) {
+	q, err := uc.GetByPublicID(ctx, questionPublicID)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, apperror.ErrUserNotFound
+	}
+
+	if logic < 1 || logic > 3 || labor < 1 || labor > 3 || theory < 1 || theory > 3 {
+		return nil, apperror.ErrInvalidInput
+	}
+
+	feedback := &entity.QuestionFeedback{
+		QuestionID:       q.ID,
+		UserID:           user.ID,
+		DifficultyLogic:  logic,
+		DifficultyLabor:  labor,
+		DifficultyTheory: theory,
+	}
+
+	if err := uc.qRepo.CreateFeedback(ctx, feedback); err != nil {
+		return nil, err
+	}
+
+	return feedback, nil
+}

@@ -152,7 +152,11 @@ type ActivityItemResponse struct {
 	VideoLessonID      *string `json:"video_lesson_id,omitempty"`
 	HandoutID          *string `json:"handout_id,omitempty"`
 	OpenExerciseListID *string `json:"open_exercise_list_id,omitempty"`
-	SimulatedExamID    *string `json:"simulated_exam_id,omitempty"`
+	SimulatedExamID    *string  `json:"simulated_exam_id,omitempty"`
+	MedianDifficulty   *float64 `json:"median_difficulty,omitempty"`
+	MedianLogic        *float64 `json:"median_logic,omitempty"`
+	MedianLabor        *float64 `json:"median_labor,omitempty"`
+	MedianTheory       *float64 `json:"median_theory,omitempty"`
 }
 
 func ActivityItemToResponse(item *entity.ActivityItem) ActivityItemResponse {
@@ -182,6 +186,10 @@ func ActivityItemToResponse(item *entity.ActivityItem) ActivityItemResponse {
 		HandoutID:          item.HandoutPublicID,
 		OpenExerciseListID: item.OpenExerciseListPublicID,
 		SimulatedExamID:    item.SimulatedExamPublicID,
+		MedianDifficulty:   item.MedianDifficulty,
+		MedianLogic:        item.MedianLogic,
+		MedianLabor:        item.MedianLabor,
+		MedianTheory:       item.MedianTheory,
 	}
 }
 

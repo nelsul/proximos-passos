@@ -20,6 +20,20 @@ type UpdateQuestionRequest struct {
 	Options            []QuestionOptionInput `json:"options,omitempty"`
 }
 
+type CreateQuestionFeedbackRequest struct {
+	DifficultyLogic  int `json:"difficulty_logic"`
+	DifficultyLabor  int `json:"difficulty_labor"`
+	DifficultyTheory int `json:"difficulty_theory"`
+}
+
+type QuestionFeedbackResponse struct {
+	PublicID         string    `json:"id"`
+	DifficultyLogic  int       `json:"difficulty_logic"`
+	DifficultyLabor  int       `json:"difficulty_labor"`
+	DifficultyTheory int       `json:"difficulty_theory"`
+	CreatedAt        time.Time `json:"created_at"`
+}
+
 type QuestionOptionInput struct {
 	Text      *string  `json:"text"`
 	ImageIDs  []string `json:"image_ids,omitempty"`
@@ -66,6 +80,10 @@ type QuestionResponse struct {
 	Options            []QuestionOptionResponse `json:"options"`
 	Topics             []QuestionTopicResponse  `json:"topics"`
 	IsActive           bool                     `json:"is_active"`
+	MedianDifficulty   *float64                 `json:"median_difficulty,omitempty"`
+	MedianLogic        *float64                 `json:"median_logic,omitempty"`
+	MedianLabor        *float64                 `json:"median_labor,omitempty"`
+	MedianTheory       *float64                 `json:"median_theory,omitempty"`
 	CreatedAt          time.Time                `json:"created_at"`
 	UpdatedAt          time.Time                `json:"updated_at"`
 }
@@ -145,6 +163,10 @@ func QuestionToResponse(q *entity.Question) QuestionResponse {
 		Options:            options,
 		Topics:             topics,
 		IsActive:           q.IsActive,
+		MedianDifficulty:   q.MedianDifficulty,
+		MedianLogic:        q.MedianLogic,
+		MedianLabor:        q.MedianLabor,
+		MedianTheory:       q.MedianTheory,
 		CreatedAt:          q.CreatedAt,
 		UpdatedAt:          q.UpdatedAt,
 	}
@@ -156,4 +178,14 @@ func QuestionsToResponse(questions []entity.Question) []QuestionResponse {
 		result[i] = QuestionToResponse(&questions[i])
 	}
 	return result
+}
+
+func QuestionFeedbackToResponse(fb *entity.QuestionFeedback) QuestionFeedbackResponse {
+	return QuestionFeedbackResponse{
+		PublicID:         fb.PublicID,
+		DifficultyLogic:  fb.DifficultyLogic,
+		DifficultyLabor:  fb.DifficultyLabor,
+		DifficultyTheory: fb.DifficultyTheory,
+		CreatedAt:        fb.CreatedAt,
+	}
 }

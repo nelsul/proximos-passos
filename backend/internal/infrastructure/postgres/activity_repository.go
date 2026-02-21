@@ -345,7 +345,23 @@ func (r *ActivityRepository) ListItems(ctx context.Context, activityID int) ([]e
 		`SELECT ai.id, ai.public_id, ai.activity_id, ai.order_index, ai.title, ai.description, ai.type,
 		        ai.question_id, ai.video_lesson_id, ai.handout_id, ai.open_exercise_list_id, ai.simulated_exam_id,
 		        q.public_id, vl.public_id, h.public_id, oel.public_id, se.public_id,
-		        q.statement, vl.title, h.title, oel.title, se.title
+		        q.statement, vl.title, h.title, oel.title, se.title,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY (qf.difficulty_logic + qf.difficulty_labor + qf.difficulty_theory)/3.0)
+					FROM question_feedbacks qf WHERE qf.question_id = ai.question_id AND qf.is_active = true
+				) as median_difficulty,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY qf.difficulty_logic)
+					FROM question_feedbacks qf WHERE qf.question_id = ai.question_id AND qf.is_active = true
+				) as median_logic,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY qf.difficulty_labor)
+					FROM question_feedbacks qf WHERE qf.question_id = ai.question_id AND qf.is_active = true
+				) as median_labor,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY qf.difficulty_theory)
+					FROM question_feedbacks qf WHERE qf.question_id = ai.question_id AND qf.is_active = true
+				) as median_theory
 		 FROM activity_items ai
 		 LEFT JOIN questions q ON q.id = ai.question_id
 		 LEFT JOIN video_lessons vl ON vl.id = ai.video_lesson_id
@@ -367,7 +383,7 @@ func (r *ActivityRepository) ListItems(ctx context.Context, activityID int) ([]e
 		if err := rows.Scan(&item.ID, &item.PublicID, &item.ActivityID, &item.OrderIndex, &item.Title, &item.Description, &item.Type,
 			&item.QuestionID, &item.VideoLessonID, &item.HandoutID, &item.OpenExerciseListID, &item.SimulatedExamID,
 			&item.QuestionPublicID, &item.VideoLessonPublicID, &item.HandoutPublicID, &item.OpenExerciseListPublicID, &item.SimulatedExamPublicID,
-			&item.QuestionStatement, &item.VideoLessonTitle, &item.HandoutTitle, &item.OpenExerciseListTitle, &item.SimulatedExamTitle); err != nil {
+			&item.QuestionStatement, &item.VideoLessonTitle, &item.HandoutTitle, &item.OpenExerciseListTitle, &item.SimulatedExamTitle, &item.MedianDifficulty, &item.MedianLogic, &item.MedianLabor, &item.MedianTheory); err != nil {
 			return nil, err
 		}
 		items = append(items, item)

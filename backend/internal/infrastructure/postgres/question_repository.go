@@ -138,7 +138,23 @@ func (r *QuestionRepository) GetByPublicID(ctx context.Context, publicID string)
 		`SELECT q.id, q.public_id, q.type, q.statement,
 		        q.expected_answer_text, q.passing_score, q.exam_id,
 		        q.is_active, q.created_by_id, q.created_at, q.updated_at,
-		        e.public_id, e.title, e.year, i.name, i.acronym
+		        e.public_id, e.title, e.year, i.name, i.acronym,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY (qf.difficulty_logic + qf.difficulty_labor + qf.difficulty_theory)/3.0)
+					FROM question_feedbacks qf WHERE qf.question_id = q.id AND qf.is_active = true
+				) as median_difficulty,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY qf.difficulty_logic)
+					FROM question_feedbacks qf WHERE qf.question_id = q.id AND qf.is_active = true
+				) as median_logic,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY qf.difficulty_labor)
+					FROM question_feedbacks qf WHERE qf.question_id = q.id AND qf.is_active = true
+				) as median_labor,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY qf.difficulty_theory)
+					FROM question_feedbacks qf WHERE qf.question_id = q.id AND qf.is_active = true
+				) as median_theory
 		 FROM questions q
 		 LEFT JOIN exams e ON e.id = q.exam_id AND e.is_active = true
 		 LEFT JOIN institutions i ON i.id = e.institution_id AND i.is_active = true
@@ -147,7 +163,7 @@ func (r *QuestionRepository) GetByPublicID(ctx context.Context, publicID string)
 	).Scan(&q.ID, &q.PublicID, &q.Type, &q.Statement,
 		&q.ExpectedAnswerText, &q.PassingScore, &q.ExamID,
 		&q.IsActive, &q.CreatedByID, &q.CreatedAt, &q.UpdatedAt,
-		&examPublicID, &examTitle, &examYear, &examInstitution, &examInstitutionAcronym)
+		&examPublicID, &examTitle, &examYear, &examInstitution, &examInstitutionAcronym, &q.MedianDifficulty, &q.MedianLogic, &q.MedianLabor, &q.MedianTheory)
 
 	if examPublicID != nil {
 		q.ExamPublicID = *examPublicID
@@ -297,7 +313,23 @@ func (r *QuestionRepository) List(ctx context.Context, limit, offset int, filter
 		`SELECT q.id, q.public_id, q.type, q.statement,
 		        q.expected_answer_text, q.passing_score, q.exam_id,
 		        q.is_active, q.created_by_id, q.created_at, q.updated_at,
-		        e.public_id, e.title, e.year, i.name, i.acronym
+		        e.public_id, e.title, e.year, i.name, i.acronym,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY (qf.difficulty_logic + qf.difficulty_labor + qf.difficulty_theory)/3.0)
+					FROM question_feedbacks qf WHERE qf.question_id = q.id AND qf.is_active = true
+				) as median_difficulty,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY qf.difficulty_logic)
+					FROM question_feedbacks qf WHERE qf.question_id = q.id AND qf.is_active = true
+				) as median_logic,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY qf.difficulty_labor)
+					FROM question_feedbacks qf WHERE qf.question_id = q.id AND qf.is_active = true
+				) as median_labor,
+				(
+					SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY qf.difficulty_theory)
+					FROM question_feedbacks qf WHERE qf.question_id = q.id AND qf.is_active = true
+				) as median_theory
 		 FROM questions q
 		 LEFT JOIN exams e ON e.id = q.exam_id AND e.is_active = true
 		 LEFT JOIN institutions i ON i.id = e.institution_id AND i.is_active = true
@@ -322,7 +354,7 @@ func (r *QuestionRepository) List(ctx context.Context, limit, offset int, filter
 		if err := rows.Scan(&q.ID, &q.PublicID, &q.Type, &q.Statement,
 			&q.ExpectedAnswerText, &q.PassingScore, &q.ExamID,
 			&q.IsActive, &q.CreatedByID, &q.CreatedAt, &q.UpdatedAt,
-			&examPublicID, &examTitle, &examYear, &examInstitution, &examInstitutionAcronym); err != nil {
+			&examPublicID, &examTitle, &examYear, &examInstitution, &examInstitutionAcronym, &q.MedianDifficulty, &q.MedianLogic, &q.MedianLabor, &q.MedianTheory); err != nil {
 			return nil, err
 		}
 		if examPublicID != nil {
@@ -678,4 +710,25 @@ func (r *QuestionRepository) TopicPublicIDsByInstitutionID(ctx context.Context, 
 		ids = append(ids, id)
 	}
 	return ids, rows.Err()
+}
+
+func (r *QuestionRepository) CreateFeedback(ctx context.Context, f *entity.QuestionFeedback) error {
+	err := r.pool.QueryRow(ctx,
+		`INSERT INTO question_feedbacks (question_id, user_id, difficulty_logic, difficulty_labor, difficulty_theory)
+		 VALUES ($1, $2, $3, $4, $5)
+		 ON CONFLICT (question_id, user_id) 
+		 DO UPDATE SET 
+			difficulty_logic = EXCLUDED.difficulty_logic,
+			difficulty_labor = EXCLUDED.difficulty_labor,
+			difficulty_theory = EXCLUDED.difficulty_theory,
+			updated_at = NOW()
+		 RETURNING id, public_id, is_active, created_at, updated_at`,
+		f.QuestionID, f.UserID, f.DifficultyLogic, f.DifficultyLabor, f.DifficultyTheory,
+	).Scan(&f.ID, &f.PublicID, &f.IsActive, &f.CreatedAt, &f.UpdatedAt)
+	
+	if err != nil {
+		return err
+	}
+	
+	return nil
 }
