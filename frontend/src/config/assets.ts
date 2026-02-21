@@ -12,5 +12,9 @@ export const BRAND_ASSETS = {
       high: "https://proximos-passos.nelsul.dev/logo_title.webp",
       low: "https://proximos-passos.nelsul.dev/logo_title.webp",
     },
+    horizontal: {
+      high: "https://proximos-passos.nelsul.dev/logo_title_horizontal.webp",
+      low: "https://proximos-passos.nelsul.dev/logo_title_horizontal.webp",
+    },
   },
 } as const;

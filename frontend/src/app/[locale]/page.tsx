@@ -61,29 +61,26 @@ export default function Home() {
       {/* Header */}
       <header className="fixed top-0 z-50 w-full border-b border-surface-border bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <BrandLogo
-              variant="icon"
+              variant="horizontal"
               size="md"
               priority
               className="hidden sm:block"
             />
             <BrandLogo
-              variant="icon"
-              size="sm"
+              variant="horizontal"
+              size="md"
               priority
               className="sm:hidden"
             />
-            <div className="mt-1 hidden min-[420px]:block">
-              <BrandLogo variant="title" size="md" priority />
-            </div>
           </div>
 
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             <Link
               href="/login"
-              className="rounded-lg bg-secondary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-secondary-dark"
+              className="rounded-lg bg-secondary px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-secondary-dark"
             >
               {t("HEADER_LOGIN")}
             </Link>
