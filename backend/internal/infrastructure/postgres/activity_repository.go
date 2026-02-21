@@ -298,7 +298,8 @@ func (r *ActivityRepository) GetItemByPublicID(ctx context.Context, publicID str
 	err := r.pool.QueryRow(ctx,
 		`SELECT ai.id, ai.public_id, ai.activity_id, ai.order_index, ai.title, ai.description, ai.type,
 		        ai.question_id, ai.video_lesson_id, ai.handout_id, ai.open_exercise_list_id, ai.simulated_exam_id,
-		        q.public_id, vl.public_id, h.public_id, oel.public_id, se.public_id
+		        q.public_id, vl.public_id, h.public_id, oel.public_id, se.public_id,
+		        q.statement, vl.title, h.title, oel.title, se.title
 		 FROM activity_items ai
 		 LEFT JOIN questions q ON q.id = ai.question_id
 		 LEFT JOIN video_lessons vl ON vl.id = ai.video_lesson_id
@@ -309,7 +310,8 @@ func (r *ActivityRepository) GetItemByPublicID(ctx context.Context, publicID str
 		publicID,
 	).Scan(&item.ID, &item.PublicID, &item.ActivityID, &item.OrderIndex, &item.Title, &item.Description, &item.Type,
 		&item.QuestionID, &item.VideoLessonID, &item.HandoutID, &item.OpenExerciseListID, &item.SimulatedExamID,
-		&item.QuestionPublicID, &item.VideoLessonPublicID, &item.HandoutPublicID, &item.OpenExerciseListPublicID, &item.SimulatedExamPublicID)
+		&item.QuestionPublicID, &item.VideoLessonPublicID, &item.HandoutPublicID, &item.OpenExerciseListPublicID, &item.SimulatedExamPublicID,
+		&item.QuestionStatement, &item.VideoLessonTitle, &item.HandoutTitle, &item.OpenExerciseListTitle, &item.SimulatedExamTitle)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -342,7 +344,8 @@ func (r *ActivityRepository) ListItems(ctx context.Context, activityID int) ([]e
 	rows, err := r.pool.Query(ctx,
 		`SELECT ai.id, ai.public_id, ai.activity_id, ai.order_index, ai.title, ai.description, ai.type,
 		        ai.question_id, ai.video_lesson_id, ai.handout_id, ai.open_exercise_list_id, ai.simulated_exam_id,
-		        q.public_id, vl.public_id, h.public_id, oel.public_id, se.public_id
+		        q.public_id, vl.public_id, h.public_id, oel.public_id, se.public_id,
+		        q.statement, vl.title, h.title, oel.title, se.title
 		 FROM activity_items ai
 		 LEFT JOIN questions q ON q.id = ai.question_id
 		 LEFT JOIN video_lessons vl ON vl.id = ai.video_lesson_id
@@ -363,7 +366,8 @@ func (r *ActivityRepository) ListItems(ctx context.Context, activityID int) ([]e
 		var item entity.ActivityItem
 		if err := rows.Scan(&item.ID, &item.PublicID, &item.ActivityID, &item.OrderIndex, &item.Title, &item.Description, &item.Type,
 			&item.QuestionID, &item.VideoLessonID, &item.HandoutID, &item.OpenExerciseListID, &item.SimulatedExamID,
-			&item.QuestionPublicID, &item.VideoLessonPublicID, &item.HandoutPublicID, &item.OpenExerciseListPublicID, &item.SimulatedExamPublicID); err != nil {
+			&item.QuestionPublicID, &item.VideoLessonPublicID, &item.HandoutPublicID, &item.OpenExerciseListPublicID, &item.SimulatedExamPublicID,
+			&item.QuestionStatement, &item.VideoLessonTitle, &item.HandoutTitle, &item.OpenExerciseListTitle, &item.SimulatedExamTitle); err != nil {
 			return nil, err
 		}
 		items = append(items, item)

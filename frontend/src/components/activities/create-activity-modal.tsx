@@ -53,13 +53,13 @@ export function CreateActivityModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md rounded-xl border border-surface-border bg-background p-6 shadow-2xl">
-        <div className="mb-6 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div className="w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl">
+        <div className="mb-6 flex items-center justify-between border-b border-surface-border pb-4">
           <h2 className="text-lg font-semibold text-heading">
             {t("ACTIVITY_CREATE_TITLE")}
           </h2>
-          <button onClick={onClose} className="text-muted hover:text-heading">
+          <button onClick={onClose} className="rounded-lg p-1 text-muted transition-colors hover:bg-surface-light hover:text-heading">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -82,12 +82,12 @@ export function CreateActivityModal({
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t("ACTIVITY_DESCRIPTION_PLACEHOLDER")}
               rows={3}
-              className="w-full rounded-lg border border-surface-border bg-surface px-4 py-2 text-sm text-body placeholder-muted outline-none focus:border-secondary"
+              className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-body placeholder-muted outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors"
             />
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-body">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-heading">
               {t("ACTIVITY_DUE_DATE_LABEL")}
             </label>
             <input
@@ -95,16 +95,15 @@ export function CreateActivityModal({
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               required
-              className="w-full rounded-lg border border-surface-border bg-surface px-4 py-2 text-sm text-body outline-none focus:border-secondary [color-scheme:dark]"
+              className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-body outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors [color-scheme:dark]"
             />
           </div>
 
           {error && <p className="text-sm text-error">{error}</p>}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-4 border-t border-surface-border">
             <Button
               variant="outline"
-              size="sm"
               onClick={onClose}
               type="button"
               className="flex-1"
@@ -112,7 +111,6 @@ export function CreateActivityModal({
               {t("PROFILE_CANCEL")}
             </Button>
             <Button
-              size="sm"
               type="submit"
               loading={loading}
               className="flex-1"

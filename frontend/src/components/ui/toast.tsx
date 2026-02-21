@@ -70,9 +70,8 @@ function ToastItem({
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-sm transition-all duration-200 ${
-        VARIANT_STYLES[toast.variant]
-      } ${exiting ? "translate-x-full opacity-0" : "translate-x-0 opacity-100"}`}
+      className={`flex items-center gap-3 rounded-lg border px-4 py-3 shadow-lg transition-all duration-200 ${VARIANT_STYLES[toast.variant]
+        } ${exiting ? "translate-x-full opacity-0" : "translate-x-0 opacity-100"}`}
     >
       <Icon className="h-5 w-5 shrink-0" />
       <p className="flex-1 text-sm font-medium">{toast.message}</p>

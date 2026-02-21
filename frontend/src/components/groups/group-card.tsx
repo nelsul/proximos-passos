@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Users, Lock, Globe, DoorOpen, DoorClosed } from "lucide-react";
 import type { GroupResponse } from "@/lib/groups";
@@ -11,21 +12,22 @@ interface GroupCardProps {
 
 export function GroupCard({ group, onClick }: GroupCardProps) {
   const t = useTranslations();
+  const [imgError, setImgError] = useState(false);
 
   return (
     <div
       onClick={onClick}
-      className={`rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:border-secondary/40${
-        onClick ? " cursor-pointer" : ""
-      }`}
+      className={`rounded-xl border border-surface-border bg-surface p-5 transition-all duration-300 hover:-translate-y-1 hover:border-secondary/50 hover:bg-surface-light hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)]${onClick ? " cursor-pointer" : ""
+        }`}
     >
       {" "}
       <div className="flex items-start gap-4">
-        {group.thumbnail_url ? (
+        {group.thumbnail_url && !imgError ? (
           <img
             src={group.thumbnail_url}
             alt={group.name}
             className="h-14 w-14 shrink-0 rounded-lg object-cover"
+            onError={() => setImgError(true)}
           />
         ) : (
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-secondary/15">
@@ -34,7 +36,7 @@ export function GroupCard({ group, onClick }: GroupCardProps) {
         )}
 
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-semibold text-heading">
+          <h3 className="truncate text-lg font-semibold tracking-tight text-heading">
             {group.name}
           </h3>
           {group.description && (

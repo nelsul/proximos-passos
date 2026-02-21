@@ -80,7 +80,6 @@ export default function GroupsPage() {
           <p className="mt-1 text-sm text-muted">{t("GROUPS_SUBTITLE")}</p>
         </div>
         <Button
-          size="sm"
           onClick={() => setShowCreate(true)}
           className="w-auto"
         >

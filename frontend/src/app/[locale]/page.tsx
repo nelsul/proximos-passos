@@ -59,7 +59,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="fixed top-0 z-50 w-full border-b border-surface-border bg-background/80 backdrop-blur-md">
+      <header className="fixed top-0 z-50 w-full border-b border-surface-border bg-background">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center">
             <BrandLogo
@@ -70,13 +70,13 @@ export default function Home() {
             />
             <BrandLogo
               variant="horizontal"
-              size="md"
+              size="sm"
               priority
               className="sm:hidden"
             />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher />
             <Link
               href="/login"

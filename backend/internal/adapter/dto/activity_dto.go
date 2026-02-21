@@ -147,6 +147,7 @@ type ActivityItemResponse struct {
 	Title              string  `json:"title"`
 	Description        *string `json:"description,omitempty"`
 	Type               string  `json:"type"`
+	ContentSubtitle    *string `json:"content_subtitle,omitempty"`
 	QuestionID         *string `json:"question_id,omitempty"`
 	VideoLessonID      *string `json:"video_lesson_id,omitempty"`
 	HandoutID          *string `json:"handout_id,omitempty"`
@@ -155,12 +156,27 @@ type ActivityItemResponse struct {
 }
 
 func ActivityItemToResponse(item *entity.ActivityItem) ActivityItemResponse {
+	var subtitle *string
+	switch item.Type {
+	case entity.ActivityItemTypeQuestion:
+		subtitle = item.QuestionStatement
+	case entity.ActivityItemTypeVideoLesson:
+		subtitle = item.VideoLessonTitle
+	case entity.ActivityItemTypeHandout:
+		subtitle = item.HandoutTitle
+	case entity.ActivityItemTypeOpenExerciseList:
+		subtitle = item.OpenExerciseListTitle
+	case entity.ActivityItemTypeSimulatedExam:
+		subtitle = item.SimulatedExamTitle
+	}
+
 	return ActivityItemResponse{
 		PublicID:           item.PublicID,
 		OrderIndex:         item.OrderIndex,
 		Title:              item.Title,
 		Description:        item.Description,
 		Type:               string(item.Type),
+		ContentSubtitle:    subtitle,
 		QuestionID:         item.QuestionPublicID,
 		VideoLessonID:      item.VideoLessonPublicID,
 		HandoutID:          item.HandoutPublicID,

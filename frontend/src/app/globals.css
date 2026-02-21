@@ -10,31 +10,34 @@
   --color-secondary-light: #dbb778;
   --color-secondary-dark: #b8893e;
 
-  /* Dark Mode Surfaces */
-  --color-background: #0a1a1a;
-  --color-surface: #0f2e2e;
-  --color-surface-light: #153535;
-  --color-surface-border: #1a4a4a;
+  /* Modern Dark Mode Surfaces */
+  --color-background: #050808;
+  --color-surface: rgba(15, 46, 46, 0.4);
+  --color-surface-light: rgba(26, 74, 74, 0.5);
+  --color-surface-border: rgba(255, 255, 255, 0.05);
 
   /* Dark Mode Text */
-  --color-heading: #e8ede8;
-  --color-body: #c5cec5;
-  --color-muted: #7a8f7a;
+  --color-heading: #ffffff;
+  --color-body: #a1b0a1;
+  --color-muted: #6b826b;
 
   --color-success: #16a34a;
   --color-error: #dc2626;
   --color-warning: #f59e0b;
 
   /* Font Families */
-  --font-heading: "Indi Kazka", serif;
-  --font-body: "Inter", sans-serif;
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
 }
 
 /* Base Styles */
 body {
   @apply bg-background text-body font-body antialiased;
   min-width: 320px;
-  min-height: 600px;
+  min-height: 100dvh;
+  /* Add subtle global radial gradient for depth */
+  background-image: radial-gradient(circle at top center, rgba(30, 80, 80, 0.15) 0%, transparent 60%), radial-gradient(circle at bottom right, rgba(207, 161, 86, 0.05) 0%, transparent 40%);
+  background-attachment: fixed;
 }
 
 h1,

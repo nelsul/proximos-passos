@@ -103,13 +103,12 @@ export function Sidebar({ mobileOpen, onMobileClose, userRole }: SidebarProps) {
             <Link
               href={item.href}
               onClick={onMobileClose}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                active
-                  ? "bg-secondary/15 text-secondary"
-                  : "text-body hover:bg-surface-light hover:text-heading"
-              }`}
+              className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${active
+                ? "bg-secondary/15 text-secondary shadow-[inset_4px_0_0_rgba(207,161,86,1)]"
+                : "text-body hover:bg-surface-light hover:text-heading"
+                }`}
             >
-              <item.icon className="h-5 w-5 shrink-0" />
+              <item.icon className="h-5 w-5 shrink-0 transition-transform group-active:scale-95" />
               {t(item.labelKey)}
             </Link>
           </li>
@@ -130,9 +129,8 @@ export function Sidebar({ mobileOpen, onMobileClose, userRole }: SidebarProps) {
 
       {/* Mobile drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-surface-border bg-surface p-4 pt-20 transition-transform duration-200 lg:hidden ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-surface-border bg-surface p-4 pt-20 transition-transform duration-300 ease-out lg:hidden ${mobileOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <button
           onClick={onMobileClose}
@@ -145,7 +143,7 @@ export function Sidebar({ mobileOpen, onMobileClose, userRole }: SidebarProps) {
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:block lg:w-60 lg:shrink-0">
-        <div className="sticky top-20 rounded-lg border border-surface-border bg-surface p-3">
+        <div className="sticky top-20 rounded-xl border border-surface-border bg-surface-light p-3 shadow-sm">
           {navContent}
         </div>
       </aside>

@@ -56,4 +56,9 @@ type ActivityItem struct {
 	HandoutPublicID          *string
 	OpenExerciseListPublicID *string
 	SimulatedExamPublicID    *string
+	QuestionStatement        *string
+	VideoLessonTitle         *string
+	HandoutTitle             *string
+	OpenExerciseListTitle    *string
+	SimulatedExamTitle       *string
 }

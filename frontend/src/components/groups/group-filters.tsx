@@ -34,7 +34,7 @@ export function GroupFilters({
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           placeholder={t("FILTER_NAME_PLACEHOLDER")}
-          className="w-full rounded-lg border border-surface-border bg-surface py-2 pl-9 pr-3 text-sm text-heading placeholder:text-muted focus:border-secondary focus:outline-none"
+          className="w-full rounded-lg border border-surface-border bg-surface py-2.5 pl-9 pr-3 text-sm text-heading placeholder:text-muted focus:border-secondary focus:outline-none transition-colors hover:border-secondary/50"
         />
       </div>
 
@@ -42,7 +42,7 @@ export function GroupFilters({
       <select
         value={accessType}
         onChange={(e) => onAccessTypeChange(e.target.value)}
-        className="rounded-lg border border-surface-border bg-surface px-3 py-2 text-sm text-heading focus:border-secondary focus:outline-none"
+        className="rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-sm text-heading focus:border-secondary focus:outline-none transition-colors hover:border-secondary/50"
       >
         <option value="">{t("FILTER_ACCESS_ALL")}</option>
         <option value="open">{t("GROUP_ACCESS_OPEN")}</option>
@@ -54,7 +54,7 @@ export function GroupFilters({
         <select
           value={visibilityType ?? ""}
           onChange={(e) => onVisibilityTypeChange(e.target.value)}
-          className="rounded-lg border border-surface-border bg-surface px-3 py-2 text-sm text-heading focus:border-secondary focus:outline-none"
+          className="rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-sm text-heading focus:border-secondary focus:outline-none transition-colors hover:border-secondary/50"
         >
           <option value="">{t("FILTER_VISIBILITY_ALL")}</option>
           <option value="public">{t("GROUP_VISIBILITY_PUBLIC")}</option>

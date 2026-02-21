@@ -41,6 +41,7 @@ export function GroupDetailModal({ group, onClose }: GroupDetailModalProps) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [groupImgError, setGroupImgError] = useState(false);
 
   // Closed groups → show only admins; open groups → show all
   const roleFilter = group.access_type === "closed" ? "admin" : undefined;
@@ -112,11 +113,12 @@ export function GroupDetailModal({ group, onClose }: GroupDetailModalProps) {
         {/* Header */}
         <div className="flex items-start justify-between border-b border-surface-border px-6 py-4">
           <div className="flex items-start gap-4 pr-2">
-            {group.thumbnail_url ? (
+            {group.thumbnail_url && !groupImgError ? (
               <img
                 src={group.thumbnail_url}
                 alt={group.name}
                 className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                onError={() => setGroupImgError(true)}
               />
             ) : (
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-secondary/15">
@@ -194,17 +196,20 @@ export function GroupDetailModal({ group, onClose }: GroupDetailModalProps) {
                     key={member.user_id}
                     className="flex items-center gap-3 py-3"
                   >
-                    {member.avatar_url ? (
+                    {member.avatar_url && (
                       <img
                         src={member.avatar_url}
                         alt={member.name}
                         className="h-9 w-9 shrink-0 rounded-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                        }}
                       />
-                    ) : (
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-sm font-semibold text-secondary">
-                        {member.name.charAt(0).toUpperCase()}
-                      </div>
                     )}
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-sm font-semibold text-secondary ${member.avatar_url ? "hidden" : ""}`}>
+                      {member.name.charAt(0).toUpperCase()}
+                    </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-heading">
                         {member.name}

@@ -89,11 +89,11 @@ export function UpcomingActivities({
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder={t("ACTIVITY_SEARCH_PLACEHOLDER")}
-            className="w-full rounded-lg border border-surface-border bg-background py-2 pl-9 pr-3 text-sm text-body placeholder-muted outline-none focus:border-secondary sm:w-56"
+            className="w-full rounded-lg border border-surface-border bg-surface/50 py-2.5 pl-9 pr-3 text-sm text-heading placeholder-muted outline-none focus:border-secondary transition-colors hover:border-secondary/50 sm:w-56"
           />
         </div>
         {isGroupAdmin && (
-          <Button size="sm" onClick={() => setShowCreate(true)}>
+          <Button onClick={() => setShowCreate(true)} className="w-auto">
             <Plus className="h-4 w-4" />
             {t("ACTIVITY_CREATE_BUTTON")}
           </Button>
@@ -117,10 +117,10 @@ export function UpcomingActivities({
                 onClick={() =>
                   router.push(`/dashboard/activities/${a.id}?group=${groupId}`)
                 }
-                className="flex w-full items-center justify-between rounded-lg border border-surface-border bg-background p-4 text-left transition-colors hover:border-secondary/40"
+                className="group flex w-full items-center justify-between rounded-xl border border-surface-border bg-surface p-4 text-left transition-all duration-300 hover:-translate-y-1 hover:border-secondary/50 hover:bg-surface-light hover:shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
               >
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-medium text-heading">
+                  <h3 className="truncate text-base font-semibold text-heading transition-colors group-hover:text-secondary-light">
                     {a.title}
                   </h3>
                   {a.description && (

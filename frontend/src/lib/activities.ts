@@ -153,6 +153,7 @@ export interface ActivityItemResponse {
   title: string;
   description?: string;
   type: string;
+  content_subtitle?: string;
   question_id?: string;
   video_lesson_id?: string;
   handout_id?: string;

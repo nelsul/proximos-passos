@@ -17,6 +17,7 @@ export function UserMenu({ user, onEditProfile }: UserMenuProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,14 +52,15 @@ export function UserMenu({ user, onEditProfile }: UserMenuProps) {
         onClick={() => setOpen((prev) => !prev)}
         className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-light"
       >
-        {user.avatar_url ? (
+        {user.avatar_url && !imgError ? (
           <img
             src={user.avatar_url}
             alt={user.name}
             className="h-8 w-8 rounded-full object-cover"
+            onError={() => setImgError(true)}
           />
         ) : (
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/20 text-sm font-semibold text-secondary">
             {initials}
           </span>
         )}
