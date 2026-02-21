@@ -37,8 +37,9 @@ type ActivitySubmissionActivityRef struct {
 }
 
 type ActivitySubmissionUserRef struct {
-	PublicID string `json:"id"`
-	Name     string `json:"name"`
+	PublicID  string  `json:"id"`
+	Name      string  `json:"name"`
+	AvatarURL *string `json:"avatar_url,omitempty"`
 }
 
 type ActivitySubmissionListResponse struct {
@@ -57,8 +58,9 @@ func ActivitySubmissionToResponse(s *entity.ActivitySubmission) ActivitySubmissi
 			Title:    s.ActivityTitle,
 		},
 		User: ActivitySubmissionUserRef{
-			PublicID: s.UserPublicID,
-			Name:     s.UserName,
+			PublicID:  s.UserPublicID,
+			Name:      s.UserName,
+			AvatarURL: s.UserAvatarURL,
 		},
 		Status:        string(s.Status),
 		Notes:         s.Notes,

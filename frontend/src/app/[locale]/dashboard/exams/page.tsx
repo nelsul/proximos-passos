@@ -118,15 +118,15 @@ export default function ExamsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-heading">
+          <h1 className="text-xl sm:text-2xl font-bold text-heading">
             {t("EXAMS_TITLE")}
           </h1>
           <p className="mt-1 text-sm text-muted">{t("EXAMS_SUBTITLE")}</p>
         </div>
         {isAdmin && (
-          <Button size="sm" onClick={() => setShowCreate(true)}>
+          <Button className="w-full sm:w-auto" onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4" />
             {t("EXAM_CREATE_BUTTON")}
           </Button>
@@ -160,7 +160,7 @@ export default function ExamsPage() {
                 setInstitutionFilter({ id: inst.id, name: inst.acronym });
             }}
             value=""
-            className="shrink-0 rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
+            className="w-full sm:w-auto rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
           >
             <option value="">{t("EXAM_FILTER_BY_INSTITUTION")}</option>
             {institutions.map((inst) => (
@@ -190,7 +190,7 @@ export default function ExamsPage() {
                 onClick={() =>
                   router.push(`/${locale}/dashboard/exams/${exam.id}`)
                 }
-                className="flex cursor-pointer items-center gap-3 rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:border-secondary hover:bg-surface-light"
+                className="flex cursor-pointer flex-col gap-2 rounded-lg border border-surface-border bg-surface p-3 sm:p-4 transition-colors hover:border-secondary hover:bg-surface-light sm:flex-row sm:items-center sm:gap-3"
               >
                 <GraduationCap className="h-5 w-5 shrink-0 text-secondary" />
                 <div className="min-w-0 flex-1">

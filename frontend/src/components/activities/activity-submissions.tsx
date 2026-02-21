@@ -277,54 +277,70 @@ export function ActivitySubmissions({ activityId }: ActivitySubmissionsProps) {
               className="rounded-lg border border-surface-border bg-background"
             >
               {/* Submission row */}
-              <div className="flex items-center gap-3 p-3">
-                {/* User avatar placeholder */}
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-light text-xs font-bold text-muted uppercase">
-                  {sub.user.name.charAt(0)}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3">
+                <div className="flex items-start gap-3 min-w-0 flex-1 w-full">
+                  {/* User avatar */}
+                  {sub.user.avatar_url ? (
+                    <img
+                      src={sub.user.avatar_url}
+                      alt={sub.user.name}
+                      className="h-8 w-8 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-light text-xs font-bold text-muted uppercase">
+                      {sub.user.name.charAt(0)}
+                    </div>
+                  )}
+
+                  <div className="min-w-0 flex-1 mt-1">
+                    <p className="text-sm font-medium text-heading break-all line-clamp-2 leading-tight">
+                      {sub.user.name}
+                    </p>
+                    <p className="text-xs text-muted mt-0.5">
+                      {formatDate(sub.submitted_at)}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Name + date */}
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-heading truncate">
-                    {sub.user.name}
-                  </p>
-                  <p className="text-xs text-muted">
-                    {formatDate(sub.submitted_at)}
-                  </p>
-                </div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-3 sm:mt-0 pt-3 sm:pt-0 border-t border-surface-border/50 sm:border-t-0">
+                  {/* Status badge */}
+                  <div className="flex justify-start">
+                    <span className={statusBadge(sub.status)}>
+                      {statusIcon(sub.status)}
+                      <span className="truncate">
+                        {t(
+                          `ACTIVITY_SUBMISSION_STATUS_${sub.status.toUpperCase()}` as Parameters<
+                            typeof t
+                          >[0],
+                        )}
+                      </span>
+                    </span>
+                  </div>
 
-                {/* Status badge */}
-                <span className={statusBadge(sub.status)}>
-                  {statusIcon(sub.status)}
-                  {t(
-                    `ACTIVITY_SUBMISSION_STATUS_${sub.status.toUpperCase()}` as Parameters<
-                      typeof t
-                    >[0],
-                  )}
-                </span>
-
-                {/* Actions */}
-                <div className="flex shrink-0 items-center gap-1">
-                  {sub.status === "pending" && (
-                    <button
-                      onClick={() => openReview(sub)}
-                      className="inline-flex items-center gap-1 rounded-lg border border-surface-border px-2.5 py-1 text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors"
-                    >
-                      <MessageSquare className="h-3.5 w-3.5" />
-                      {t("ACTIVITY_SUBMISSIONS_REVIEW_BUTTON")}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => toggleExpand(sub)}
-                    className="rounded-lg p-1.5 text-muted hover:text-heading transition-colors"
-                    title={t("ACTIVITY_SUBMISSIONS_TOGGLE_DETAILS")}
-                  >
-                    {expandedId === sub.id ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
+                  {/* Actions */}
+                  <div className="flex shrink-0 items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+                    {sub.status === "pending" && (
+                      <button
+                        onClick={() => openReview(sub)}
+                        className="inline-flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg border border-surface-border bg-surface-light px-3 py-1.5 text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors shadow-sm"
+                      >
+                        <MessageSquare className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                        <span className="line-clamp-1 break-all text-left leading-tight hidden sm:inline">{t("ACTIVITY_SUBMISSIONS_REVIEW_BUTTON")}</span>
+                        <span className="line-clamp-1 break-all text-left leading-tight sm:hidden">{t("ACTIVITY_SUBMISSIONS_REVIEW_TITLE")}</span>
+                      </button>
                     )}
-                  </button>
+                    <button
+                      onClick={() => toggleExpand(sub)}
+                      className="inline-flex shrink-0 items-center justify-center rounded-lg border border-surface-border bg-surface-light p-1.5 text-muted hover:text-heading transition-colors shadow-sm"
+                      title={t("ACTIVITY_SUBMISSIONS_TOGGLE_DETAILS")}
+                    >
+                      {expandedId === sub.id ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -378,22 +394,24 @@ export function ActivitySubmissions({ activityId }: ActivitySubmissionsProps) {
                     ) : (
                       <div className="space-y-1.5">
                         {expandedAttachments.map((att) => (
-                          <a
-                            key={att.id}
-                            href={att.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 rounded-lg border border-surface-border bg-surface p-2 text-sm hover:text-secondary transition-colors"
-                          >
-                            {getFileIcon(att.content_type)}
-                            <span className="min-w-0 flex-1 truncate text-xs font-medium text-heading">
-                              {att.filename}
-                            </span>
-                            <span className="text-[10px] text-muted">
-                              {formatFileSize(att.size_bytes)}
-                            </span>
-                            <Eye className="h-3.5 w-3.5 shrink-0 text-muted" />
-                          </a>
+                            <a
+                              key={att.id}
+                              href={att.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 rounded-lg border border-surface-border bg-surface p-2 text-sm hover:text-secondary transition-colors"
+                            >
+                              <div className="shrink-0">{getFileIcon(att.content_type)}</div>
+                              <div className="min-w-0 flex-1 flex flex-col">
+                                <span className="line-clamp-1 break-all text-xs font-medium text-heading">
+                                  {att.filename}
+                                </span>
+                                <span className="text-[10px] text-muted leading-tight">
+                                  {formatFileSize(att.size_bytes)}
+                                </span>
+                              </div>
+                              <Eye className="h-4 w-4 shrink-0 text-muted ml-1" />
+                            </a>
                         ))}
                       </div>
                     )}
@@ -430,12 +448,12 @@ export function ActivitySubmissions({ activityId }: ActivitySubmissionsProps) {
                                       : group.questionId,
                                   )
                                 }
-                                className="flex w-full items-center gap-2 p-2.5 text-left transition-colors hover:bg-surface-light"
+                                className="flex w-full items-start gap-2 p-2.5 text-left transition-colors hover:bg-surface-light group"
                               >
                                 {group.bestPassed ? (
-                                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-400" />
+                                  <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400 group-hover:opacity-80 transition-opacity" />
                                 ) : (
-                                  <XCircle className="h-3.5 w-3.5 shrink-0 text-red-400" />
+                                  <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400 group-hover:opacity-80 transition-opacity" />
                                 )}
                                 <div className="min-w-0 flex-1">
                                   {group.title && (
@@ -554,13 +572,15 @@ export function ActivitySubmissions({ activityId }: ActivitySubmissionsProps) {
 
                   {/* Review button inside expanded for non-pending too */}
                   {sub.status !== "pending" && (
-                    <button
-                      onClick={() => openReview(sub)}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-surface-border px-2.5 py-1 text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors"
-                    >
-                      <MessageSquare className="h-3.5 w-3.5" />
-                      {t("ACTIVITY_SUBMISSIONS_CHANGE_REVIEW")}
-                    </button>
+                    <div className="flex pt-2">
+                       <button
+                        onClick={() => openReview(sub)}
+                        className="inline-flex min-w-0 flex-1 sm:flex-none justify-center items-center gap-1.5 rounded-lg border border-surface-border bg-surface-light px-3 py-1.5 text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors shadow-sm"
+                      >
+                        <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{t("ACTIVITY_SUBMISSIONS_CHANGE_REVIEW")}</span>
+                      </button>
+                    </div>
                   )}
                 </div>
               )}

@@ -14,15 +14,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_STYLES: Record<ButtonVariant, string> = {
   primary:
-    "bg-secondary text-white shadow-lg hover:bg-secondary-dark hover:shadow-[0_0_15px_rgba(207,161,86,0.5)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-lg",
+    "bg-gradient-to-r from-secondary-dark via-secondary to-secondary-light text-white shadow-[0_2px_12px_rgba(207,161,86,0.3)] hover:shadow-[0_4px_20px_rgba(207,161,86,0.5)] hover:brightness-110 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none disabled:hover:brightness-100",
   outline:
-    "border border-surface-border text-heading hover:bg-surface-light active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
+    "border border-surface-border text-heading hover:border-secondary/50 hover:text-secondary hover:bg-secondary/5 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:border-surface-border disabled:hover:text-heading disabled:hover:bg-transparent",
 };
 
 const SIZE_STYLES: Record<ButtonSize, string> = {
-  sm: "px-5 py-2 text-sm",
-  md: "px-8 py-2.5 text-base",
-  lg: "px-10 py-3 text-lg",
+  sm: "px-3 sm:px-5 py-2 text-xs sm:text-sm",
+  md: "px-4 sm:px-8 py-2.5 text-sm sm:text-base",
+  lg: "px-6 sm:px-10 py-3 text-base sm:text-lg",
 };
 
 export function Button({
@@ -36,12 +36,14 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`inline-flex w-full items-center justify-center gap-2 rounded-lg font-semibold transition-all ${VARIANT_STYLES[variant]} ${SIZE_STYLES[size]} ${className}`}
+      className={`relative inline-flex w-full items-center justify-center rounded-lg font-semibold tracking-wide uppercase transition-all duration-200 ${VARIANT_STYLES[variant]} ${SIZE_STYLES[size]} ${className}`}
       disabled={disabled || loading}
       {...props}
     >
-      {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-      {children}
+      {loading && <Loader2 className="absolute h-5 w-5 animate-spin" />}
+      <span className={`inline-flex items-center gap-2 transition-opacity duration-200 ${loading ? "opacity-0" : "opacity-100"}`}>
+        {children}
+      </span>
     </button>
   );
 }

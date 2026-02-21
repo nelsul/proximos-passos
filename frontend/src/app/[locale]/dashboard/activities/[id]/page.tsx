@@ -370,47 +370,50 @@ export default function ActivityDetailPage() {
       </button>
 
       {/* Activity Header */}
-      <div className="rounded-lg border border-surface-border bg-surface p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold text-heading">
-              {activity.title}
-            </h1>
-            {activity.description && (
-              <LatexText
-                text={activity.description}
-                as="div"
-                className="mt-2 text-sm text-muted whitespace-pre-wrap"
-              />
-            )}
+      <div className="rounded-xl border border-surface-border bg-surface p-5 sm:p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5 sm:gap-6">
+          <div className="min-w-0 flex-1 space-y-4">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-heading">
+                {activity.title}
+              </h1>
+              {activity.description && (
+                <LatexText
+                  text={activity.description}
+                  as="div"
+                  className="mt-2 text-sm text-body whitespace-pre-wrap leading-relaxed"
+                />
+              )}
+            </div>
+
+            <div className="flex items-center gap-2.5 bg-background/50 border border-surface-border/50 rounded-lg px-3.5 py-2.5 w-fit">
+              <Clock className="h-4 w-4 text-muted shrink-0" />
+              <span className="text-sm font-medium text-heading">
+                {formatDueDate(activity.due_date)}
+              </span>
+            </div>
           </div>
+
           {isGroupAdmin && (
-            <div className="flex shrink-0 gap-2">
+            <div className="flex shrink-0 gap-2 items-center sm:items-start pt-4 sm:pt-0 border-t border-surface-border/50 sm:border-t-0 w-full sm:w-auto justify-end">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={openEdit}
-                className="w-auto"
+                className="shadow-sm border-surface-border/60 hover:border-secondary/40 hover:bg-surface-light"
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-4 w-4 shrink-0" />
                 {t("GROUP_EDIT_BUTTON")}
               </Button>
               <button
                 onClick={handleDelete}
-                className="rounded-lg border border-surface-border p-2 text-red-400 hover:bg-red-600/10 hover:border-red-400/40 transition-colors"
+                className="flex items-center justify-center rounded-lg border border-surface-border/60 p-2 text-red-400 hover:bg-red-500/10 hover:border-red-400/40 hover:text-red-500 transition-colors shadow-sm"
                 title={t("ACTIVITY_DELETE_BUTTON")}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4 shrink-0" />
               </button>
             </div>
           )}
-        </div>
-
-        <div className="mt-4 flex items-center gap-2">
-          <Clock className="h-4 w-4 text-muted" />
-          <span className="text-sm text-muted">
-            {formatDueDate(activity.due_date)}
-          </span>
         </div>
       </div>
 

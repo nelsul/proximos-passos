@@ -11,10 +11,10 @@
   --color-secondary-dark: #b8893e;
 
   /* Modern Dark Mode Surfaces */
-  --color-background: #050808;
-  --color-surface: #0f2e2e;
-  --color-surface-light: #1a4a4a;
-  --color-surface-border: rgba(255, 255, 255, 0.05);
+  --color-background: #0c1e1e;
+  --color-surface: #132f2f;
+  --color-surface-light: #1d4545;
+  --color-surface-border: rgba(255, 255, 255, 0.08);
 
   /* Dark Mode Text */
   --color-heading: #ffffff;

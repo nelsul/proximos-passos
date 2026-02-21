@@ -15,8 +15,9 @@ interface ButtonLinkProps {
 
 const VARIANT_STYLES: Record<ButtonVariant, string> = {
   primary:
-    "bg-secondary text-white shadow-lg hover:bg-secondary-dark hover:shadow-xl",
-  outline: "border border-surface-border text-heading hover:bg-surface",
+    "bg-gradient-to-r from-secondary-dark via-secondary to-secondary-light text-white shadow-[0_2px_12px_rgba(207,161,86,0.3)] hover:shadow-[0_4px_20px_rgba(207,161,86,0.5)] hover:brightness-110",
+  outline:
+    "border border-surface-border text-heading hover:border-secondary/50 hover:text-secondary hover:bg-secondary/5",
 };
 
 const SIZE_STYLES: Record<ButtonSize, string> = {
@@ -36,7 +37,7 @@ export function ButtonLink({
   return (
     <Link
       href={href}
-      className={`inline-flex items-center gap-2 rounded-lg font-semibold transition-all ${VARIANT_STYLES[variant]} ${SIZE_STYLES[size]} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-lg font-semibold tracking-wide uppercase transition-all duration-200 ${VARIANT_STYLES[variant]} ${SIZE_STYLES[size]} ${className}`}
     >
       {children}
       {Icon && <Icon className="h-4 w-4" />}

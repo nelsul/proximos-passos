@@ -107,6 +107,15 @@ export default function LoginPage() {
             {t("LOGIN_RESEND_LINK")}
           </Link>
         </p>
+
+        <p className="text-center text-sm">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-muted transition-colors hover:text-heading"
+          >
+            ← {t("LOGIN_BACK_TO_HOME")}
+          </Link>
+        </p>
       </div>
     </div>
   );

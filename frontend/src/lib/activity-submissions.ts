@@ -8,6 +8,7 @@ export interface ActivitySubmissionActivityRef {
 export interface ActivitySubmissionUserRef {
   id: string;
   name: string;
+  avatar_url?: string;
 }
 
 export interface ActivitySubmissionResponse {

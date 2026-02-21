@@ -38,9 +38,9 @@ const ICONS: Record<ToastVariant, typeof CheckCircle2> = {
 };
 
 const VARIANT_STYLES: Record<ToastVariant, string> = {
-  success: "border-success/30 bg-success/10 text-success",
-  error: "border-error/30 bg-error/10 text-error",
-  info: "border-secondary/30 bg-secondary/10 text-secondary",
+  success: "border-green-700 bg-green-950 text-green-300",
+  error: "border-red-700 bg-red-950 text-red-300",
+  info: "border-amber-700 bg-amber-950 text-amber-300",
 };
 
 const DURATION = 4000;

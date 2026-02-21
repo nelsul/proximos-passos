@@ -93,7 +93,7 @@ export function UpcomingActivities({
           />
         </div>
         {isGroupAdmin && (
-          <Button onClick={() => setShowCreate(true)} className="w-auto">
+          <Button onClick={() => setShowCreate(true)} className="w-full sm:w-auto">
             <Plus className="h-4 w-4" />
             {t("ACTIVITY_CREATE_BUTTON")}
           </Button>
@@ -117,29 +117,31 @@ export function UpcomingActivities({
                 onClick={() =>
                   router.push(`/dashboard/activities/${a.id}?group=${groupId}`)
                 }
-                className="group flex w-full items-center justify-between rounded-xl border border-surface-border bg-surface p-4 text-left transition-all duration-300 hover:-translate-y-1 hover:border-secondary/50 hover:bg-surface-light hover:shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+                className="group flex flex-col sm:flex-row w-full sm:items-center justify-between gap-3 sm:gap-4 rounded-xl border border-surface-border bg-surface p-4 text-left transition-all duration-300 hover:-translate-y-1 hover:border-secondary/50 hover:bg-surface-light hover:shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
               >
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-base font-semibold text-heading transition-colors group-hover:text-secondary-light">
+                  <h3 className="text-base font-semibold text-heading transition-colors group-hover:text-secondary-light line-clamp-2">
                     {a.title}
                   </h3>
                   {a.description && (
-                    <p className="mt-0.5 line-clamp-1 text-xs text-muted">
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted">
                       {a.description}
                     </p>
                   )}
                 </div>
-                <div className="ml-4 flex shrink-0 items-center gap-1.5">
-                  {isDueSoon(a.due_date) ? (
-                    <AlertTriangle className="h-3.5 w-3.5 text-warning" />
-                  ) : (
-                    <Clock className="h-3.5 w-3.5 text-muted" />
-                  )}
-                  <span
-                    className={`text-xs ${isDueSoon(a.due_date) ? "font-medium text-warning" : "text-muted"}`}
-                  >
-                    {formatDueDate(a.due_date)}
-                  </span>
+                <div className="flex shrink-0 items-center gap-1.5 sm:ml-auto border-t border-surface-border/50 sm:border-t-0 pt-2 sm:pt-0 w-full sm:w-auto justify-between sm:justify-end">
+                  <div className="flex items-center gap-1.5">
+                    {isDueSoon(a.due_date) ? (
+                      <AlertTriangle className="h-3.5 w-3.5 text-warning" />
+                    ) : (
+                      <Clock className="h-3.5 w-3.5 text-muted" />
+                    )}
+                    <span
+                      className={`text-xs ${isDueSoon(a.due_date) ? "font-medium text-warning" : "text-muted"}`}
+                    >
+                      {formatDueDate(a.due_date)}
+                    </span>
+                  </div>
                 </div>
               </button>
             ))}

@@ -29,6 +29,7 @@ type ActivitySubmission struct {
 	ActivityTitle    string
 	UserPublicID     string
 	UserName         string
+	UserAvatarURL    *string
 	ReviewerPublicID *string
 	ReviewerName     *string
 }

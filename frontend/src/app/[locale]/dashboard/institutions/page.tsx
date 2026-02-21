@@ -82,9 +82,9 @@ export default function InstitutionsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-heading">
+          <h1 className="text-xl sm:text-2xl font-bold text-heading">
             {t("INSTITUTIONS_TITLE")}
           </h1>
           <p className="mt-1 text-sm text-muted">
@@ -92,7 +92,7 @@ export default function InstitutionsPage() {
           </p>
         </div>
         {isAdmin && (
-          <Button size="sm" onClick={() => setShowCreate(true)}>
+          <Button className="w-full sm:w-auto" onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4" />
             {t("INSTITUTION_CREATE_BUTTON")}
           </Button>
@@ -132,7 +132,7 @@ export default function InstitutionsPage() {
                     `/${locale}/dashboard/institutions/${institution.id}`,
                   )
                 }
-                className="flex cursor-pointer items-center gap-3 rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:border-secondary hover:bg-surface-light"
+                className="flex cursor-pointer flex-col gap-2 rounded-lg border border-surface-border bg-surface p-3 sm:p-4 transition-colors hover:border-secondary hover:bg-surface-light sm:flex-row sm:items-center sm:gap-3"
               >
                 <Building2 className="h-5 w-5 shrink-0 text-secondary" />
                 <div className="min-w-0 flex-1">

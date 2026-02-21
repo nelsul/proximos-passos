@@ -96,6 +96,8 @@ export default function GroupDetailPage() {
 
   // Action loading states
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [avatarErrors, setAvatarErrors] = useState<Set<string>>(new Set());
+  const [thumbError, setThumbError] = useState(false);
 
   const isGroupAdmin = membership === "member" && userRole === "admin";
   const [activeTab, setActiveTab] = useState<Tab>("activities");
@@ -347,11 +349,12 @@ export default function GroupDetailPage() {
         {/* Group Header */}
         <div className="rounded-lg border border-surface-border bg-surface p-6">
           <div className="flex items-start gap-5">
-            {group.thumbnail_url ? (
+            {group.thumbnail_url && !thumbError ? (
               <img
                 src={group.thumbnail_url}
                 alt={group.name}
                 className="h-20 w-20 shrink-0 rounded-xl object-cover"
+                onError={() => setThumbError(true)}
               />
             ) : (
               <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-secondary/15">
@@ -603,11 +606,12 @@ export default function GroupDetailPage() {
                           className="flex items-center justify-between rounded-lg border border-surface-border bg-background p-3"
                         >
                           <div className="flex items-center gap-3">
-                            {m.avatar_url ? (
+                            {m.avatar_url && !avatarErrors.has(m.user_id) ? (
                               <img
                                 src={m.avatar_url}
                                 alt={m.name}
                                 className="h-9 w-9 rounded-full object-cover"
+                                onError={() => setAvatarErrors((prev) => new Set(prev).add(m.user_id))}
                               />
                             ) : (
                               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/15 text-sm font-medium text-secondary">
@@ -691,11 +695,12 @@ export default function GroupDetailPage() {
                       className="flex items-center justify-between rounded-lg border border-surface-border bg-background p-3"
                     >
                       <div className="flex items-center gap-3">
-                        {m.avatar_url ? (
+                        {m.avatar_url && !avatarErrors.has(m.user_id) ? (
                           <img
                             src={m.avatar_url}
                             alt={m.name}
                             className="h-9 w-9 rounded-full object-cover"
+                            onError={() => setAvatarErrors((prev) => new Set(prev).add(m.user_id))}
                           />
                         ) : (
                           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary/15 text-sm font-medium text-secondary">

@@ -48,18 +48,21 @@ export default function TopicsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-heading">
+          <h1 className="text-xl sm:text-2xl font-bold text-heading">
             {t("TOPICS_TITLE")}
           </h1>
           <p className="mt-1 text-sm text-muted">{t("TOPICS_SUBTITLE")}</p>
         </div>
         {isAdmin && (
-          <Button size="sm" onClick={() => setShowCreate(true)}>
-            <Plus className="h-4 w-4" />
-            {t("TOPIC_CREATE_BUTTON")}
-          </Button>
+        <Button
+          onClick={() => setShowCreate(true)}
+          className="w-full sm:w-auto"
+        >
+          <Plus className="h-4 w-4" />
+          {t("TOPIC_CREATE_BUTTON")}
+        </Button>
         )}
       </div>
 

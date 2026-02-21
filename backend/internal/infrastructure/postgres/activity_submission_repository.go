@@ -24,7 +24,7 @@ const actSubSelectFields = `
 	asub.reviewed_at, asub.reviewed_by_id,
 	asub.is_active, asub.submitted_at, asub.updated_at,
 	a.public_id, a.title,
-	u.public_id, u.name,
+	u.public_id, u.name, u.avatar_url,
 	r.public_id, r.name
 `
 
@@ -43,7 +43,7 @@ func scanActivitySubmission(row pgx.Row) (*entity.ActivitySubmission, error) {
 		&s.ReviewedAt, &s.ReviewedByID,
 		&s.IsActive, &s.SubmittedAt, &s.UpdatedAt,
 		&s.ActivityPublicID, &s.ActivityTitle,
-		&s.UserPublicID, &s.UserName,
+		&s.UserPublicID, &s.UserName, &s.UserAvatarURL,
 		&s.ReviewerPublicID, &s.ReviewerName,
 	)
 	if err != nil {

@@ -15,6 +15,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<UserResponse | null>(null);
   const [search, setSearch] = useState("");
+  const [imgErrors, setImgErrors] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -93,11 +94,12 @@ export default function UsersPage() {
                 key={user.id}
                 className="flex items-center gap-3 rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:bg-surface-light"
               >
-                {user.avatar_url ? (
+                {user.avatar_url && !imgErrors.has(user.id) ? (
                   <img
                     src={user.avatar_url}
                     alt={user.name}
                     className="h-10 w-10 shrink-0 rounded-full object-cover"
+                    onError={() => setImgErrors((prev) => new Set(prev).add(user.id))}
                   />
                 ) : (
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-sm font-semibold text-secondary">

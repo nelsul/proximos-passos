@@ -116,9 +116,9 @@ export default function VideoLessonsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-heading">
+          <h1 className="text-xl sm:text-2xl font-bold text-heading">
             {t("VIDEO_LESSONS_TITLE")}
           </h1>
           <p className="mt-1 text-sm text-muted">
@@ -126,7 +126,7 @@ export default function VideoLessonsPage() {
           </p>
         </div>
         {isAdmin && (
-          <Button size="sm" onClick={() => setShowCreate(true)}>
+          <Button className="w-full sm:w-auto" onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4" />
             {t("VIDEO_LESSON_CREATE_BUTTON")}
           </Button>
@@ -155,7 +155,7 @@ export default function VideoLessonsPage() {
         ) : (
           <button
             onClick={() => setShowTopicFilter(true)}
-            className="shrink-0 rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
+            className="w-full sm:w-auto rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
           >
             {t("VIDEO_LESSON_FILTER_BY_TOPIC")}
           </button>
@@ -188,7 +188,7 @@ export default function VideoLessonsPage() {
             {lessons.map((lesson) => (
               <div
                 key={lesson.id}
-                className="flex items-center gap-3 rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:bg-surface-light"
+                className="flex flex-col gap-2 rounded-lg border border-surface-border bg-surface p-3 sm:p-4 transition-colors hover:bg-surface-light sm:flex-row sm:items-center sm:gap-3"
               >
                 <Video className="h-5 w-5 shrink-0 text-secondary" />
                 <div className="min-w-0 flex-1">
@@ -234,7 +234,7 @@ export default function VideoLessonsPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="flex shrink-0 items-center gap-1 self-end sm:self-center">
                   {lesson.video_url && (
                     <a
                       href={lesson.video_url}

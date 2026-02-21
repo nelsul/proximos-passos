@@ -50,6 +50,8 @@ export default function JoinGroupPage() {
 
   const [membership, setMembership] = useState<MembershipStatus>("none");
   const [joining, setJoining] = useState(false);
+  const [imgErrors, setImgErrors] = useState<Set<string>>(new Set());
+  const [thumbError, setThumbError] = useState(false);
 
   // Fetch group preview
   useEffect(() => {
@@ -161,11 +163,12 @@ export default function JoinGroupPage() {
         {/* Header */}
         <div className="border-b border-surface-border px-6 py-5">
           <div className="flex items-start gap-4">
-            {group.thumbnail_url ? (
+            {group.thumbnail_url && !thumbError ? (
               <img
                 src={group.thumbnail_url}
                 alt={group.name}
                 className="h-16 w-16 shrink-0 rounded-xl object-cover"
+                onError={() => setThumbError(true)}
               />
             ) : (
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-secondary/15">
@@ -235,11 +238,12 @@ export default function JoinGroupPage() {
                     key={member.user_id}
                     className="flex items-center gap-3 py-3"
                   >
-                    {member.avatar_url ? (
+                    {member.avatar_url && !imgErrors.has(member.user_id) ? (
                       <img
                         src={member.avatar_url}
                         alt={member.name}
                         className="h-9 w-9 shrink-0 rounded-full object-cover"
+                        onError={() => setImgErrors((prev) => new Set(prev).add(member.user_id))}
                       />
                     ) : (
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-sm font-semibold text-secondary">

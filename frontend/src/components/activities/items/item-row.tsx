@@ -121,111 +121,114 @@ export function ItemRow({ item, index, activityId, questionStatus, t }: ItemRowP
                 )}
             </div>
 
-            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 ml-auto">
-                {item.type === "question" && item.question_id && questionStatus && (
-                    <span
-                        className={`inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-medium \${
-                questionStatus.passed
-                    ? "bg-green-500/10 text-green-400 border border-green-500/20"
-                    : "bg-red-500/10 text-red-400 border border-red-500/20"
-            }`}
-                        title={
-                            questionStatus.passed
-                                ? t("ACTIVITY_ITEM_QUESTION_CORRECT")
-                                : t("ACTIVITY_ITEM_QUESTION_INCORRECT")
-                        }
-                    >
-                        {questionStatus.passed ? (
-                            <CheckCircle2 className="h-3 w-3" />
-                        ) : (
-                            <XCircle className="h-3 w-3" />
-                        )}
-                        {questionStatus.passed
-                            ? t("ACTIVITY_ITEM_QUESTION_CORRECT")
-                            : t("ACTIVITY_ITEM_QUESTION_INCORRECT")}
+                {/* Actions container: Allow wrapping and shrinking on small screens */}
+                <div className="flex flex-wrap shrink items-center justify-end gap-1.5 sm:gap-2 ml-auto mt-2 sm:mt-0 w-full sm:w-auto">
+                    {item.type === "question" && item.question_id && questionStatus && (
+                        <span
+                            className={`inline-flex items-center gap-1 rounded-full px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-medium ${
+                    questionStatus.passed
+                        ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                        : "bg-red-500/10 text-red-400 border border-red-500/20"
+                }`}
+                            title={
+                                questionStatus.passed
+                                    ? t("ACTIVITY_ITEM_QUESTION_CORRECT")
+                                    : t("ACTIVITY_ITEM_QUESTION_INCORRECT")
+                            }
+                        >
+                            {questionStatus.passed ? (
+                                <CheckCircle2 className="h-3 w-3 shrink-0" />
+                            ) : (
+                                <XCircle className="h-3 w-3 shrink-0" />
+                            )}
+                            <span className="truncate max-w-[80px] sm:max-w-none">
+                                {questionStatus.passed
+                                    ? t("ACTIVITY_ITEM_QUESTION_CORRECT")
+                                    : t("ACTIVITY_ITEM_QUESTION_INCORRECT")}
+                            </span>
+                        </span>
+                    )}
+
+                    {item.type === "question" && item.question_id && (
+                        <Link
+                            href={`/${locale}/dashboard/questions/${item.question_id}/answer?activity=${activityId}`}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-surface-border px-2 py-1 sm:px-2.5 text-[10px] sm:text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors"
+                        >
+                            <PenLine className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                            <span className="truncate max-w-[80px] sm:max-w-none">{t("ACTIVITY_ITEM_ANSWER")}</span>
+                        </Link>
+                    )}
+
+                    {hasOpenAction && (
+                        <button
+                            onClick={handleOpen}
+                            disabled={opening}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-surface-border px-2 py-1 sm:px-2.5 text-[10px] sm:text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors disabled:opacity-50"
+                        >
+                            {opening ? (
+                                <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin shrink-0" />
+                            ) : (
+                                <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                            )}
+                            <span className="truncate max-w-[80px] sm:max-w-none">{t("ACTIVITY_ITEM_OPEN")}</span>
+                        </button>
+                    )}
+
+                    {hasLinkAction && (
+                        <Link
+                            href={`/${locale}/dashboard/exams/${item.simulated_exam_id}`}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-surface-border px-2 py-1 sm:px-2.5 text-[10px] sm:text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors"
+                        >
+                            <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                            <span className="truncate max-w-[80px] sm:max-w-none">{t("ACTIVITY_ITEM_OPEN")}</span>
+                        </Link>
+                    )}
+
+                    {item.type === "question" && item.median_difficulty !== undefined && item.median_difficulty !== null && (
+                        <div className="flex gap-1 flex-wrap justify-end w-full sm:w-auto mt-1 sm:mt-0">
+                            {item.median_logic !== undefined && item.median_logic !== null && (
+                                <span
+                                    className={`group/logic relative inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium uppercase cursor-default ${item.median_logic >= 2.25 ? "bg-red-500/10 text-red-400" :
+                                        item.median_logic >= 1.25 ? "bg-amber-500/10 text-amber-400" :
+                                            "bg-green-500/10 text-green-400"
+                                        }`}
+                                >
+                                    <Brain className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
+                                    <span className="truncate">{item.median_logic >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : item.median_logic >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}</span>
+                                    <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[9px] text-white opacity-0 transition-opacity group-hover/logic:opacity-100">{t("FEEDBACK_LOGIC")}</span>
+                                </span>
+                            )}
+                            {item.median_labor !== undefined && item.median_labor !== null && (
+                                <span
+                                    className={`group/labor relative inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium uppercase cursor-default ${item.median_labor >= 2.25 ? "bg-red-500/10 text-red-400" :
+                                        item.median_labor >= 1.25 ? "bg-amber-500/10 text-amber-400" :
+                                            "bg-green-500/10 text-green-400"
+                                        }`}
+                                >
+                                    <Cpu className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
+                                    <span className="truncate">{item.median_labor >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : item.median_labor >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}</span>
+                                    <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[9px] text-white opacity-0 transition-opacity group-hover/labor:opacity-100">{t("FEEDBACK_LABOR")}</span>
+                                </span>
+                            )}
+                            {item.median_theory !== undefined && item.median_theory !== null && (
+                                <span
+                                    className={`group/theory relative inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium uppercase cursor-default ${item.median_theory >= 2.25 ? "bg-red-500/10 text-red-400" :
+                                        item.median_theory >= 1.25 ? "bg-amber-500/10 text-amber-400" :
+                                            "bg-green-500/10 text-green-400"
+                                        }`}
+                                >
+                                    <BookOpen className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
+                                    <span className="truncate">{item.median_theory >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : item.median_theory >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}</span>
+                                    <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[9px] text-white opacity-0 transition-opacity group-hover/theory:opacity-100">{t("FEEDBACK_THEORY")}</span>
+                                </span>
+                            )}
+                        </div>
+                    )}
+
+                    <span className="inline-flex items-center rounded-full bg-surface-light px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium text-muted uppercase">
+                        <span className="truncate">{t(`ACTIVITY_ITEM_TYPE_${item.type.toUpperCase()}`, { defaultValue: item.type })}</span>
                     </span>
-                )}
-
-                {item.type === "question" && item.question_id && (
-                    <Link
-                        href={`/\${locale}/dashboard/questions/\${item.question_id}/answer?activity=\${activityId}`}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-surface-border px-2 py-1 sm:px-2.5 text-[10px] sm:text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors"
-                    >
-                        <PenLine className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                        {t("ACTIVITY_ITEM_ANSWER")}
-                    </Link>
-                )}
-
-                {hasOpenAction && (
-                    <button
-                        onClick={handleOpen}
-                        disabled={opening}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-surface-border px-2 py-1 sm:px-2.5 text-[10px] sm:text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors disabled:opacity-50"
-                    >
-                        {opening ? (
-                            <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
-                        ) : (
-                            <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                        )}
-                        {t("ACTIVITY_ITEM_OPEN")}
-                    </button>
-                )}
-
-                {hasLinkAction && (
-                    <Link
-                        href={`/\${locale}/dashboard/exams/\${item.simulated_exam_id}`}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-surface-border px-2 py-1 sm:px-2.5 text-[10px] sm:text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors"
-                    >
-                        <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                        {t("ACTIVITY_ITEM_OPEN")}
-                    </Link>
-                )}
-
-                {item.type === "question" && item.median_difficulty !== undefined && item.median_difficulty !== null && (
-                    <div className="flex gap-1 flex-wrap">
-                        {item.median_logic !== undefined && item.median_logic !== null && (
-                            <span
-                                className={`group/logic relative inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium uppercase cursor-default ${item.median_logic >= 2.25 ? "bg-red-500/10 text-red-400" :
-                                    item.median_logic >= 1.25 ? "bg-amber-500/10 text-amber-400" :
-                                        "bg-green-500/10 text-green-400"
-                                    }`}
-                            >
-                                <Brain className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                {item.median_logic >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : item.median_logic >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
-                                <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[9px] text-white opacity-0 transition-opacity group-hover/logic:opacity-100">{t("FEEDBACK_LOGIC")}</span>
-                            </span>
-                        )}
-                        {item.median_labor !== undefined && item.median_labor !== null && (
-                            <span
-                                className={`group/labor relative inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium uppercase cursor-default ${item.median_labor >= 2.25 ? "bg-red-500/10 text-red-400" :
-                                    item.median_labor >= 1.25 ? "bg-amber-500/10 text-amber-400" :
-                                        "bg-green-500/10 text-green-400"
-                                    }`}
-                            >
-                                <Cpu className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                {item.median_labor >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : item.median_labor >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
-                                <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[9px] text-white opacity-0 transition-opacity group-hover/labor:opacity-100">{t("FEEDBACK_LABOR")}</span>
-                            </span>
-                        )}
-                        {item.median_theory !== undefined && item.median_theory !== null && (
-                            <span
-                                className={`group/theory relative inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium uppercase cursor-default ${item.median_theory >= 2.25 ? "bg-red-500/10 text-red-400" :
-                                    item.median_theory >= 1.25 ? "bg-amber-500/10 text-amber-400" :
-                                        "bg-green-500/10 text-green-400"
-                                    }`}
-                            >
-                                <BookOpen className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                {item.median_theory >= 2.25 ? t("FEEDBACK_LEVEL_HIGH") : item.median_theory >= 1.25 ? t("FEEDBACK_LEVEL_MEDIUM") : t("FEEDBACK_LEVEL_LOW")}
-                                <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-[9px] text-white opacity-0 transition-opacity group-hover/theory:opacity-100">{t("FEEDBACK_THEORY")}</span>
-                            </span>
-                        )}
-                    </div>
-                )}
-
-                <span className="shrink-0 rounded-full bg-surface-light px-1.5 py-0.5 sm:px-2 text-[9px] sm:text-[10px] font-medium text-muted uppercase">
-                    {t(`ACTIVITY_ITEM_TYPE_${item.type.toUpperCase()}`, { defaultValue: item.type })}
-                </span>
+                </div>
             </div>
-        </div>
     );
 }

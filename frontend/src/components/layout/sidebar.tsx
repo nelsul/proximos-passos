@@ -104,7 +104,7 @@ export function Sidebar({ mobileOpen, onMobileClose, userRole }: SidebarProps) {
               href={item.href}
               onClick={onMobileClose}
               className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${active
-                ? "bg-secondary/15 text-secondary shadow-[inset_4px_0_0_rgba(207,161,86,1)]"
+                ? "bg-gradient-to-r from-secondary/20 to-transparent text-secondary shadow-[inset_4px_0_0_rgba(207,161,86,1)]"
                 : "text-body hover:bg-surface-light hover:text-heading"
                 }`}
             >

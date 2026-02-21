@@ -96,23 +96,25 @@ export function PastActivities({ groupId }: PastActivitiesProps) {
                 onClick={() =>
                   router.push(`/dashboard/activities/${a.id}?group=${groupId}`)
                 }
-                className="flex w-full items-center justify-between rounded-lg border border-surface-border bg-background p-4 text-left opacity-75 transition-colors hover:border-secondary/40 hover:opacity-100"
+                className="flex flex-col sm:flex-row w-full sm:items-center justify-between gap-3 sm:gap-4 rounded-lg border border-surface-border bg-background p-4 text-left opacity-75 transition-colors hover:border-secondary/40 hover:opacity-100"
               >
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-medium text-heading">
+                  <h3 className="text-sm font-medium text-heading line-clamp-2">
                     {a.title}
                   </h3>
                   {a.description && (
-                    <p className="mt-0.5 line-clamp-1 text-xs text-muted">
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted">
                       {a.description}
                     </p>
                   )}
                 </div>
-                <div className="ml-4 flex shrink-0 items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-muted" />
-                  <span className="text-xs text-muted">
-                    {formatDueDate(a.due_date)}
-                  </span>
+                <div className="flex shrink-0 items-center justify-between sm:justify-end gap-1.5 border-t border-surface-border/50 sm:border-t-0 pt-2 sm:pt-0 w-full sm:w-auto">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 text-muted" />
+                    <span className="text-xs text-muted">
+                      {formatDueDate(a.due_date)}
+                    </span>
+                  </div>
                 </div>
               </button>
             ))}

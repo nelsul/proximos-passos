@@ -72,16 +72,16 @@ export default function GroupsPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-heading">
+          <h1 className="text-xl sm:text-2xl font-bold text-heading">
             {t("GROUPS_TITLE")}
           </h1>
           <p className="mt-1 text-sm text-muted">{t("GROUPS_SUBTITLE")}</p>
         </div>
         <Button
           onClick={() => setShowCreate(true)}
-          className="w-auto"
+          className="w-full sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           {t("GROUP_CREATE_BUTTON")}
