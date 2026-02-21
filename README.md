@@ -2,7 +2,7 @@
 
 ![Próximos Passos](https://proximos-passos.nelsul.dev/app_example_en.webp)
 
-**[👉 Access the Live Platform Here](https://proximos-passos.nelsul.dev)**
+**[👉 Access the Live Platform Here](https://proximos-passos.tech)**
 
 A full-stack, modern educational platform built for students preparing for public exams and university entrance exams. It provides powerful tools for studying, practicing questions, and tracking progress.
 
