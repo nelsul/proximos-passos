@@ -3,8 +3,9 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev -p 3000",
+        "dev": "dotenv -e ../.env -c -- next dev -p 3000",
         "build": "next build",
+        "build:local": "dotenv -e ../.env -c -- next build",
         "start": "next start -p 3000",
         "lint": "next lint"
     },
@@ -29,6 +30,7 @@
         "@types/node": "^22",
         "@types/react": "^19",
         "@types/react-dom": "^19",
+        "dotenv-cli": "^11.0.0",
         "eslint": "^9",
         "eslint-config-next": "^15",
         "typescript": "^5"

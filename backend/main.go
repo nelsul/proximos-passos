@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/joho/godotenv"
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	docs "proximos-passos/backend/docs"
@@ -34,6 +35,9 @@ import (
 
 func main() {
 	ctx := context.Background()
+
+	// Ignore errors, we might be in production and not need a .env file
+	_ = godotenv.Load("../.env", ".env")
 
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {

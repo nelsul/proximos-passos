@@ -76,23 +76,29 @@ createdb proximospassos
 psql -d proximospassos -f database/setup.sql
 ```
 
-### 3. Backend
+#### 3. Run the Backend
 
-Source the root `.env` and start the Go server (port 8080):
+Navigate to the `backend/` directory and run the Go application:
 
 ```bash
-export $(grep -v '^#' .env | xargs) && cd backend && go run .
+cd backend
+go run main.go
 ```
+
+> The Go app will automatically try to load the `../.env` file using godotenv, so there is no need to manually export the variables in bash.
 
 > For live-reload, install [air](https://github.com/air-verse/air) and run `air` instead of `go run .`
 
-### 4. Frontend
+#### 4. Run the Frontend
 
-Source the root `.env` and start the Next.js dev server (port 3000):
+Navigate to the `frontend/` directory and start the Next.js application:
 
 ```bash
-export $(grep -v '^#' .env | xargs) && cd frontend && npm install && npm run dev
+cd frontend
+npm run dev
 ```
+
+> The Next.js `dev` script uses `dotenv-cli` to automatically inject variables from `../.env` into the Next.js process natively.
 
 The app will be available at **http://localhost:3000**.
 
