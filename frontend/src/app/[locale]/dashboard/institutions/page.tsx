@@ -13,6 +13,7 @@ import {
 import { CreateInstitutionModal } from "@/components/institutions/create-institution-modal";
 import { EditInstitutionModal } from "@/components/institutions/edit-institution-modal";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { useToast } from "@/components/ui/toast";
 import { useIsAdmin } from "@/contexts/user-context";
 
@@ -172,29 +173,11 @@ export default function InstitutionsPage() {
             ))}
           </div>
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                {t("HANDOUT_PAGE_PREV")}
-              </Button>
-              <span className="text-sm text-muted">
-                {page} / {totalPages}
-              </span>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                {t("HANDOUT_PAGE_NEXT")}
-              </Button>
-            </div>
-          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         </>
       )}
 
