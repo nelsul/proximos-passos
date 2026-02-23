@@ -68,16 +68,15 @@ export default function ExerciseListsPage() {
   );
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(1);
-      fetchLists(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, 1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search, topicFilters, fetchLists]);
+    setPage(1);
+  }, [search, topicFilters]);
 
   useEffect(() => {
-    fetchLists(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, page);
-  }, [page, fetchLists, search, topicFilters]);
+    const timer = setTimeout(() => {
+      fetchLists(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, page);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, topicFilters, page, fetchLists]);
 
   function handleCreated() {
     setShowCreate(false);

@@ -46,16 +46,15 @@ export default function InstitutionsPage() {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(1);
-      fetchInstitutions(search || undefined, 1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search, fetchInstitutions]);
+    setPage(1);
+  }, [search]);
 
   useEffect(() => {
-    fetchInstitutions(search || undefined, page);
-  }, [page, fetchInstitutions, search]);
+    const timer = setTimeout(() => {
+      fetchInstitutions(search || undefined, page);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, page, fetchInstitutions]);
 
   function handleCreated() {
     setShowCreate(false);

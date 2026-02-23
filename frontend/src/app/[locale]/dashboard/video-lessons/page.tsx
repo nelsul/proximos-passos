@@ -68,16 +68,15 @@ export default function VideoLessonsPage() {
   );
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(1);
-      fetchLessons(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, 1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search, topicFilters, fetchLessons]);
+    setPage(1);
+  }, [search, topicFilters]);
 
   useEffect(() => {
-    fetchLessons(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, page);
-  }, [page, fetchLessons, search, topicFilters]);
+    const timer = setTimeout(() => {
+      fetchLessons(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, page);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, topicFilters, page, fetchLessons]);
 
   function handleCreated() {
     setShowCreate(false);

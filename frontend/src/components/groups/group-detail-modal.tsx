@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import {
   X,
   Users,
@@ -33,6 +34,8 @@ const MEMBERS_PAGE_SIZE = 10;
 
 export function GroupDetailModal({ group, onClose }: GroupDetailModalProps) {
   const t = useTranslations();
+  const router = useRouter();
+  const locale = useLocale();
   const { toast } = useToast();
   const [members, setMembers] = useState<GroupMemberResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,9 +77,15 @@ export function GroupDetailModal({ group, onClose }: GroupDetailModalProps) {
     checkMembership(group.id).then((res) => setMembership(res.status));
   }, [group.id]);
 
-  const joinDisabled = membership === "member" || membership === "pending";
+  const joinDisabled = membership === "pending";
 
   async function handleJoin() {
+    if (membership === "member") {
+      router.push(`/${locale}/dashboard/groups/${group.id}`);
+      onClose();
+      return;
+    }
+
     setJoining(true);
     try {
       const res = await joinGroup(group.id);
@@ -242,7 +251,7 @@ export function GroupDetailModal({ group, onClose }: GroupDetailModalProps) {
             >
               <LogIn className="h-4 w-4" />
               {membership === "member"
-                ? t("GROUP_ALREADY_MEMBER")
+                ? t("GROUP_GO_TO_PAGE_BUTTON")
                 : membership === "pending"
                   ? t("GROUP_REQUEST_PENDING")
                   : group.access_type === "open"

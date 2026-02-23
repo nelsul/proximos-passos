@@ -108,15 +108,18 @@ export default function QuestionsPage() {
   );
 
   useEffect(() => {
+    setPage(1);
+  }, [search, typeFilter, topicFilters, examFilter, institutionFilter]);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
-      setPage(1);
       fetchQuestions(
         search || undefined,
         typeFilter || undefined,
         topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined,
         examFilter || undefined,
         institutionFilter || undefined,
-        1,
+        page,
       );
     }, 300);
     return () => clearTimeout(timer);
@@ -126,26 +129,8 @@ export default function QuestionsPage() {
     topicFilters,
     examFilter,
     institutionFilter,
-    fetchQuestions,
-  ]);
-
-  useEffect(() => {
-    fetchQuestions(
-      search || undefined,
-      typeFilter || undefined,
-      topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined,
-      examFilter || undefined,
-      institutionFilter || undefined,
-      page,
-    );
-  }, [
     page,
     fetchQuestions,
-    search,
-    typeFilter,
-    topicFilters,
-    examFilter,
-    institutionFilter,
   ]);
 
   // Show toast from URL params (after create/edit redirect)

@@ -20,13 +20,13 @@ export function Navbar({ user, onUserUpdated, onMenuToggle }: NavbarProps) {
 
   return (
     <>
-      <nav className="fixed inset-x-0 top-0 z-50 border-b border-surface-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-surface-border bg-surface/95 backdrop-blur supports-backdrop-filter:bg-surface/80">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             {onMenuToggle && (
               <button
                 onClick={onMenuToggle}
-                className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
+                className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading lg:hidden"
                 aria-label="Toggle menu"
               >
                 <Menu className="h-5 w-5" />

@@ -126,6 +126,11 @@ export default function UsersPage() {
                         {t("USER_INACTIVE")}
                       </span>
                     )}
+                    {user.email_verified_at && (
+                      <span className="inline-flex rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                        {t("USER_EMAIL_VERIFIED")}
+                      </span>
+                    )}
                   </div>
                   <p className="mt-0.5 text-sm text-muted">{user.email}</p>
                 </div>

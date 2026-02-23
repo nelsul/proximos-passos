@@ -102,9 +102,14 @@ export default function JoinGroupPage() {
     if (group) fetchMembers(page);
   }, [page, group, fetchMembers]);
 
-  const joinDisabled = membership === "member" || membership === "pending";
+  const joinDisabled = membership === "pending";
 
   async function handleJoin() {
+    if (membership === "member") {
+      router.push(`/dashboard/groups/${groupId}`);
+      return;
+    }
+
     setJoining(true);
     try {
       const res = await joinGroup(groupId);
@@ -283,7 +288,7 @@ export default function JoinGroupPage() {
             >
               <LogIn className="h-4 w-4" />
               {membership === "member"
-                ? t("GROUP_ALREADY_MEMBER")
+                ? t("GROUP_GO_TO_PAGE_BUTTON")
                 : membership === "pending"
                   ? t("GROUP_REQUEST_PENDING")
                   : group.access_type === "open"

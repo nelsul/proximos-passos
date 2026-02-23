@@ -68,16 +68,15 @@ export default function HandoutsPage() {
   );
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(1);
-      fetchHandouts(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, 1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search, topicFilters, fetchHandouts]);
+    setPage(1);
+  }, [search, topicFilters]);
 
   useEffect(() => {
-    fetchHandouts(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, page);
-  }, [page, fetchHandouts, search, topicFilters]);
+    const timer = setTimeout(() => {
+      fetchHandouts(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, page);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, topicFilters, page, fetchHandouts]);
 
   function handleCreated() {
     setShowCreate(false);
