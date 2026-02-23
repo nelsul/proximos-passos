@@ -12,6 +12,33 @@ import (
 	"proximos-passos/backend/internal/domain/repository"
 )
 
+const topicCountsSelect = `
+	(WITH RECURSIVE descendants AS (
+		SELECT id FROM topics WHERE id = t.id
+		UNION ALL
+		SELECT t2.id FROM topics t2 JOIN descendants d ON t2.parent_id = d.id WHERE t2.is_active = true
+	)
+	SELECT COUNT(DISTINCT qt.question_id) FROM descendants d JOIN question_topics qt ON qt.topic_id = d.id) as questions_count,
+	(WITH RECURSIVE descendants AS (
+		SELECT id FROM topics WHERE id = t.id
+		UNION ALL
+		SELECT t2.id FROM topics t2 JOIN descendants d ON t2.parent_id = d.id WHERE t2.is_active = true
+	)
+	SELECT COUNT(DISTINCT vt.video_lesson_id) FROM descendants d JOIN video_lesson_topics vt ON vt.topic_id = d.id) as video_lessons_count,
+	(WITH RECURSIVE descendants AS (
+		SELECT id FROM topics WHERE id = t.id
+		UNION ALL
+		SELECT t2.id FROM topics t2 JOIN descendants d ON t2.parent_id = d.id WHERE t2.is_active = true
+	)
+	SELECT COUNT(DISTINCT ht.handout_id) FROM descendants d JOIN handout_topics ht ON ht.topic_id = d.id) as handouts_count,
+	(WITH RECURSIVE descendants AS (
+		SELECT id FROM topics WHERE id = t.id
+		UNION ALL
+		SELECT t2.id FROM topics t2 JOIN descendants d ON t2.parent_id = d.id WHERE t2.is_active = true
+	)
+	SELECT COUNT(DISTINCT et.open_exercise_list_id) FROM descendants d JOIN open_exercise_list_topics et ON et.topic_id = d.id) as exercise_lists_count
+`
+
 type TopicRepository struct {
 	pool *pgxpool.Pool
 }
@@ -34,14 +61,15 @@ func (r *TopicRepository) GetByPublicID(ctx context.Context, publicID string) (*
 	err := r.pool.QueryRow(ctx,
 		`SELECT t.id, t.public_id, t.parent_id, t.name, t.description,
 		        t.is_active, t.created_by_id, t.created_at, t.updated_at,
-		        p.public_id
+		        p.public_id, `+topicCountsSelect+`
 		 FROM topics t
 		 LEFT JOIN topics p ON p.id = t.parent_id
 		 WHERE t.public_id = $1 AND t.is_active = true`,
 		publicID,
 	).Scan(&t.ID, &t.PublicID, &t.ParentID, &t.Name, &t.Description,
 		&t.IsActive, &t.CreatedByID, &t.CreatedAt, &t.UpdatedAt,
-		&t.ParentPublicID)
+		&t.ParentPublicID,
+		&t.QuestionsCount, &t.VideoLessonsCount, &t.HandoutsCount, &t.ExerciseListsCount)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -57,14 +85,15 @@ func (r *TopicRepository) GetByID(ctx context.Context, id int) (*entity.Topic, e
 	err := r.pool.QueryRow(ctx,
 		`SELECT t.id, t.public_id, t.parent_id, t.name, t.description,
 		        t.is_active, t.created_by_id, t.created_at, t.updated_at,
-		        p.public_id
+		        p.public_id, `+topicCountsSelect+`
 		 FROM topics t
 		 LEFT JOIN topics p ON p.id = t.parent_id
 		 WHERE t.id = $1 AND t.is_active = true`,
 		id,
 	).Scan(&t.ID, &t.PublicID, &t.ParentID, &t.Name, &t.Description,
 		&t.IsActive, &t.CreatedByID, &t.CreatedAt, &t.UpdatedAt,
-		&t.ParentPublicID)
+		&t.ParentPublicID,
+		&t.QuestionsCount, &t.VideoLessonsCount, &t.HandoutsCount, &t.ExerciseListsCount)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -153,14 +182,14 @@ func (r *TopicRepository) List(ctx context.Context, limit, offset int, filter re
 	query := fmt.Sprintf(
 		`SELECT t.id, t.public_id, t.parent_id, t.name, t.description,
 		        t.is_active, t.created_by_id, t.created_at, t.updated_at,
-		        p.public_id
+		        p.public_id, %s
 		 FROM topics t
 		 LEFT JOIN topics p ON p.id = t.parent_id
 		 %s
 		 WHERE t.is_active = true%s
 		 ORDER BY t.name ASC
 		 LIMIT $%d OFFSET $%d`,
-		parentJoin, filterClause, len(filterArgs)+1, len(filterArgs)+2,
+		topicCountsSelect, parentJoin, filterClause, len(filterArgs)+1, len(filterArgs)+2,
 	)
 
 	args := append(filterArgs, limit, offset)
@@ -175,7 +204,8 @@ func (r *TopicRepository) List(ctx context.Context, limit, offset int, filter re
 		var t entity.Topic
 		if err := rows.Scan(&t.ID, &t.PublicID, &t.ParentID, &t.Name, &t.Description,
 			&t.IsActive, &t.CreatedByID, &t.CreatedAt, &t.UpdatedAt,
-			&t.ParentPublicID); err != nil {
+			&t.ParentPublicID,
+			&t.QuestionsCount, &t.VideoLessonsCount, &t.HandoutsCount, &t.ExerciseListsCount); err != nil {
 			return nil, err
 		}
 		topics = append(topics, t)

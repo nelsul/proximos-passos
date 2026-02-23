@@ -5,6 +5,10 @@ export interface TopicResponse {
   parent_id?: string;
   name: string;
   description?: string;
+  questions_count: number;
+  video_lessons_count: number;
+  handouts_count: number;
+  exercise_lists_count: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;

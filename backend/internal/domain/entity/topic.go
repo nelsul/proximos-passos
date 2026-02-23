@@ -14,4 +14,10 @@ type Topic struct {
 	UpdatedAt   time.Time
 
 	ParentPublicID *string
+
+	// Aggregated quantities
+	QuestionsCount     int
+	VideoLessonsCount  int
+	HandoutsCount      int
+	ExerciseListsCount int
 }

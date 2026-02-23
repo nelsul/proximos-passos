@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/routing";
-import { ArrowLeft, Edit2, Layers, Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit2, Layers, Loader2, Plus, Trash2, HelpCircle, Video, FileText, BookOpen } from "lucide-react";
 import {
   getTopic,
   listTopics,
@@ -234,6 +234,34 @@ function TopicDetailContent() {
             {topic.description && (
               <p className="mt-2 text-sm text-muted">{topic.description}</p>
             )}
+            {(topic.questions_count > 0 || topic.video_lessons_count > 0 || topic.handouts_count > 0 || topic.exercise_lists_count > 0) && (
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                {topic.questions_count > 0 && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted" title={t("ACTIVITY_ITEM_TYPE_QUESTION")}>
+                    <HelpCircle className="h-4 w-4 text-purple-400" />
+                    <span>{topic.questions_count}</span>
+                  </div>
+                )}
+                {topic.video_lessons_count > 0 && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted" title={t("ACTIVITY_ITEM_TYPE_VIDEO_LESSON")}>
+                    <Video className="h-4 w-4 text-blue-400" />
+                    <span>{topic.video_lessons_count}</span>
+                  </div>
+                )}
+                {topic.handouts_count > 0 && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted" title={t("ACTIVITY_ITEM_TYPE_HANDOUT")}>
+                    <FileText className="h-4 w-4 text-secondary" />
+                    <span>{topic.handouts_count}</span>
+                  </div>
+                )}
+                {topic.exercise_lists_count > 0 && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted" title={t("ACTIVITY_ITEM_TYPE_OPEN_EXERCISE_LIST")}>
+                    <BookOpen className="h-4 w-4 text-green-400" />
+                    <span>{topic.exercise_lists_count}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           {isAdmin && (
             <div className="flex shrink-0 gap-2">
@@ -262,7 +290,7 @@ function TopicDetailContent() {
           {t("TOPIC_CHILDREN_TITLE")}
         </h2>
         {isAdmin && (
-          <Button size="sm" onClick={() => setShowCreate(true)}>
+          <Button className="w-full sm:w-auto"  onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4" />
             {t("TOPIC_CREATE_BUTTON")}
           </Button>

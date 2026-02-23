@@ -23,13 +23,17 @@ type UpdateTopicRequest struct {
 }
 
 type TopicResponse struct {
-	PublicID    string    `json:"id"`
-	ParentID    *string   `json:"parent_id,omitempty"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description,omitempty"`
-	IsActive    bool      `json:"is_active"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	PublicID           string    `json:"id"`
+	ParentID           *string   `json:"parent_id,omitempty"`
+	Name               string    `json:"name"`
+	Description        *string   `json:"description,omitempty"`
+	QuestionsCount     int       `json:"questions_count"`
+	VideoLessonsCount  int       `json:"video_lessons_count"`
+	HandoutsCount      int       `json:"handouts_count"`
+	ExerciseListsCount int       `json:"exercise_lists_count"`
+	IsActive           bool      `json:"is_active"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
 }
 
 type TopicListResponse struct {
@@ -46,13 +50,17 @@ type TopicListResponse struct {
 
 func TopicToResponse(t *entity.Topic) TopicResponse {
 	return TopicResponse{
-		PublicID:    t.PublicID,
-		ParentID:    t.ParentPublicID,
-		Name:        t.Name,
-		Description: t.Description,
-		IsActive:    t.IsActive,
-		CreatedAt:   t.CreatedAt,
-		UpdatedAt:   t.UpdatedAt,
+		PublicID:           t.PublicID,
+		ParentID:           t.ParentPublicID,
+		Name:               t.Name,
+		Description:        t.Description,
+		QuestionsCount:     t.QuestionsCount,
+		VideoLessonsCount:  t.VideoLessonsCount,
+		HandoutsCount:      t.HandoutsCount,
+		ExerciseListsCount: t.ExerciseListsCount,
+		IsActive:           t.IsActive,
+		CreatedAt:          t.CreatedAt,
+		UpdatedAt:          t.UpdatedAt,
 	}
 }
 

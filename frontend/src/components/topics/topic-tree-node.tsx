@@ -11,6 +11,10 @@ import {
   Loader2,
   Plus,
   Trash2,
+  HelpCircle,
+  Video,
+  FileText,
+  BookOpen,
 } from "lucide-react";
 import {
   listTopics,
@@ -262,10 +266,40 @@ export function TopicTreeNode({
 
         {/* Icon + name */}
         <Layers className="h-4 w-4 shrink-0 text-secondary" />
-        <div className="ml-1 min-w-0 flex-1">
-          <span className="text-sm font-medium text-heading">{topic.name}</span>
-          {topic.description && (
-            <span className="ml-2 text-xs text-muted">{topic.description}</span>
+        <div className="ml-1 min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between py-1">
+          <div className="min-w-0">
+            <span className="text-sm font-medium text-heading">{topic.name}</span>
+            {topic.description && (
+              <span className="ml-2 text-xs text-muted">{topic.description}</span>
+            )}
+          </div>
+          {(topic.questions_count > 0 || topic.video_lessons_count > 0 || topic.handouts_count > 0 || topic.exercise_lists_count > 0) && (
+            <div className="mt-1 sm:mt-0 flex items-center gap-3">
+              {topic.questions_count > 0 && (
+                <div className="flex items-center gap-1.5 text-xs text-muted" title={t("ACTIVITY_ITEM_TYPE_QUESTION")}>
+                  <HelpCircle className="h-3 w-3 text-purple-400" />
+                  <span>{topic.questions_count}</span>
+                </div>
+              )}
+              {topic.video_lessons_count > 0 && (
+                <div className="flex items-center gap-1.5 text-xs text-muted" title={t("ACTIVITY_ITEM_TYPE_VIDEO_LESSON")}>
+                  <Video className="h-3 w-3 text-blue-400" />
+                  <span>{topic.video_lessons_count}</span>
+                </div>
+              )}
+              {topic.handouts_count > 0 && (
+                <div className="flex items-center gap-1.5 text-xs text-muted" title={t("ACTIVITY_ITEM_TYPE_HANDOUT")}>
+                  <FileText className="h-3 w-3 text-secondary" />
+                  <span>{topic.handouts_count}</span>
+                </div>
+              )}
+              {topic.exercise_lists_count > 0 && (
+                <div className="flex items-center gap-1.5 text-xs text-muted" title={t("ACTIVITY_ITEM_TYPE_OPEN_EXERCISE_LIST")}>
+                  <BookOpen className="h-3 w-3 text-green-400" />
+                  <span>{topic.exercise_lists_count}</span>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

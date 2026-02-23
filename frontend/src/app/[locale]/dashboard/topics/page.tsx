@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
-import { Plus, Loader2, Search, Layers } from "lucide-react";
+import { Plus, Loader2, Search, Layers, HelpCircle, Video, FileText, BookOpen } from "lucide-react";
 import { listTopics, type TopicResponse } from "@/lib/topics";
 import { CreateTopicModal } from "@/components/topics/create-topic-modal";
 import { Button } from "@/components/ui/button";
@@ -103,6 +103,34 @@ export default function TopicsPage() {
                   <p className="mt-0.5 truncate text-sm text-muted">
                     {topic.description}
                   </p>
+                )}
+                {(topic.questions_count > 0 || topic.video_lessons_count > 0 || topic.handouts_count > 0 || topic.exercise_lists_count > 0) && (
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    {topic.questions_count > 0 && (
+                      <div className="flex items-center gap-1text-xs text-muted" title={t("ACTIVITY_ITEM_TYPE_QUESTION")}>
+                        <HelpCircle className="h-3.5 w-3.5 text-purple-400" />
+                        <span>{topic.questions_count}</span>
+                      </div>
+                    )}
+                    {topic.video_lessons_count > 0 && (
+                      <div className="flex items-center gap-1text-xs text-muted" title={t("ACTIVITY_ITEM_TYPE_VIDEO_LESSON")}>
+                        <Video className="h-3.5 w-3.5 text-blue-400" />
+                        <span>{topic.video_lessons_count}</span>
+                      </div>
+                    )}
+                    {topic.handouts_count > 0 && (
+                      <div className="flex items-center gap-1text-xs text-muted" title={t("ACTIVITY_ITEM_TYPE_HANDOUT")}>
+                        <FileText className="h-3.5 w-3.5 text-secondary" />
+                        <span>{topic.handouts_count}</span>
+                      </div>
+                    )}
+                    {topic.exercise_lists_count > 0 && (
+                      <div className="flex items-center gap-1text-xs text-muted" title={t("ACTIVITY_ITEM_TYPE_OPEN_EXERCISE_LIST")}>
+                        <BookOpen className="h-3.5 w-3.5 text-green-400" />
+                        <span>{topic.exercise_lists_count}</span>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </button>
