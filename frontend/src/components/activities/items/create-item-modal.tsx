@@ -16,6 +16,7 @@ import { InputField } from "@/components/ui/input-field";
 import { FilterTooltip } from "@/components/ui/filter-tooltip";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { LatexText } from "@/components/ui/latex-text";
+import { Pagination } from "@/components/ui/pagination";
 
 // ==========================================
 // Create Item Modal (Complex Search)
@@ -47,6 +48,7 @@ function CreateItemModal({
   const [totalPages, setTotalPages] = useState(1);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  const currentReq = useRef(0);
 
   // Question specific filters
   const [examFilter, setExamFilter] = useState("");
@@ -67,7 +69,6 @@ function CreateItemModal({
   useEffect(() => {
     setContentId("");
     setContentLabel("");
-    setSearchQuery("");
     setSearchPage(1);
     setTotalPages(1);
     setExamFilter("");
@@ -77,7 +78,13 @@ function CreateItemModal({
 
   const fetchResults = useCallback(async () => {
     setSearching(true);
+    currentReq.current += 1;
+    const reqId = currentReq.current;
+
     try {
+      let results: any[] = [];
+      let total = 1;
+
       if (contentType === "question") {
         const filter: any = {};
         if (searchQuery.trim()) filter.statement = searchQuery.trim();
@@ -85,23 +92,23 @@ function CreateItemModal({
         if (examFilter) filter.exam_id = examFilter;
         if (institutionFilter) filter.institution_id = institutionFilter;
         const res = await listQuestions(searchPage, 10, Object.keys(filter).length > 0 ? filter : undefined);
-        setSearchResults(res.data ?? []);
-        setTotalPages(res.total_pages || 1);
+        results = res.data ?? [];
+        total = res.total_pages || 1;
       } else if (contentType === "video_lesson") {
         const q = searchQuery.trim();
         const res = await listVideoLessons(searchPage, 10, q ? { title: q } : undefined);
-        setSearchResults(res.data ?? []);
-        setTotalPages(res.total_pages || 1);
+        results = res.data ?? [];
+        total = res.total_pages || 1;
       } else if (contentType === "handout") {
         const q = searchQuery.trim();
         const res = await listHandouts(searchPage, 10, q ? { title: q } : undefined);
-        setSearchResults(res.data ?? []);
-        setTotalPages(res.total_pages || 1);
+        results = res.data ?? [];
+        total = res.total_pages || 1;
       } else if (contentType === "open_exercise_list") {
         const q = searchQuery.trim();
         const res = await listExerciseLists(searchPage, 10, q ? { title: q } : undefined);
-        setSearchResults(res.data ?? []);
-        setTotalPages(res.total_pages || 1);
+        results = res.data ?? [];
+        total = res.total_pages || 1;
       } else if (contentType === "simulated_exam") {
         // Exams do not have backend search/pagination by query right now, fallback to client filter
         const res = await listExams(1, 200);
@@ -116,14 +123,23 @@ function CreateItemModal({
         }
         // Client side pagination
         const perPage = 10;
-        setTotalPages(Math.ceil(items.length / perPage) || 1);
-        setSearchResults(items.slice((searchPage - 1) * perPage, searchPage * perPage));
+        total = Math.ceil(items.length / perPage) || 1;
+        results = items.slice((searchPage - 1) * perPage, searchPage * perPage);
+      }
+
+      if (reqId === currentReq.current) {
+        setSearchResults(results);
+        setTotalPages(total);
       }
     } catch {
-      setSearchResults([]);
-      setTotalPages(1);
+      if (reqId === currentReq.current) {
+        setSearchResults([]);
+        setTotalPages(1);
+      }
     } finally {
-      setSearching(false);
+      if (reqId === currentReq.current) {
+        setSearching(false);
+      }
     }
   }, [contentType, searchQuery, searchPage, examFilter, institutionFilter, topicFilters]);
 
@@ -442,26 +458,12 @@ function CreateItemModal({
               </div>
 
               {totalPages > 1 && (
-                <div className="mt-4 flex items-center justify-center gap-2 border-t border-surface-border pt-4">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={searchPage <= 1}
-                    onClick={() => setSearchPage((p) => p - 1)}
-                  >
-                    {t("QUESTION_PAGE_PREV")}
-                  </Button>
-                  <span className="text-sm text-muted">
-                    {searchPage} / {totalPages}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={searchPage >= totalPages}
-                    onClick={() => setSearchPage((p) => p + 1)}
-                  >
-                    {t("QUESTION_PAGE_NEXT")}
-                  </Button>
+                <div className="border-t border-surface-border mt-2 pt-2 pb-2">
+                  <Pagination
+                    page={searchPage}
+                    totalPages={totalPages}
+                    onPageChange={setSearchPage}
+                  />
                 </div>
               )}
             </div>

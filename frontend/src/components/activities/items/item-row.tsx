@@ -91,6 +91,11 @@ export function ItemRow({ item, index, activityId, questionStatus, t }: ItemRowP
     let subtitle = item.content_subtitle;
     if (item.type === "question" && subtitle) {
         subtitle = stripImageMarkers(subtitle);
+        // Strip newlines to keep the snippet on a single line
+        subtitle = subtitle.replace(/[\n\r]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
+        if (subtitle.length > 150) {
+            subtitle = subtitle.substring(0, 150) + "...";
+        }
     }
 
     return (

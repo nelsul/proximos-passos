@@ -17,7 +17,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, Loader2, ListChecks } from "lucide-react";
+import { Plus, Loader2, ListChecks, ChevronDown, ChevronRight } from "lucide-react";
 import {
   listActivityItems,
   reorderActivityItems,
@@ -53,6 +53,7 @@ export function ActivityItems({ activityId, isAdmin }: ActivityItemsProps) {
   const [questionStatuses, setQuestionStatuses] = useState<
     Record<string, QuestionStatusResponse>
   >({});
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -139,10 +140,18 @@ export function ActivityItems({ activityId, isAdmin }: ActivityItemsProps) {
   return (
     <div className="rounded-lg border border-surface-border bg-surface p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-lg font-semibold text-heading">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="group flex items-center gap-2 text-lg font-semibold text-heading hover:text-secondary transition-colors"
+        >
           <ListChecks className="h-5 w-5 text-secondary" />
           {t("ACTIVITY_ITEMS_TITLE")}
-        </h2>
+          {isExpanded ? (
+            <ChevronDown className="h-4 w-4 text-muted group-hover:text-secondary transition-colors" />
+          ) : (
+            <ChevronRight className="h-4 w-4 text-muted group-hover:text-secondary transition-colors" />
+          )}
+        </button>
         {isAdmin && (
           <button
             onClick={() => setShowCreate(true)}
@@ -154,7 +163,9 @@ export function ActivityItems({ activityId, isAdmin }: ActivityItemsProps) {
         )}
       </div>
 
-      {loading ? (
+      {isExpanded && (
+        <>
+          {loading ? (
         <div className="flex justify-center py-6">
           <Loader2 className="h-5 w-5 animate-spin text-muted" />
         </div>
@@ -205,6 +216,8 @@ export function ActivityItems({ activityId, isAdmin }: ActivityItemsProps) {
             />
           ))}
         </div>
+      )}
+        </>
       )}
 
       {showCreate && (

@@ -19,7 +19,11 @@ import {
   CheckCircle2,
   XCircle,
   ClockIcon,
+  PlayCircle,
+  HelpCircle,
+  CheckSquare,
 } from "lucide-react";
+import { CountdownTimer } from "@/components/ui/countdown-timer";
 import {
   getActivity,
   updateActivity,
@@ -384,12 +388,46 @@ export default function ActivityDetailPage() {
                   className="mt-2 text-sm text-body whitespace-pre-wrap leading-relaxed"
                 />
               )}
+
+              {/* Stats Badges */}
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                {activity.total_video_duration_minutes > 0 && (
+                  <div className="flex items-center gap-2 text-sm text-muted">
+                    <PlayCircle className="h-4 w-4" />
+                    <span>
+                      {t("ACTIVITY_SUMMARY_VIDEO", {
+                        minutes: activity.total_video_duration_minutes,
+                      })}
+                    </span>
+                  </div>
+                )}
+                {activity.total_questions_count > 0 && (
+                  <div className="flex items-center gap-2 text-sm text-muted">
+                    <HelpCircle className="h-4 w-4" />
+                    <span>
+                      {t("ACTIVITY_SUMMARY_QUESTIONS", {
+                        count: activity.total_questions_count,
+                      })}
+                    </span>
+                  </div>
+                )}
+                {activity.total_exercise_lists_count > 0 && (
+                  <div className="flex items-center gap-2 text-sm text-muted">
+                    <CheckSquare className="h-4 w-4" />
+                    <span>
+                      {t("ACTIVITY_SUMMARY_EXERCISES", {
+                        count: activity.total_exercise_lists_count,
+                      })}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-2.5 bg-background/50 border border-surface-border/50 rounded-lg px-3.5 py-2.5 w-fit">
               <Clock className="h-4 w-4 text-muted shrink-0" />
               <span className="text-sm font-medium text-heading">
-                {formatDueDate(activity.due_date)}
+                <CountdownTimer targetDate={activity.due_date} />
               </span>
             </div>
           </div>
