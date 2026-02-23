@@ -749,6 +749,13 @@ export function QuestionForm({
                   value: exam.id,
                   label: `${exam.institution.acronym} — ${exam.title} (${exam.year})`,
                 }))}
+                onSearch={async (q) => {
+                  const res = await listExams(1, 50, q ? { search: q } : undefined);
+                  return (res.data ?? []).map((exam) => ({
+                    value: exam.id,
+                    label: `${exam.institution.acronym} — ${exam.title} (${exam.year})`,
+                  }));
+                }}
                 placeholder={t("QUESTION_EXAM_NONE")}
                 searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
                 emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}

@@ -99,6 +99,13 @@ func buildExamFilterClause(filter repository.ExamFilter, startIdx int) (string, 
 		argIdx++
 	}
 
+	if filter.Search != "" {
+		clause += fmt.Sprintf(" AND (e.title ILIKE $%d OR i.name ILIKE $%d OR i.acronym ILIKE $%d)", argIdx, argIdx, argIdx)
+		args = append(args, "%"+filter.Search+"%")
+		argIdx++
+	}
+
+	_ = argIdx
 	return clause, args
 }
 

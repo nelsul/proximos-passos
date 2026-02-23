@@ -31,7 +31,7 @@ export function EditExamModal({
   const [institutions, setInstitutions] = useState<InstitutionResponse[]>([]);
 
   useEffect(() => {
-    listInstitutions(1, 100).then((res) => {
+    listInstitutions(1, 50).then((res) => {
       setInstitutions(res.data ?? []);
     });
   }, []);
@@ -91,6 +91,13 @@ export function EditExamModal({
                 value: inst.id,
                 label: `${inst.name} (${inst.acronym})`,
               }))}
+              onSearch={async (q) => {
+                const res = await listInstitutions(1, 50, q ? { name: q } : undefined);
+                return (res.data ?? []).map((inst) => ({
+                  value: inst.id,
+                  label: `${inst.name} (${inst.acronym})`,
+                }));
+              }}
               placeholder={t("EXAM_INSTITUTION_PLACEHOLDER")}
               searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
               emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}

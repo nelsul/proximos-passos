@@ -93,6 +93,7 @@ func (h *ExamHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	filter := repository.ExamFilter{
 		InstitutionID: r.URL.Query().Get("institution_id"),
+		Search:        r.URL.Query().Get("search"),
 	}
 
 	if yearStr := r.URL.Query().Get("year"); yearStr != "" {

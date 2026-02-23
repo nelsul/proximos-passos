@@ -41,7 +41,7 @@ export default function ExamsPage() {
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    listInstitutions(1, 100).then((res) => {
+    listInstitutions(1, 50).then((res) => {
       setInstitutions(res.data ?? []);
     });
   }, []);
@@ -153,6 +153,16 @@ export default function ExamsPage() {
               label: `${inst.name} (${inst.acronym})`,
             })),
           ]}
+          onSearch={async (q) => {
+            const res = await listInstitutions(1, 50, q ? { name: q } : undefined);
+            return [
+              { value: "", label: t("EXAM_FILTER_BY_INSTITUTION") },
+              ...(res.data ?? []).map((inst) => ({
+                value: inst.id,
+                label: `${inst.name} (${inst.acronym})`,
+              })),
+            ];
+          }}
           placeholder={t("EXAM_FILTER_BY_INSTITUTION")}
           searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
           emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}

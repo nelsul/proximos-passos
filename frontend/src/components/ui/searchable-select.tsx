@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Search, Check } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { ChevronDown, Search, Check, Loader2 } from "lucide-react";
 
 interface Option {
   value: string;
@@ -15,10 +15,12 @@ interface SearchableSelectProps {
   emptyMessage: string;
   className?: string;
   disabled?: boolean;
+  /** If provided, called on each keystroke (debounced 300ms) to fetch options from backend */
+  onSearch?: (query: string) => Promise<Option[]>;
 }
 
 export function SearchableSelect({
-  options,
+  options: initialOptions,
   value,
   onChange,
   placeholder,
@@ -26,15 +28,59 @@ export function SearchableSelect({
   emptyMessage,
   className = "",
   disabled = false,
+  onSearch,
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [asyncOptions, setAsyncOptions] = useState<Option[] | null>(null);
+  const [searching, setSearching] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const selectedOption = options.find((o) => o.value === value);
-  const filteredOptions = options.filter((o) =>
-    o.label.toLowerCase().includes(search.toLowerCase())
+  // Options to display: async results when available, otherwise filter locally
+  const displayOptions = asyncOptions !== null
+    ? asyncOptions
+    : initialOptions.filter((o) =>
+        o.label.toLowerCase().includes(search.toLowerCase())
+      );
+
+  const selectedOption = initialOptions.find((o) => o.value === value)
+    ?? asyncOptions?.find((o) => o.value === value);
+
+  const runSearch = useCallback(
+    (query: string) => {
+      if (!onSearch) return;
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(async () => {
+        setSearching(true);
+        try {
+          const results = await onSearch(query);
+          setAsyncOptions(results);
+        } finally {
+          setSearching(false);
+        }
+      }, 300);
+    },
+    [onSearch],
   );
+
+  // Trigger initial load when dropdown opens (empty search = all results)
+  useEffect(() => {
+    if (isOpen && onSearch) {
+      runSearch("");
+    }
+    if (!isOpen) {
+      setSearch("");
+      setAsyncOptions(null);
+    }
+  }, [isOpen, onSearch, runSearch]);
+
+  // Trigger search on each keystroke
+  useEffect(() => {
+    if (isOpen && onSearch) {
+      runSearch(search);
+    }
+  }, [search, isOpen, onSearch, runSearch]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -42,7 +88,6 @@ export function SearchableSelect({
         setIsOpen(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -76,16 +121,23 @@ export function SearchableSelect({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
+              {searching && (
+                <Loader2 className="absolute right-3 h-4 w-4 animate-spin text-muted" />
+              )}
             </div>
           </div>
-          
+
           <div className="max-h-60 overflow-y-auto custom-scrollbar p-1">
-            {filteredOptions.length === 0 ? (
+            {searching && displayOptions.length === 0 ? (
+              <div className="py-4 text-center text-sm text-muted">
+                <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+              </div>
+            ) : displayOptions.length === 0 ? (
               <div className="py-4 text-center text-sm text-muted">
                 {emptyMessage}
               </div>
             ) : (
-              filteredOptions.map((option) => (
+              displayOptions.map((option) => (
                 <button
                   type="button"
                   key={option.value}
@@ -93,6 +145,7 @@ export function SearchableSelect({
                     onChange(option.value);
                     setIsOpen(false);
                     setSearch("");
+                    setAsyncOptions(null);
                   }}
                   className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-surface-light ${
                     value === option.value ? "bg-secondary/10 text-secondary" : "text-body"

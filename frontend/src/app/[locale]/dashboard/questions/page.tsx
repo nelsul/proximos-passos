@@ -64,10 +64,10 @@ export default function QuestionsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Load exams and institutions for filter dropdowns
+  // Load exams and institutions for filter dropdowns (initial set, then backend search on type)
   useEffect(() => {
-    listExams(1, 200).then((res) => setExams(res.data ?? []));
-    listInstitutions(1, 200).then((res) => setInstitutions(res.data ?? []));
+    listExams(1, 50).then((res) => setExams(res.data ?? []));
+    listInstitutions(1, 50).then((res) => setInstitutions(res.data ?? []));
   }, []);
 
   const fetchQuestions = useCallback(
@@ -240,6 +240,13 @@ export default function QuestionsPage() {
               value: exam.id,
               label: `${exam.institution.acronym} — ${exam.title} (${exam.year})`,
             }))}
+            onSearch={async (q) => {
+              const res = await listExams(1, 50, q ? { search: q } : undefined);
+              return (res.data ?? []).map((exam) => ({
+                value: exam.id,
+                label: `${exam.institution.acronym} — ${exam.title} (${exam.year})`,
+              }));
+            }}
             placeholder={t("QUESTION_ALL_EXAMS")}
             searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
             emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}
@@ -253,6 +260,13 @@ export default function QuestionsPage() {
               value: inst.id,
               label: `${inst.name} (${inst.acronym})`,
             }))}
+            onSearch={async (q) => {
+              const res = await listInstitutions(1, 50, q ? { name: q } : undefined);
+              return (res.data ?? []).map((inst) => ({
+                value: inst.id,
+                label: `${inst.name} (${inst.acronym})`,
+              }));
+            }}
             placeholder={t("QUESTION_ALL_INSTITUTIONS")}
             searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
             emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}

@@ -9,6 +9,7 @@ import (
 type ExamFilter struct {
 	InstitutionID string
 	Year          *int
+	Search        string
 }
 
 type ExamRepository interface {

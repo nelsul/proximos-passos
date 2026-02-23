@@ -42,6 +42,7 @@ export interface UpdateExamInput {
 export interface ExamFilter {
   institution_id?: string;
   year?: number;
+  search?: string;
 }
 
 function buildQuery(page: number, size: number, filter?: ExamFilter): string {
@@ -51,6 +52,7 @@ function buildQuery(page: number, size: number, filter?: ExamFilter): string {
   if (filter?.institution_id)
     params.set("institution_id", filter.institution_id);
   if (filter?.year) params.set("year", String(filter.year));
+  if (filter?.search) params.set("search", filter.search);
   return params.toString();
 }
 
