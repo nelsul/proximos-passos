@@ -41,7 +41,7 @@ export default function DashboardLayout({
         onUserUpdated={setUser}
         onMenuToggle={() => setSidebarOpen((prev) => !prev)}
       />
-      <div className="mx-auto flex max-w-[1600px] gap-6 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[1920px] gap-6 px-4 py-6 sm:px-6 lg:px-8">
         <Sidebar
           mobileOpen={sidebarOpen}
           onMobileClose={() => setSidebarOpen(false)}

@@ -8,6 +8,7 @@ import { listInstitutions, type InstitutionResponse } from "@/lib/institutions";
 import { ApiRequestError } from "@/lib/api";
 import { InputField } from "@/components/ui/input-field";
 import { Button } from "@/components/ui/button";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 interface EditExamModalProps {
   exam: ExamResponse;
@@ -83,19 +84,18 @@ export function EditExamModal({
             <label className="block text-sm font-medium text-heading">
               {t("EXAM_INSTITUTION_LABEL")}
             </label>
-            <select
+            <SearchableSelect
               value={institutionId}
-              onChange={(e) => setInstitutionId(e.target.value)}
-              required
-              className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-body outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
-            >
-              <option value="">{t("EXAM_INSTITUTION_PLACEHOLDER")}</option>
-              {institutions.map((inst) => (
-                <option key={inst.id} value={inst.id}>
-                  {inst.name} ({inst.acronym})
-                </option>
-              ))}
-            </select>
+              onChange={setInstitutionId}
+              options={institutions.map((inst) => ({
+                value: inst.id,
+                label: `${inst.name} (${inst.acronym})`,
+              }))}
+              placeholder={t("EXAM_INSTITUTION_PLACEHOLDER")}
+              searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
+              emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}
+              className="w-full"
+            />
           </div>
 
           <InputField

@@ -13,6 +13,7 @@ import {
   ChevronUp,
   ChevronDown,
   Type,
+  Monitor,
 } from "lucide-react";
 import {
   createQuestion,
@@ -26,6 +27,7 @@ import {
 import { listExams, type ExamResponse } from "@/lib/exams";
 import { ApiRequestError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
 import { LatexText } from "@/components/ui/latex-text";
 import { LatexToolbar } from "@/components/ui/latex-toolbar";
@@ -160,7 +162,7 @@ export function QuestionForm({
   const expectedAnswerRef = useRef<HTMLTextAreaElement>(null);
 
   // ---- State ----
-  const [qType, setQType] = useState(initialQuestion?.type ?? "open_ended");
+  const [qType, setQType] = useState(initialQuestion?.type ?? "closed_ended");
   const [blocks, setBlocks] = useState<ContentBlock[]>(() => {
     if (initialQuestion) {
       return parseStatementToBlocks(
@@ -656,48 +658,67 @@ export function QuestionForm({
   return (
     <>
       <form onSubmit={isCreate ? handleCreate : handleEdit}>
-        {/* Sticky toolbar */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:text-heading"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {t("QUESTION_BACK")}
-            </button>
-            <h1 className="text-xl font-bold text-heading">
-              {isCreate ? t("QUESTION_CREATE_TITLE") : t("QUESTION_EDIT_TITLE")}
-            </h1>
+        {/* Mobile Warning */}
+        <div className="flex flex-col items-center justify-center py-20 text-center lg:hidden">
+          <div className="mb-6 rounded-full bg-surface p-4">
+            <Monitor className="h-10 w-10 text-muted" />
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowPreview((p) => !p)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-surface-border px-3 py-2 text-sm text-muted transition-colors hover:text-heading"
-            >
-              {showPreview ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-              {t("QUESTION_PREVIEW_TOGGLE")}
-            </button>
-            <Button type="submit" loading={loading}>
-              {isCreate ? t("QUESTION_CREATE_SUBMIT") : t("PROFILE_SAVE")}
-            </Button>
-          </div>
+          <h2 className="mb-2 text-xl font-bold text-heading">
+            {t("QUESTION_DESKTOP_ONLY_TITLE")}
+          </h2>
+          <p className="mb-8 max-w-sm text-sm text-muted">
+            {t("QUESTION_DESKTOP_ONLY_DESC")}
+          </p>
+          <Button type="button" variant="outline" onClick={onCancel}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t("QUESTION_BACK")}
+          </Button>
         </div>
 
-        <div
-          className={
-            showPreview ? "grid gap-6 lg:grid-cols-2" : "mx-auto max-w-5xl"
-          }
-        >
-          {/* ---------- Editor column ---------- */}
-          <div className="space-y-6">
-            {/* Type */}
+        {/* Desktop Editor */}
+        <div className="hidden lg:block">
+          {/* Sticky toolbar */}
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:text-heading"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {t("QUESTION_BACK")}
+              </button>
+              <h1 className="text-xl font-bold text-heading">
+                {isCreate ? t("QUESTION_CREATE_TITLE") : t("QUESTION_EDIT_TITLE")}
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowPreview((p) => !p)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-surface-border px-3 py-2 text-sm text-muted transition-colors hover:text-heading"
+              >
+                {showPreview ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+                {t("QUESTION_PREVIEW_TOGGLE")}
+              </button>
+              <Button type="submit" loading={loading}>
+                {isCreate ? t("QUESTION_CREATE_SUBMIT") : t("PROFILE_SAVE")}
+              </Button>
+            </div>
+          </div>
+
+          <div
+            className={
+              showPreview ? "grid gap-6 lg:grid-cols-2" : "mx-auto max-w-6xl"
+            }
+          >
+            {/* ---------- Editor column ---------- */}
+            <div className="space-y-6">
+              {/* Type */}
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-heading">
                 {t("QUESTION_TYPE_LABEL")}
@@ -707,11 +728,11 @@ export function QuestionForm({
                 onChange={(e) => setQType(e.target.value)}
                 className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-body outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
               >
-                <option value="open_ended">
-                  {t("QUESTION_TYPE_OPEN_ENDED")}
-                </option>
                 <option value="closed_ended">
                   {t("QUESTION_TYPE_CLOSED_ENDED")}
+                </option>
+                <option value="open_ended">
+                  {t("QUESTION_TYPE_OPEN_ENDED")}
                 </option>
               </select>
             </div>
@@ -721,19 +742,18 @@ export function QuestionForm({
               <label className="block text-sm font-medium text-heading">
                 {t("QUESTION_EXAM_LABEL")}
               </label>
-              <select
+              <SearchableSelect
                 value={selectedExamId}
-                onChange={(e) => setSelectedExamId(e.target.value)}
-                disabled={examsLoading}
-                className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-body outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary disabled:opacity-50"
-              >
-                <option value="">{t("QUESTION_EXAM_NONE")}</option>
-                {exams.map((exam) => (
-                  <option key={exam.id} value={exam.id}>
-                    {exam.institution.name} — {exam.title} ({exam.year})
-                  </option>
-                ))}
-              </select>
+                onChange={setSelectedExamId}
+                options={exams.map((exam) => ({
+                  value: exam.id,
+                  label: `${exam.institution.acronym} — ${exam.title} (${exam.year})`,
+                }))}
+                placeholder={t("QUESTION_EXAM_NONE")}
+                searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
+                emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}
+                className="w-full"
+              />
             </div>
 
             {/* Statement (block editor) */}
@@ -1321,7 +1341,8 @@ export function QuestionForm({
             </div>
           )}
         </div>
-      </form>
+      </div>
+    </form>
 
       {showTopicPicker && (
         <TopicPickerModal

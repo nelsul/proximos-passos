@@ -64,7 +64,7 @@ export function SearchableSelect({
       </button>
 
       {isOpen && (
-        <div className="absolute z-60 mt-1 min-w-full w-max max-w-[90vw] sm:max-w-xs md:max-w-sm rounded-lg border border-surface-border bg-surface shadow-xl shadow-black/20 origin-top overflow-hidden">
+        <div className="absolute right-0 z-50 mt-1 min-w-full w-max max-w-[90vw] sm:max-w-xs md:max-w-sm rounded-lg border border-surface-border bg-surface shadow-xl shadow-black/20 origin-top overflow-hidden">
           <div className="p-2 border-b border-surface-border">
             <div className="relative flex items-center w-full">
               <Search className="absolute left-3 h-4 w-4 text-muted pointer-events-none" />
@@ -87,6 +87,7 @@ export function SearchableSelect({
             ) : (
               filteredOptions.map((option) => (
                 <button
+                  type="button"
                   key={option.value}
                   onClick={() => {
                     onChange(option.value);

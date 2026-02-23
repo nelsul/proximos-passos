@@ -26,7 +26,7 @@ export function Navbar({ user, onUserUpdated, onMenuToggle }: NavbarProps) {
             {onMenuToggle && (
               <button
                 onClick={onMenuToggle}
-                className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading lg:hidden"
+                className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-light hover:text-heading"
                 aria-label="Toggle menu"
               >
                 <Menu className="h-5 w-5" />

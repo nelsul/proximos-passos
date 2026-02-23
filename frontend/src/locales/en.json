@@ -434,6 +434,8 @@
   "QUESTION_BLOCK_MOVE_UP": "Move up",
   "QUESTION_BLOCK_MOVE_DOWN": "Move down",
   "QUESTION_BLOCK_IMAGE_EMPTY": "No image selected",
+  "QUESTION_DESKTOP_ONLY_TITLE": "Switch to your Computer",
+  "QUESTION_DESKTOP_ONLY_DESC": "The question editor requires a larger screen to function properly. Please access this page from a desktop or laptop computer.",
   "ERROR_QUESTION_NOT_FOUND": "Question not found.",
   "LATEX_SHOW_MORE": "More ▾",
   "LATEX_SHOW_LESS": "Less ▴",
@@ -570,9 +572,9 @@
   "FEEDBACK_SUBMIT_BUTTON": "Send Feedback",
   "FEEDBACK_SUBMITTED_MESSAGE": "Thank you for your feedback! Your rating helps us improve the platform.",
   "FEEDBACK_SUBMITTED_SUCCESS": "Feedback submitted successfully!",
-  "FEEDBACK_LEVEL_LOW": "Low",
+  "FEEDBACK_LEVEL_LOW": "Easy",
   "FEEDBACK_LEVEL_MEDIUM": "Medium",
-  "FEEDBACK_LEVEL_HIGH": "High",
+  "FEEDBACK_LEVEL_HIGH": "Hard",
   "DIFFICULTY": "Difficulty",
   "QUESTION_MEDIAN_DIFFICULTY": "Average Difficulty: {value}"
 }
