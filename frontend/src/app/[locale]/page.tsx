@@ -103,10 +103,13 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8 lg:pt-40 lg:pb-32">
           <div className="mx-auto max-w-4xl text-center">
             <h1 className="text-4xl font-extrabold tracking-tight text-heading sm:text-6xl lg:text-7xl mb-6">
-              O seu caminho para a{" "}
-              <span className="bg-gradient-to-r from-secondary-light via-secondary to-secondary-dark bg-clip-text text-transparent drop-shadow-sm">
-                aprovação
-              </span>
+              {t.rich("HERO_TITLE", {
+                highlight: (chunks) => (
+                  <span className="bg-gradient-to-r from-secondary-light via-secondary to-secondary-dark bg-clip-text text-transparent drop-shadow-sm">
+                    {chunks}
+                  </span>
+                ),
+              })}
             </h1>
             
             <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
