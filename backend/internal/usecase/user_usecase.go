@@ -235,7 +235,7 @@ func (uc *UserUseCase) GetByPublicID(ctx context.Context, publicID string) (*ent
 
 func (uc *UserUseCase) List(ctx context.Context, pageNumber, pageSize int) ([]entity.User, int, error) {
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100
@@ -261,7 +261,7 @@ func (uc *UserUseCase) List(ctx context.Context, pageNumber, pageSize int) ([]en
 
 func (uc *UserUseCase) ListAll(ctx context.Context, pageNumber, pageSize int) ([]entity.User, int, error) {
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100

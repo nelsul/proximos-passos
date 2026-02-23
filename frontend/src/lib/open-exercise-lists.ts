@@ -62,7 +62,7 @@ function buildQuery(
 
 export async function listExerciseLists(
   page = 1,
-  size = 20,
+  size = 10,
   filter?: ExerciseListFilter,
 ): Promise<ExerciseListListResponse> {
   return api<ExerciseListListResponse>(

@@ -324,7 +324,7 @@ func (uc *VideoLessonUseCase) List(ctx context.Context, pageNumber, pageSize int
 		pageNumber = 1
 	}
 	if pageSize < 1 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100

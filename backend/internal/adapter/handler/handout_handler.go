@@ -98,7 +98,7 @@ func (h *HandoutHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce     json
 // @Security    CookieAuth
 // @Param       page_number query int    false "Page number" default(1)
-// @Param       page_size   query int    false "Page size"   default(20)
+// @Param       page_size   query int    false "Page size"   default(10)
 // @Param       title       query string false "Filter by title (partial match)"
 // @Param       topic_id    query string false "Filter by topic public ID (UUID)"
 // @Success     200 {object} dto.HandoutListResponse
@@ -130,7 +130,7 @@ func (h *HandoutHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100

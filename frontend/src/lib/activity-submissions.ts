@@ -64,7 +64,7 @@ export async function getMyActivitySubmission(
 export async function listActivitySubmissions(
   activityId: string,
   page = 1,
-  size = 20,
+  size = 10,
 ): Promise<ActivitySubmissionListResponse> {
   const params = new URLSearchParams();
   params.set("page_number", String(page));
@@ -101,7 +101,7 @@ export async function resubmitActivitySubmission(
 
 export async function listMyActivitySubmissions(
   page = 1,
-  size = 20,
+  size = 10,
 ): Promise<ActivitySubmissionListResponse> {
   const params = new URLSearchParams();
   params.set("page_number", String(page));

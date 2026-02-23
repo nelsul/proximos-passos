@@ -76,7 +76,7 @@ func (h *InstitutionHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce     json
 // @Security    CookieAuth
 // @Param       page_number query    int    false "Page number" default(1)
-// @Param       page_size   query    int    false "Page size"   default(20)
+// @Param       page_size   query    int    false "Page size"   default(10)
 // @Param       name        query    string false "Filter by name or acronym (partial match)"
 // @Success     200         {object} dto.InstitutionListResponse
 // @Failure     401         {object} apperror.AppError
@@ -98,7 +98,7 @@ func (h *InstitutionHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100

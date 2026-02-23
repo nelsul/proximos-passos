@@ -22,7 +22,7 @@ export default function UsersPage() {
   const fetchUsers = useCallback(async (pageNum = 1) => {
     setLoading(true);
     try {
-      const res = await listUsers(pageNum, 20);
+      const res = await listUsers(pageNum, 10);
       setUsers(res.data ?? []);
       setTotalPages(res.total_pages);
     } finally {

@@ -115,7 +115,7 @@ function buildQuery(
 
 export async function listQuestions(
   page = 1,
-  size = 20,
+  size = 10,
   filter?: QuestionFilter,
 ): Promise<QuestionListResponse> {
   return api<QuestionListResponse>(

@@ -179,7 +179,7 @@ func (uc *GroupUseCase) GetPreview(ctx context.Context, publicID string) (*entit
 
 func (uc *GroupUseCase) List(ctx context.Context, pageNumber, pageSize int, userRole entity.UserRole, filter repository.GroupFilter) ([]entity.Group, int, error) {
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100
@@ -224,7 +224,7 @@ func (uc *GroupUseCase) ListMyGroups(ctx context.Context, userPublicID string, p
 	}
 
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100
@@ -518,7 +518,7 @@ func (uc *GroupUseCase) ListMembers(ctx context.Context, groupPublicID string, r
 	}
 
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100
@@ -715,7 +715,7 @@ func (uc *GroupUseCase) ListPendingMembers(ctx context.Context, groupPublicID st
 	}
 
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100

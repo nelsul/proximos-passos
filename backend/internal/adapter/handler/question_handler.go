@@ -152,7 +152,7 @@ func (h *QuestionHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce     json
 // @Security    CookieAuth
 // @Param       page_number query int    false "Page number" default(1)
-// @Param       page_size   query int    false "Page size"   default(20)
+// @Param       page_size   query int    false "Page size"   default(10)
 // @Param       statement   query string false "Filter by statement (partial match)"
 // @Param       type        query string false "Filter by type (open_ended or closed_ended)"
 // @Param       topic_id    query string false "Filter by topic public ID (UUID)"
@@ -205,7 +205,7 @@ func (h *QuestionHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100

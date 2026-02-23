@@ -56,7 +56,7 @@ function buildQuery(page: number, size: number, filter?: ExamFilter): string {
 
 export async function listExams(
   page = 1,
-  size = 20,
+  size = 10,
   filter?: ExamFilter,
 ): Promise<ExamListResponse> {
   return api<ExamListResponse>(`/exams?${buildQuery(page, size, filter)}`);

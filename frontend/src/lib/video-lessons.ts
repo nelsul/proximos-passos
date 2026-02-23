@@ -64,7 +64,7 @@ function buildQuery(
 
 export async function listVideoLessons(
   page = 1,
-  size = 20,
+  size = 10,
   filter?: VideoLessonFilter,
 ): Promise<VideoLessonListResponse> {
   return api<VideoLessonListResponse>(

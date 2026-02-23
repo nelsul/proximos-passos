@@ -60,7 +60,7 @@ function buildQuery(
 
 export async function listHandouts(
   page = 1,
-  size = 20,
+  size = 10,
   filter?: HandoutFilter,
 ): Promise<HandoutListResponse> {
   return api<HandoutListResponse>(

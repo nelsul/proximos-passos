@@ -220,7 +220,7 @@ func (h *ActivityHandler) ListUpcoming(w http.ResponseWriter, r *http.Request) {
 		pageNumber = 1
 	}
 	if pageSize < 1 {
-		pageSize = 20
+		pageSize = 10
 	}
 
 	filter := repository.ActivityFilter{
@@ -269,7 +269,7 @@ func (h *ActivityHandler) ListPast(w http.ResponseWriter, r *http.Request) {
 		pageNumber = 1
 	}
 	if pageSize < 1 {
-		pageSize = 20
+		pageSize = 10
 	}
 
 	filter := repository.ActivityFilter{

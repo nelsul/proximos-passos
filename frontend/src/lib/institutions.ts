@@ -45,7 +45,7 @@ function buildQuery(
 
 export async function listInstitutions(
   page = 1,
-  size = 20,
+  size = 10,
   filter?: InstitutionFilter,
 ): Promise<InstitutionListResponse> {
   return api<InstitutionListResponse>(

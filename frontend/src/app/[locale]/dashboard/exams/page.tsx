@@ -17,6 +17,7 @@ import { listExams, deleteExam, type ExamResponse } from "@/lib/exams";
 import { listInstitutions, type InstitutionResponse } from "@/lib/institutions";
 import { CreateExamModal } from "@/components/exams/create-exam-modal";
 import { EditExamModal } from "@/components/exams/edit-exam-modal";
+import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useIsAdmin } from "@/contexts/user-context";
@@ -55,7 +56,7 @@ export default function ExamsPage() {
         if (institutionId) filter.institution_id = institutionId;
         const res = await listExams(
           pageNum,
-          20,
+          10,
           Object.keys(filter).length > 0 ? filter : undefined,
         );
         setExams(res.data ?? []);
@@ -230,29 +231,11 @@ export default function ExamsPage() {
             ))}
           </div>
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                {t("HANDOUT_PAGE_PREV")}
-              </Button>
-              <span className="text-sm text-muted">
-                {page} / {totalPages}
-              </span>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                {t("HANDOUT_PAGE_NEXT")}
-              </Button>
-            </div>
-          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         </>
       )}
 

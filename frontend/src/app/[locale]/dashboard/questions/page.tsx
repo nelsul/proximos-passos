@@ -28,6 +28,7 @@ import { listInstitutions, type InstitutionResponse } from "@/lib/institutions";
 import { LatexText } from "@/components/ui/latex-text";
 import { stripImageMarkers } from "@/components/questions/statement-renderer";
 import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
+import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useIsAdmin } from "@/contexts/user-context";
@@ -92,7 +93,7 @@ export default function QuestionsPage() {
         if (institutionId) filter.institution_id = institutionId;
         const res = await listQuestions(
           pageNum,
-          20,
+          10,
           Object.keys(filter).length > 0 ? filter : undefined,
         );
         setQuestions(res.data ?? []);
@@ -440,29 +441,11 @@ export default function QuestionsPage() {
             ))}
           </div>
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                {t("QUESTION_PAGE_PREV")}
-              </Button>
-              <span className="text-sm text-muted">
-                {page} / {totalPages}
-              </span>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                {t("QUESTION_PAGE_NEXT")}
-              </Button>
-            </div>
-          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         </>
       )
       }

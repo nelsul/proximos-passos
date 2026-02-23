@@ -276,7 +276,7 @@ func (uc *ActivityUseCase) ListUpcoming(ctx context.Context, groupPublicID strin
 		pageNumber = 1
 	}
 	if pageSize < 1 {
-		pageSize = 20
+		pageSize = 10
 	}
 	offset := (pageNumber - 1) * pageSize
 
@@ -316,7 +316,7 @@ func (uc *ActivityUseCase) ListPast(ctx context.Context, groupPublicID string, r
 		pageNumber = 1
 	}
 	if pageSize < 1 {
-		pageSize = 20
+		pageSize = 10
 	}
 	offset := (pageNumber - 1) * pageSize
 

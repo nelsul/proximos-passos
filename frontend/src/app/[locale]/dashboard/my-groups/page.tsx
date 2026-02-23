@@ -16,7 +16,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 export default function MyGroupsPage() {
   const t = useTranslations();

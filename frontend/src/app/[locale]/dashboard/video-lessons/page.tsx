@@ -21,6 +21,7 @@ import {
 import { CreateVideoLessonModal } from "@/components/video-lessons/create-video-lesson-modal";
 import { EditVideoLessonModal } from "@/components/video-lessons/edit-video-lesson-modal";
 import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
+import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useIsAdmin } from "@/contexts/user-context";
@@ -53,7 +54,7 @@ export default function VideoLessonsPage() {
         if (topicId) filter.topic_id = topicId;
         const res = await listVideoLessons(
           pageNum,
-          20,
+          10,
           Object.keys(filter).length > 0 ? filter : undefined,
         );
         setLessons(res.data ?? []);
@@ -268,29 +269,11 @@ export default function VideoLessonsPage() {
             ))}
           </div>
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                {t("VIDEO_LESSON_PAGE_PREV")}
-              </Button>
-              <span className="text-sm text-muted">
-                {page} / {totalPages}
-              </span>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                {t("VIDEO_LESSON_PAGE_NEXT")}
-              </Button>
-            </div>
-          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         </>
       )}
 

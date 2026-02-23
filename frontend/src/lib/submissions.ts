@@ -52,7 +52,7 @@ export async function submitAnswer(
 
 export async function listMySubmissions(
   page = 1,
-  size = 20,
+  size = 10,
   statement?: string,
 ): Promise<QuestionSubmissionListResponse> {
   const params = new URLSearchParams();
@@ -73,7 +73,7 @@ export async function getSubmission(
 export async function listQuestionSubmissions(
   questionId: string,
   page = 1,
-  size = 20,
+  size = 10,
 ): Promise<QuestionSubmissionListResponse> {
   const params = new URLSearchParams();
   params.set("page_number", String(page));

@@ -106,7 +106,7 @@ func (h *GroupHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Produce     json
 // @Security    CookieAuth
 // @Param       page_number query    int false "Page number" default(1)
-// @Param       page_size   query    int false "Page size"   default(20)
+// @Param       page_size   query    int false "Page size"   default(10)
 // @Success     200         {object} dto.GroupListResponse
 // @Failure     401         {object} apperror.AppError
 // @Failure     403         {object} apperror.AppError
@@ -129,7 +129,7 @@ func (h *GroupHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100
@@ -207,7 +207,7 @@ func (h *GroupHandler) GetPreview(w http.ResponseWriter, r *http.Request) {
 // @Produce     json
 // @Security    CookieAuth
 // @Param       page_number query    int false "Page number" default(1)
-// @Param       page_size   query    int false "Page size"   default(20)
+// @Param       page_size   query    int false "Page size"   default(10)
 // @Success     200         {object} dto.GroupListResponse
 // @Failure     401         {object} apperror.AppError
 // @Failure     500         {object} apperror.AppError
@@ -235,7 +235,7 @@ func (h *GroupHandler) ListMyGroups(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100
@@ -467,7 +467,7 @@ func (h *GroupHandler) AddMember(w http.ResponseWriter, r *http.Request) {
 // @Security    CookieAuth
 // @Param       id          path     string true  "Group public ID (UUID)"
 // @Param       page_number query    int    false  "Page number" default(1)
-// @Param       page_size   query    int    false  "Page size"   default(20)
+// @Param       page_size   query    int    false  "Page size"   default(10)
 // @Success     200         {object} dto.GroupMemberListResponse
 // @Failure     401         {object} apperror.AppError
 // @Failure     403         {object} apperror.AppError
@@ -490,7 +490,7 @@ func (h *GroupHandler) ListMembers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100
@@ -766,7 +766,7 @@ func (h *GroupHandler) ListPendingMembers(w http.ResponseWriter, r *http.Request
 	}
 
 	if pageSize <= 0 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100

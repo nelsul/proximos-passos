@@ -175,7 +175,7 @@ func (uc *ExamUseCase) List(ctx context.Context, page, pageSize int, filter repo
 		page = 1
 	}
 	if pageSize < 1 || pageSize > 100 {
-		pageSize = 20
+		pageSize = 10
 	}
 
 	offset := (page - 1) * pageSize

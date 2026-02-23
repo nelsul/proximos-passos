@@ -36,7 +36,7 @@ export default function InstitutionsPage() {
     setLoading(true);
     try {
       const filter = name ? { name } : undefined;
-      const res = await listInstitutions(pageNum, 20, filter);
+      const res = await listInstitutions(pageNum, 10, filter);
       setInstitutions(res.data ?? []);
       setTotalPages(res.total_pages);
     } finally {

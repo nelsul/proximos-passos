@@ -594,7 +594,7 @@ func (uc *QuestionUseCase) List(ctx context.Context, pageNumber, pageSize int, f
 		pageNumber = 1
 	}
 	if pageSize < 1 {
-		pageSize = 20
+		pageSize = 10
 	}
 	if pageSize > 100 {
 		pageSize = 100

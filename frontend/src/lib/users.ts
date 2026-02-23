@@ -30,7 +30,7 @@ export interface UpdateUserInput {
 
 export async function listUsers(
   page = 1,
-  size = 20,
+  size = 10,
 ): Promise<UserListResponse> {
   const params = new URLSearchParams();
   params.set("page_number", String(page));

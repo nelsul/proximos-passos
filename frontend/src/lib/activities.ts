@@ -102,7 +102,7 @@ export async function deleteActivity(activityId: string): Promise<void> {
 export async function listUpcomingActivities(
   groupId: string,
   page = 1,
-  size = 20,
+  size = 10,
   filter?: ActivityFilter,
 ): Promise<ActivityListResponse> {
   return api<ActivityListResponse>(
@@ -113,7 +113,7 @@ export async function listUpcomingActivities(
 export async function listPastActivities(
   groupId: string,
   page = 1,
-  size = 20,
+  size = 10,
   filter?: ActivityFilter,
 ): Promise<ActivityListResponse> {
   return api<ActivityListResponse>(

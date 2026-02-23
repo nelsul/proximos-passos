@@ -46,7 +46,7 @@ function buildQuery(page: number, size: number, filter?: GroupFilter): string {
 
 export async function listGroups(
   page = 1,
-  size = 20,
+  size = 10,
   filter?: GroupFilter,
 ): Promise<GroupListResponse> {
   return api<GroupListResponse>(`/groups?${buildQuery(page, size, filter)}`);
@@ -54,7 +54,7 @@ export async function listGroups(
 
 export async function listMyGroups(
   page = 1,
-  size = 20,
+  size = 10,
   filter?: GroupFilter,
 ): Promise<GroupListResponse> {
   return api<GroupListResponse>(`/me/groups?${buildQuery(page, size, filter)}`);
