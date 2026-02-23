@@ -44,7 +44,7 @@ export interface UpdateExerciseListInput {
 
 export interface ExerciseListFilter {
   title?: string;
-  topic_id?: string;
+  topic_id?: string | string[];
 }
 
 function buildQuery(
@@ -56,7 +56,13 @@ function buildQuery(
   params.set("page_number", String(page));
   params.set("page_size", String(size));
   if (filter?.title) params.set("title", filter.title);
-  if (filter?.topic_id) params.set("topic_id", filter.topic_id);
+  if (filter?.topic_id) {
+    if (Array.isArray(filter.topic_id)) {
+      filter.topic_id.forEach((id) => params.append("topic_id", id));
+    } else {
+      params.append("topic_id", filter.topic_id);
+    }
+  }
   return params.toString();
 }
 

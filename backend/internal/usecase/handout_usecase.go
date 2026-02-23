@@ -298,15 +298,8 @@ func (uc *HandoutUseCase) List(ctx context.Context, pageNumber, pageSize int, fi
 	return handouts, total, totalPages, nil
 }
 
-func (uc *HandoutUseCase) ResolveTopicID(ctx context.Context, publicID string) (int, error) {
-	topic, err := uc.topicRepo.GetByPublicID(ctx, publicID)
-	if err != nil {
-		return 0, err
-	}
-	if topic == nil {
-		return 0, apperror.ErrTopicNotFound
-	}
-	return topic.ID, nil
+func (uc *HandoutUseCase) ResolveTopicIDs(ctx context.Context, publicIDs []string) ([]int, error) {
+	return uc.resolveTopicIDs(ctx, publicIDs)
 }
 
 func (uc *HandoutUseCase) resolveTopicIDs(ctx context.Context, publicIDs []string) ([]int, error) {

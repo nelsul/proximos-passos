@@ -257,6 +257,8 @@
   "HANDOUT_PAGE_NEXT": "Next",
   "TOPIC_PICKER_TITLE": "Select a topic",
   "TOPIC_PICKER_CLOSE": "Close",
+  "TOPIC_PICKER_CONFIRM": "Confirm",
+  "FILTER_TOPIC_TOOLTIP": "Returns items that have any of the selected topics (OR condition).",
   "ERROR_HANDOUT_NOT_FOUND": "Handout not found.",
   "ERROR_HANDOUT_TITLE_TAKEN": "A handout with this title already exists.",
   "INSTITUTIONS_TITLE": "Institutions",

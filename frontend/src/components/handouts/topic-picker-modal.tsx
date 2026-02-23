@@ -21,7 +21,7 @@ interface SelectedTopic {
 
 interface TopicPickerModalProps {
   selected: SelectedTopic[];
-  onConfirm: (topic: SelectedTopic) => void;
+  onConfirm: (topics: SelectedTopic[]) => void;
   onClose: () => void;
 }
 
@@ -38,8 +38,9 @@ export function TopicPickerModal({
     null,
   );
   const [searching, setSearching] = useState(false);
+  const [currentSelected, setCurrentSelected] = useState<SelectedTopic[]>(selected);
 
-  const selectedIds = new Set(selected.map((s) => s.id));
+  const selectedIds = new Set(currentSelected.map((s) => s.id));
 
   const fetchRoots = useCallback(async () => {
     setLoading(true);
@@ -73,8 +74,11 @@ export function TopicPickerModal({
   }, [search]);
 
   function handleSelect(topic: TopicResponse) {
-    if (selectedIds.has(topic.id)) return;
-    onConfirm({ id: topic.id, name: topic.name });
+    if (selectedIds.has(topic.id)) {
+      setCurrentSelected((prev) => prev.filter((t) => t.id !== topic.id));
+    } else {
+      setCurrentSelected((prev) => [...prev, { id: topic.id, name: topic.name }]);
+    }
   }
 
   return (
@@ -157,9 +161,12 @@ export function TopicPickerModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-surface-border px-6 py-4">
+        <div className="border-t border-surface-border px-6 py-4 flex justify-between gap-4">
           <Button variant="outline" onClick={onClose} className="w-full">
             {t("TOPIC_PICKER_CLOSE")}
+          </Button>
+          <Button onClick={() => onConfirm(currentSelected)} className="w-full">
+            {t("TOPIC_PICKER_CONFIRM")}
           </Button>
         </div>
       </div>

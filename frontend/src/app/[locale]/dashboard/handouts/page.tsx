@@ -23,6 +23,7 @@ import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { FilterTooltip } from "@/components/ui/filter-tooltip";
 import { useIsAdmin } from "@/contexts/user-context";
 
 export default function HandoutsPage() {
@@ -37,21 +38,21 @@ export default function HandoutsPage() {
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [topicFilter, setTopicFilter] = useState<{
+  const [topicFilters, setTopicFilters] = useState<{
     id: string;
     name: string;
-  } | null>(null);
+  }[]>([]);
   const [showTopicFilter, setShowTopicFilter] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   const fetchHandouts = useCallback(
-    async (title?: string, topicId?: string, pageNum = 1) => {
+    async (title?: string, topicIds?: string[], pageNum = 1) => {
       setLoading(true);
       try {
-        const filter: { title?: string; topic_id?: string } = {};
+        const filter: { title?: string; topic_id?: string | string[] } = {};
         if (title) filter.title = title;
-        if (topicId) filter.topic_id = topicId;
+        if (topicIds && topicIds.length > 0) filter.topic_id = topicIds;
         const res = await listHandouts(
           pageNum,
           10,
@@ -69,25 +70,25 @@ export default function HandoutsPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setPage(1);
-      fetchHandouts(search || undefined, topicFilter?.id, 1);
+      fetchHandouts(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, 1);
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, topicFilter, fetchHandouts]);
+  }, [search, topicFilters, fetchHandouts]);
 
   useEffect(() => {
-    fetchHandouts(search || undefined, topicFilter?.id, page);
-  }, [page, fetchHandouts, search, topicFilter]);
+    fetchHandouts(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, page);
+  }, [page, fetchHandouts, search, topicFilters]);
 
   function handleCreated() {
     setShowCreate(false);
     toast(t("HANDOUT_CREATE_SUCCESS"));
-    fetchHandouts(search || undefined, topicFilter?.id, page);
+    fetchHandouts(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, page);
   }
 
   function handleUpdated() {
     setEditingHandout(null);
     toast(t("HANDOUT_UPDATE_SUCCESS"));
-    fetchHandouts(search || undefined, topicFilter?.id, page);
+    fetchHandouts(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, page);
   }
 
   async function handleDelete(id: string) {
@@ -96,7 +97,7 @@ export default function HandoutsPage() {
     try {
       await deleteHandout(id);
       toast(t("HANDOUT_DELETE_SUCCESS"));
-      fetchHandouts(search || undefined, topicFilter?.id, page);
+      fetchHandouts(search || undefined, topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined, page);
     } finally {
       setDeletingId(null);
     }
@@ -136,29 +137,45 @@ export default function HandoutsPage() {
             className="w-full rounded-lg border border-surface-border bg-background py-2.5 pl-10 pr-4 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
           />
         </div>
-        {topicFilter ? (
-          <button
-            onClick={() => setTopicFilter(null)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-3 py-2 text-xs font-medium text-secondary transition-colors hover:bg-secondary/20"
-          >
-            {topicFilter.name}
-            <X className="h-3.5 w-3.5" />
-          </button>
+        {topicFilters.length > 0 ? (
+          <div className="flex flex-wrap gap-2 items-center">
+            {topicFilters.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTopicFilters(prev => prev.filter(p => p.id !== t.id))}
+                className="inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-3 py-2 text-xs font-medium text-secondary transition-colors hover:bg-secondary/20"
+              >
+                {t.name}
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ))}
+            <button
+              onClick={() => setShowTopicFilter(true)}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full border border-dashed border-surface-border bg-background px-3 py-2 text-xs font-medium text-muted transition-colors hover:border-secondary hover:text-heading"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              {t("HANDOUT_FILTER_BY_TOPIC")}
+            </button>
+            <FilterTooltip />
+          </div>
         ) : (
-          <button
-            onClick={() => setShowTopicFilter(true)}
-            className="w-full sm:w-auto rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
-          >
-            {t("HANDOUT_FILTER_BY_TOPIC")}
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setShowTopicFilter(true)}
+              className="w-full sm:w-auto rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
+            >
+              {t("HANDOUT_FILTER_BY_TOPIC")}
+            </button>
+            <FilterTooltip />
+          </div>
         )}
       </div>
 
       {showTopicFilter && (
         <TopicPickerModal
-          selected={[]}
-          onConfirm={(topic) => {
-            setTopicFilter(topic);
+          selected={topicFilters}
+          onConfirm={(topics) => {
+            setTopicFilters(topics);
             setShowTopicFilter(false);
           }}
           onClose={() => setShowTopicFilter(false)}

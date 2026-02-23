@@ -171,13 +171,13 @@ func (h *QuestionHandler) List(w http.ResponseWriter, r *http.Request) {
 		Type:      r.URL.Query().Get("type"),
 	}
 
-	if topicPublicID := r.URL.Query().Get("topic_id"); topicPublicID != "" {
-		topicID, resolveErr := h.uc.ResolveTopicID(r.Context(), topicPublicID)
+	if topicPublicIDs := r.URL.Query()["topic_id"]; len(topicPublicIDs) > 0 {
+		topicIDs, resolveErr := h.uc.ResolveTopicIDs(r.Context(), topicPublicIDs)
 		if resolveErr != nil {
 			response.Error(w, resolveErr)
 			return
 		}
-		filter.TopicID = &topicID
+		filter.TopicIDs = topicIDs
 	}
 
 	if examPublicID := r.URL.Query().Get("exam_id"); examPublicID != "" {
@@ -457,11 +457,11 @@ func (h *QuestionHandler) CreateFeedback(w http.ResponseWriter, r *http.Request)
 	}
 
 	fb, err := h.uc.CreateFeedback(
-		r.Context(), 
-		publicID, 
-		userPublicID, 
-		req.DifficultyLogic, 
-		req.DifficultyLabor, 
+		r.Context(),
+		publicID,
+		userPublicID,
+		req.DifficultyLogic,
+		req.DifficultyLabor,
 		req.DifficultyTheory,
 	)
 	if err != nil {

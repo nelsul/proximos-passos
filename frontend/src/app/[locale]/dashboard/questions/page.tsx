@@ -31,6 +31,7 @@ import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { FilterTooltip } from "@/components/ui/filter-tooltip";
 import { useIsAdmin } from "@/contexts/user-context";
 
 export default function QuestionsPage() {
@@ -46,10 +47,10 @@ export default function QuestionsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
-  const [topicFilter, setTopicFilter] = useState<{
+  const [topicFilters, setTopicFilters] = useState<{
     id: string;
     name: string;
-  } | null>(null);
+  }[]>([]);
   const [showTopicFilter, setShowTopicFilter] = useState(false);
   const [examFilter, setExamFilter] = useState(
     searchParams.get("exam_id") ?? "",
@@ -72,7 +73,7 @@ export default function QuestionsPage() {
     async (
       statement?: string,
       type?: string,
-      topicId?: string,
+      topicIds?: string[],
       examId?: string,
       institutionId?: string,
       pageNum = 1,
@@ -82,13 +83,13 @@ export default function QuestionsPage() {
         const filter: {
           statement?: string;
           type?: string;
-          topic_id?: string;
+          topic_id?: string | string[];
           exam_id?: string;
           institution_id?: string;
         } = {};
         if (statement) filter.statement = statement;
         if (type) filter.type = type;
-        if (topicId) filter.topic_id = topicId;
+        if (topicIds && topicIds.length > 0) filter.topic_id = topicIds;
         if (examId) filter.exam_id = examId;
         if (institutionId) filter.institution_id = institutionId;
         const res = await listQuestions(
@@ -111,7 +112,7 @@ export default function QuestionsPage() {
       fetchQuestions(
         search || undefined,
         typeFilter || undefined,
-        topicFilter?.id,
+        topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined,
         examFilter || undefined,
         institutionFilter || undefined,
         1,
@@ -121,7 +122,7 @@ export default function QuestionsPage() {
   }, [
     search,
     typeFilter,
-    topicFilter,
+    topicFilters,
     examFilter,
     institutionFilter,
     fetchQuestions,
@@ -131,7 +132,7 @@ export default function QuestionsPage() {
     fetchQuestions(
       search || undefined,
       typeFilter || undefined,
-      topicFilter?.id,
+      topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined,
       examFilter || undefined,
       institutionFilter || undefined,
       page,
@@ -141,7 +142,7 @@ export default function QuestionsPage() {
     fetchQuestions,
     search,
     typeFilter,
-    topicFilter,
+    topicFilters,
     examFilter,
     institutionFilter,
   ]);
@@ -170,7 +171,7 @@ export default function QuestionsPage() {
       fetchQuestions(
         search || undefined,
         typeFilter || undefined,
-        topicFilter?.id,
+        topicFilters.length > 0 ? topicFilters.map(t => t.id) : undefined,
         examFilter || undefined,
         institutionFilter || undefined,
         page,
@@ -256,29 +257,45 @@ export default function QuestionsPage() {
           ))}
         </select>
 
-        {topicFilter ? (
-          <button
-            onClick={() => setTopicFilter(null)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-secondary/10 px-3 py-2 text-xs font-medium text-secondary transition-colors hover:bg-secondary/20"
-          >
-            {topicFilter.name}
-            <X className="h-3.5 w-3.5" />
-          </button>
+        {topicFilters.length > 0 ? (
+          <div className="flex flex-wrap gap-2 items-center">
+            {topicFilters.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTopicFilters(prev => prev.filter(p => p.id !== t.id))}
+                className="inline-flex items-center justify-center gap-1.5 rounded-full bg-secondary/10 px-3 py-2 text-xs font-medium text-secondary transition-colors hover:bg-secondary/20"
+              >
+                {t.name}
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ))}
+            <button
+              onClick={() => setShowTopicFilter(true)}
+              className="inline-flex items-center justify-center gap-1.5 rounded-full border border-dashed border-surface-border bg-background px-3 py-2 text-xs font-medium text-muted transition-colors hover:border-secondary hover:text-heading"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              {t("QUESTION_FILTER_BY_TOPIC")}
+            </button>
+            <FilterTooltip />
+          </div>
         ) : (
-          <button
-            onClick={() => setShowTopicFilter(true)}
-            className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
-          >
-            {t("QUESTION_FILTER_BY_TOPIC")}
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setShowTopicFilter(true)}
+              className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
+            >
+              {t("QUESTION_FILTER_BY_TOPIC")}
+            </button>
+            <FilterTooltip />
+          </div>
         )}
       </div>
 
       {showTopicFilter && (
         <TopicPickerModal
-          selected={[]}
-          onConfirm={(topic) => {
-            setTopicFilter(topic);
+          selected={topicFilters}
+          onConfirm={(topics) => {
+            setTopicFilters(topics);
             setShowTopicFilter(false);
           }}
           onClose={() => setShowTopicFilter(false)}

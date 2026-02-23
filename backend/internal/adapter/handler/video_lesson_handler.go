@@ -134,13 +134,13 @@ func (h *VideoLessonHandler) List(w http.ResponseWriter, r *http.Request) {
 		Title: r.URL.Query().Get("title"),
 	}
 
-	if topicPublicID := r.URL.Query().Get("topic_id"); topicPublicID != "" {
-		topicID, resolveErr := h.uc.ResolveTopicID(r.Context(), topicPublicID)
+	if topicPublicIDs := r.URL.Query()["topic_id"]; len(topicPublicIDs) > 0 {
+		topicIDs, resolveErr := h.uc.ResolveTopicIDs(r.Context(), topicPublicIDs)
 		if resolveErr != nil {
 			response.Error(w, resolveErr)
 			return
 		}
-		filter.TopicID = &topicID
+		filter.TopicIDs = topicIDs
 	}
 
 	lessons, totalItems, totalPages, err := h.uc.List(r.Context(), pageNumber, pageSize, filter)

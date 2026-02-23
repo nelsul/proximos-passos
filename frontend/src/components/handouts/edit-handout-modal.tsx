@@ -198,8 +198,8 @@ export function EditHandoutModal({
       {showTopicPicker && (
         <TopicPickerModal
           selected={selectedTopics}
-          onConfirm={(topic) => {
-            setSelectedTopics((prev) => [...prev, topic]);
+          onConfirm={(topics) => {
+            setSelectedTopics(topics);
             setShowTopicPicker(false);
           }}
           onClose={() => setShowTopicPicker(false)}

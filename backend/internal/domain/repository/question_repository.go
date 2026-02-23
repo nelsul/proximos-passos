@@ -8,7 +8,7 @@ import (
 
 type QuestionFilter struct {
 	Statement     string
-	TopicID       *int
+	TopicIDs      []int
 	Type          string // "open_ended", "closed_ended", or "" for any
 	ExamID        *int
 	InstitutionID *int

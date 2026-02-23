@@ -434,9 +434,9 @@ func buildQuestionFilterClause(filter repository.QuestionFilter) (string, []any)
 		argIdx++
 	}
 
-	if filter.TopicID != nil {
-		clause += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM question_topics qt2 WHERE qt2.question_id = q.id AND qt2.topic_id IN (WITH RECURSIVE topic_tree AS (SELECT id FROM topics WHERE id = $%d UNION ALL SELECT t.id FROM topics t JOIN topic_tree tt ON t.parent_id = tt.id) SELECT id FROM topic_tree))", argIdx)
-		args = append(args, *filter.TopicID)
+	if len(filter.TopicIDs) > 0 {
+		clause += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM question_topics qt2 WHERE qt2.question_id = q.id AND qt2.topic_id IN (WITH RECURSIVE topic_tree AS (SELECT id FROM topics WHERE id = ANY($%d) UNION ALL SELECT t.id FROM topics t JOIN topic_tree tt ON t.parent_id = tt.id) SELECT id FROM topic_tree))", argIdx)
+		args = append(args, filter.TopicIDs)
 		argIdx++
 	}
 
@@ -725,10 +725,10 @@ func (r *QuestionRepository) CreateFeedback(ctx context.Context, f *entity.Quest
 		 RETURNING id, public_id, is_active, created_at, updated_at`,
 		f.QuestionID, f.UserID, f.DifficultyLogic, f.DifficultyLabor, f.DifficultyTheory,
 	).Scan(&f.ID, &f.PublicID, &f.IsActive, &f.CreatedAt, &f.UpdatedAt)
-	
+
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }

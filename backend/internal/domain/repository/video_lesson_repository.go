@@ -7,8 +7,8 @@ import (
 )
 
 type VideoLessonFilter struct {
-	Title   string
-	TopicID *int
+	Title    string
+	TopicIDs []int
 }
 
 type VideoLessonRepository interface {

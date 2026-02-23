@@ -257,6 +257,8 @@
     "HANDOUT_PAGE_NEXT": "Próxima",
     "TOPIC_PICKER_TITLE": "Selecionar um tópico",
     "TOPIC_PICKER_CLOSE": "Fechar",
+    "TOPIC_PICKER_CONFIRM": "Confirmar",
+    "FILTER_TOPIC_TOOLTIP": "Retorna itens que possuam qualquer um dos tópicos selecionados (condição OU).",
     "ERROR_HANDOUT_NOT_FOUND": "Apostila não encontrada.",
     "ERROR_HANDOUT_TITLE_TAKEN": "Já existe uma apostila com este título.",
     "INSTITUTIONS_TITLE": "Instituições",

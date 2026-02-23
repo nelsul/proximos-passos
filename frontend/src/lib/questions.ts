@@ -91,7 +91,7 @@ export interface UpdateQuestionInput {
 export interface QuestionFilter {
   statement?: string;
   type?: string;
-  topic_id?: string;
+  topic_id?: string | string[];
   exam_id?: string;
   institution_id?: string;
 }
@@ -106,7 +106,13 @@ function buildQuery(
   params.set("page_size", String(size));
   if (filter?.statement) params.set("statement", filter.statement);
   if (filter?.type) params.set("type", filter.type);
-  if (filter?.topic_id) params.set("topic_id", filter.topic_id);
+  if (filter?.topic_id) {
+    if (Array.isArray(filter.topic_id)) {
+      filter.topic_id.forEach((id) => params.append("topic_id", id));
+    } else {
+      params.append("topic_id", filter.topic_id);
+    }
+  }
   if (filter?.exam_id) params.set("exam_id", filter.exam_id);
   if (filter?.institution_id)
     params.set("institution_id", filter.institution_id);

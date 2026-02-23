@@ -334,15 +334,8 @@ func (uc *OpenExerciseListUseCase) List(ctx context.Context, pageNumber, pageSiz
 	return lists, total, totalPages, nil
 }
 
-func (uc *OpenExerciseListUseCase) ResolveTopicID(ctx context.Context, publicID string) (int, error) {
-	topic, err := uc.topicRepo.GetByPublicID(ctx, publicID)
-	if err != nil {
-		return 0, err
-	}
-	if topic == nil {
-		return 0, apperror.ErrTopicNotFound
-	}
-	return topic.ID, nil
+func (uc *OpenExerciseListUseCase) ResolveTopicIDs(ctx context.Context, publicIDs []string) ([]int, error) {
+	return uc.resolveTopicIDs(ctx, publicIDs)
 }
 
 func (uc *OpenExerciseListUseCase) resolveTopicIDs(ctx context.Context, publicIDs []string) ([]int, error) {

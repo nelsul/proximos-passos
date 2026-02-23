@@ -7,8 +7,8 @@ import (
 )
 
 type OpenExerciseListFilter struct {
-	Title   string
-	TopicID *int
+	Title    string
+	TopicIDs []int
 }
 
 type OpenExerciseListRepository interface {

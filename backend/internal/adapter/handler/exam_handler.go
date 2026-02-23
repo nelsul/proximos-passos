@@ -100,7 +100,6 @@ func (h *ExamHandler) List(w http.ResponseWriter, r *http.Request) {
 			filter.Year = &year
 		}
 	}
-
 	exams, totalItems, totalPages, err := h.uc.List(r.Context(), pageNumber, pageSize, filter)
 	if err != nil {
 		response.Error(w, err)

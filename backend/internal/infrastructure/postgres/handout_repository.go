@@ -253,9 +253,9 @@ func buildHandoutFilterClause(filter repository.HandoutFilter) (string, []any) {
 		argIdx++
 	}
 
-	if filter.TopicID != nil {
-		clause += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM handout_topics ht2 WHERE ht2.handout_id = h.id AND ht2.topic_id IN (WITH RECURSIVE topic_tree AS (SELECT id FROM topics WHERE id = $%d UNION ALL SELECT t.id FROM topics t JOIN topic_tree tt ON t.parent_id = tt.id) SELECT id FROM topic_tree))", argIdx)
-		args = append(args, *filter.TopicID)
+	if len(filter.TopicIDs) > 0 {
+		clause += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM handout_topics ht2 WHERE ht2.handout_id = h.id AND ht2.topic_id IN (WITH RECURSIVE topic_tree AS (SELECT id FROM topics WHERE id = ANY($%d) UNION ALL SELECT t.id FROM topics t JOIN topic_tree tt ON t.parent_id = tt.id) SELECT id FROM topic_tree))", argIdx)
+		args = append(args, filter.TopicIDs)
 		argIdx++
 	}
 

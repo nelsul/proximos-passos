@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2, Check, X, Search } from "lucide-react";
+import { Loader2, Check, X, Search, Plus } from "lucide-react";
 import { createActivityItem, type CreateActivityItemInput } from "@/lib/activities";
 import { listQuestions } from "@/lib/questions";
 import { listVideoLessons } from "@/lib/video-lessons";
@@ -13,6 +13,7 @@ import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
 import { stripImageMarkers } from "@/components/questions/statement-renderer";
 import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/ui/input-field";
+import { FilterTooltip } from "@/components/ui/filter-tooltip";
 import { LatexText } from "@/components/ui/latex-text";
 
 // ==========================================
@@ -49,7 +50,7 @@ function CreateItemModal({
   // Question specific filters
   const [examFilter, setExamFilter] = useState("");
   const [institutionFilter, setInstitutionFilter] = useState("");
-  const [topicFilter, setTopicFilter] = useState<{ id: string; name: string } | null>(null);
+  const [topicFilters, setTopicFilters] = useState<{ id: string; name: string }[]>([]);
   const [showTopicFilter, setShowTopicFilter] = useState(false);
 
   const [exams, setExams] = useState<ExamResponse[]>([]);
@@ -70,7 +71,7 @@ function CreateItemModal({
     setTotalPages(1);
     setExamFilter("");
     setInstitutionFilter("");
-    setTopicFilter(null);
+    setTopicFilters([]);
   }, [contentType]);
 
   const fetchResults = useCallback(async () => {
@@ -79,7 +80,7 @@ function CreateItemModal({
       if (contentType === "question") {
         const filter: any = {};
         if (searchQuery.trim()) filter.statement = searchQuery.trim();
-        if (topicFilter) filter.topic_id = topicFilter.id;
+        if (topicFilters.length > 0) filter.topic_id = topicFilters.map(t => t.id);
         if (examFilter) filter.exam_id = examFilter;
         if (institutionFilter) filter.institution_id = institutionFilter;
         const res = await listQuestions(searchPage, 10, Object.keys(filter).length > 0 ? filter : undefined);
@@ -123,7 +124,7 @@ function CreateItemModal({
     } finally {
       setSearching(false);
     }
-  }, [contentType, searchQuery, searchPage, examFilter, institutionFilter, topicFilter]);
+  }, [contentType, searchQuery, searchPage, examFilter, institutionFilter, topicFilters]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -342,24 +343,40 @@ function CreateItemModal({
                       ))}
                     </select>
 
-                    {topicFilter ? (
-                      <button
-                        onClick={() => {
-                          setTopicFilter(null);
-                          setSearchPage(1);
-                        }}
-                        className="flex w-full items-center justify-between rounded-lg bg-secondary/10 px-3 py-2 text-sm text-secondary hover:bg-secondary/20 transition-colors"
-                      >
-                        <span className="truncate">{topicFilter.name}</span>
-                        <X className="h-3.5 w-3.5 shrink-0" />
-                      </button>
+                    {topicFilters.length > 0 ? (
+                      <div className="flex flex-wrap gap-2 w-full col-span-1 sm:col-span-2 lg:col-span-3">
+                        {topicFilters.map(t => (
+                          <button
+                            key={t.id}
+                            onClick={() => {
+                              setTopicFilters(prev => prev.filter(p => p.id !== t.id));
+                              setSearchPage(1);
+                            }}
+                            className="flex items-center gap-1.5 rounded-lg bg-secondary/10 px-3 py-2 text-sm text-secondary hover:bg-secondary/20 transition-colors"
+                          >
+                            <span className="truncate">{t.name}</span>
+                            <X className="h-3.5 w-3.5 shrink-0" />
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => setShowTopicFilter(true)}
+                          className="flex items-center gap-1.5 rounded-lg border border-dashed border-surface-border bg-surface px-3 py-2 text-sm text-muted hover:border-secondary transition-colors"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          <span className="truncate">{t("QUESTION_FILTER_BY_TOPIC")}</span>
+                        </button>
+                        <FilterTooltip />
+                      </div>
                     ) : (
-                      <button
-                        onClick={() => setShowTopicFilter(true)}
-                        className="flex w-full items-center justify-between rounded-lg border border-surface-border bg-surface px-3 py-2 text-sm text-muted hover:border-secondary transition-colors"
-                      >
-                        <span className="truncate">{t("QUESTION_FILTER_BY_TOPIC")}</span>
-                      </button>
+                      <div className="flex w-full items-center gap-2">
+                        <button
+                          onClick={() => setShowTopicFilter(true)}
+                          className="flex flex-1 items-center justify-between rounded-lg border border-surface-border bg-surface px-3 py-2 text-sm text-muted hover:border-secondary transition-colors"
+                        >
+                          <span className="truncate">{t("QUESTION_FILTER_BY_TOPIC")}</span>
+                        </button>
+                        <FilterTooltip />
+                      </div>
                     )}
                   </div>
                 )}
@@ -472,9 +489,9 @@ function CreateItemModal({
 
         {showTopicFilter && (
           <TopicPickerModal
-            selected={[]}
-            onConfirm={(topic) => {
-              setTopicFilter(topic);
+            selected={topicFilters}
+            onConfirm={(topics) => {
+              setTopicFilters(topics);
               setShowTopicFilter(false);
               setSearchPage(1);
             }}
