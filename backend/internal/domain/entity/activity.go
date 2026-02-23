@@ -3,17 +3,20 @@ package entity
 import "time"
 
 type Activity struct {
-	ID            int
-	PublicID      string
-	GroupID       int
-	GroupPublicID string
-	Title         string
-	Description   *string
-	DueDate       time.Time
-	IsActive      bool
-	CreatedByID   int
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID                        int
+	PublicID                  string
+	GroupID                   int
+	GroupPublicID             string
+	Title                     string
+	Description               *string
+	DueDate                   time.Time
+	IsActive                  bool
+	CreatedByID               int
+	CreatedAt                 time.Time
+	TotalVideoDurationMinutes int
+	TotalQuestionsCount       int
+	TotalExerciseListsCount   int
+	UpdatedAt                 time.Time
 }
 
 type ActivityAttachment struct {

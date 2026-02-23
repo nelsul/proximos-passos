@@ -23,26 +23,32 @@ type UpdateActivityRequest struct {
 }
 
 type ActivityResponse struct {
-	PublicID    string    `json:"id"`
-	GroupID     string    `json:"group_id"`
-	Title       string    `json:"title"`
-	Description *string   `json:"description,omitempty"`
-	DueDate     time.Time `json:"due_date"`
-	IsActive    bool      `json:"is_active"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	PublicID                  string    `json:"id"`
+	GroupID                   string    `json:"group_id"`
+	Title                     string    `json:"title"`
+	Description               *string   `json:"description,omitempty"`
+	DueDate                   time.Time `json:"due_date"`
+	IsActive                  bool      `json:"is_active"`
+	TotalVideoDurationMinutes int       `json:"total_video_duration_minutes"`
+	TotalQuestionsCount       int       `json:"total_questions_count"`
+	TotalExerciseListsCount   int       `json:"total_exercise_lists_count"`
+	CreatedAt                 time.Time `json:"created_at"`
+	UpdatedAt                 time.Time `json:"updated_at"`
 }
 
 type ActivityDetailResponse struct {
-	PublicID    string               `json:"id"`
-	GroupID     string               `json:"group_id"`
-	Title       string               `json:"title"`
-	Description *string              `json:"description,omitempty"`
-	DueDate     time.Time            `json:"due_date"`
-	IsActive    bool                 `json:"is_active"`
-	Attachments []AttachmentResponse `json:"attachments"`
-	CreatedAt   time.Time            `json:"created_at"`
-	UpdatedAt   time.Time            `json:"updated_at"`
+	PublicID                  string               `json:"id"`
+	GroupID                   string               `json:"group_id"`
+	Title                     string               `json:"title"`
+	Description               *string              `json:"description,omitempty"`
+	DueDate                   time.Time            `json:"due_date"`
+	IsActive                  bool                 `json:"is_active"`
+	TotalVideoDurationMinutes int                  `json:"total_video_duration_minutes"`
+	TotalQuestionsCount       int                  `json:"total_questions_count"`
+	TotalExerciseListsCount   int                  `json:"total_exercise_lists_count"`
+	Attachments               []AttachmentResponse `json:"attachments"`
+	CreatedAt                 time.Time            `json:"created_at"`
+	UpdatedAt                 time.Time            `json:"updated_at"`
 }
 
 type ActivityListResponse struct {
@@ -71,14 +77,17 @@ type AttachmentResponse struct {
 
 func ActivityToResponse(a *entity.Activity) ActivityResponse {
 	return ActivityResponse{
-		PublicID:    a.PublicID,
-		GroupID:     a.GroupPublicID,
-		Title:       a.Title,
-		Description: a.Description,
-		DueDate:     a.DueDate,
-		IsActive:    a.IsActive,
-		CreatedAt:   a.CreatedAt,
-		UpdatedAt:   a.UpdatedAt,
+		PublicID:                  a.PublicID,
+		GroupID:                   a.GroupPublicID,
+		Title:                     a.Title,
+		Description:               a.Description,
+		DueDate:                   a.DueDate,
+		IsActive:                  a.IsActive,
+		TotalVideoDurationMinutes: a.TotalVideoDurationMinutes,
+		TotalQuestionsCount:       a.TotalQuestionsCount,
+		TotalExerciseListsCount:   a.TotalExerciseListsCount,
+		CreatedAt:                 a.CreatedAt,
+		UpdatedAt:                 a.UpdatedAt,
 	}
 }
 
@@ -96,15 +105,18 @@ func ActivityDetailToResponse(a *entity.Activity, attachments []entity.ActivityA
 		attResp[i] = AttachmentToResponse(&attachments[i])
 	}
 	return ActivityDetailResponse{
-		PublicID:    a.PublicID,
-		GroupID:     a.GroupPublicID,
-		Title:       a.Title,
-		Description: a.Description,
-		DueDate:     a.DueDate,
-		IsActive:    a.IsActive,
-		Attachments: attResp,
-		CreatedAt:   a.CreatedAt,
-		UpdatedAt:   a.UpdatedAt,
+		PublicID:                  a.PublicID,
+		GroupID:                   a.GroupPublicID,
+		Title:                     a.Title,
+		Description:               a.Description,
+		DueDate:                   a.DueDate,
+		IsActive:                  a.IsActive,
+		TotalVideoDurationMinutes: a.TotalVideoDurationMinutes,
+		TotalQuestionsCount:       a.TotalQuestionsCount,
+		TotalExerciseListsCount:   a.TotalExerciseListsCount,
+		Attachments:               attResp,
+		CreatedAt:                 a.CreatedAt,
+		UpdatedAt:                 a.UpdatedAt,
 	}
 }
 
@@ -142,16 +154,16 @@ type ReorderActivityItemsRequest struct {
 }
 
 type ActivityItemResponse struct {
-	PublicID           string  `json:"id"`
-	OrderIndex         int     `json:"order_index"`
-	Title              string  `json:"title"`
-	Description        *string `json:"description,omitempty"`
-	Type               string  `json:"type"`
-	ContentSubtitle    *string `json:"content_subtitle,omitempty"`
-	QuestionID         *string `json:"question_id,omitempty"`
-	VideoLessonID      *string `json:"video_lesson_id,omitempty"`
-	HandoutID          *string `json:"handout_id,omitempty"`
-	OpenExerciseListID *string `json:"open_exercise_list_id,omitempty"`
+	PublicID           string   `json:"id"`
+	OrderIndex         int      `json:"order_index"`
+	Title              string   `json:"title"`
+	Description        *string  `json:"description,omitempty"`
+	Type               string   `json:"type"`
+	ContentSubtitle    *string  `json:"content_subtitle,omitempty"`
+	QuestionID         *string  `json:"question_id,omitempty"`
+	VideoLessonID      *string  `json:"video_lesson_id,omitempty"`
+	HandoutID          *string  `json:"handout_id,omitempty"`
+	OpenExerciseListID *string  `json:"open_exercise_list_id,omitempty"`
 	SimulatedExamID    *string  `json:"simulated_exam_id,omitempty"`
 	MedianDifficulty   *float64 `json:"median_difficulty,omitempty"`
 	MedianLogic        *float64 `json:"median_logic,omitempty"`

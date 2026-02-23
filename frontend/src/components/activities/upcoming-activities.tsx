@@ -11,6 +11,8 @@ import {
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { CreateActivityModal } from "@/components/activities/create-activity-modal";
+import { CountdownTimer } from "@/components/ui/countdown-timer";
+import { PlayCircle, HelpCircle, CheckSquare } from "lucide-react";
 
 const PAGE_SIZE = 10;
 
@@ -128,6 +130,39 @@ export function UpcomingActivities({
                       {a.description}
                     </p>
                   )}
+                  {/* Stats Badges */}
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    {a.total_video_duration_minutes > 0 && (
+                      <div className="flex items-center gap-1.5 text-xs text-muted">
+                        <PlayCircle className="h-3.5 w-3.5" />
+                        <span>
+                          {t("ACTIVITY_SUMMARY_VIDEO", {
+                            minutes: a.total_video_duration_minutes,
+                          })}
+                        </span>
+                      </div>
+                    )}
+                    {a.total_questions_count > 0 && (
+                      <div className="flex items-center gap-1.5 text-xs text-muted">
+                        <HelpCircle className="h-3.5 w-3.5" />
+                        <span>
+                          {t("ACTIVITY_SUMMARY_QUESTIONS", {
+                            count: a.total_questions_count,
+                          })}
+                        </span>
+                      </div>
+                    )}
+                    {a.total_exercise_lists_count > 0 && (
+                      <div className="flex items-center gap-1.5 text-xs text-muted">
+                        <CheckSquare className="h-3.5 w-3.5" />
+                        <span>
+                          {t("ACTIVITY_SUMMARY_EXERCISES", {
+                            count: a.total_exercise_lists_count,
+                          })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5 sm:ml-auto border-t border-surface-border/50 sm:border-t-0 pt-2 sm:pt-0 w-full sm:w-auto justify-between sm:justify-end">
                   <div className="flex items-center gap-1.5">
@@ -139,7 +174,7 @@ export function UpcomingActivities({
                     <span
                       className={`text-xs ${isDueSoon(a.due_date) ? "font-medium text-warning" : "text-muted"}`}
                     >
-                      {formatDueDate(a.due_date)}
+                      <CountdownTimer targetDate={a.due_date} />
                     </span>
                   </div>
                 </div>

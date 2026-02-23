@@ -34,13 +34,16 @@ func (r *ActivityRepository) GetByPublicID(ctx context.Context, publicID string)
 	var a entity.Activity
 	err := r.pool.QueryRow(ctx,
 		`SELECT a.id, a.public_id, a.group_id, g.public_id, a.title, a.description, a.due_date,
-		        a.is_active, a.created_by_id, a.created_at, a.updated_at
+		        a.is_active, a.created_by_id, a.created_at, a.updated_at,
+		        COALESCE((SELECT SUM(vl.duration_minutes) FROM activity_items ai JOIN video_lessons vl ON vl.id = ai.video_lesson_id WHERE ai.activity_id = a.id AND ai.type = 'video_lesson'), 0) as total_video_duration_minutes,
+		        (SELECT COUNT(*) FROM activity_items ai WHERE ai.activity_id = a.id AND ai.type = 'question') as total_questions_count,
+		        (SELECT COUNT(*) FROM activity_items ai WHERE ai.activity_id = a.id AND ai.type = 'open_exercise_list') as total_exercise_lists_count
 		 FROM activities a
 		 JOIN groups g ON g.id = a.group_id
 		 WHERE a.public_id = $1 AND a.is_active = true`,
 		publicID,
 	).Scan(&a.ID, &a.PublicID, &a.GroupID, &a.GroupPublicID, &a.Title, &a.Description, &a.DueDate,
-		&a.IsActive, &a.CreatedByID, &a.CreatedAt, &a.UpdatedAt)
+		&a.IsActive, &a.CreatedByID, &a.CreatedAt, &a.UpdatedAt, &a.TotalVideoDurationMinutes, &a.TotalQuestionsCount, &a.TotalExerciseListsCount)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -55,13 +58,16 @@ func (r *ActivityRepository) GetByID(ctx context.Context, id int) (*entity.Activ
 	var a entity.Activity
 	err := r.pool.QueryRow(ctx,
 		`SELECT a.id, a.public_id, a.group_id, g.public_id, a.title, a.description, a.due_date,
-		        a.is_active, a.created_by_id, a.created_at, a.updated_at
+		        a.is_active, a.created_by_id, a.created_at, a.updated_at,
+		        COALESCE((SELECT SUM(vl.duration_minutes) FROM activity_items ai JOIN video_lessons vl ON vl.id = ai.video_lesson_id WHERE ai.activity_id = a.id AND ai.type = 'video_lesson'), 0) as total_video_duration_minutes,
+		        (SELECT COUNT(*) FROM activity_items ai WHERE ai.activity_id = a.id AND ai.type = 'question') as total_questions_count,
+		        (SELECT COUNT(*) FROM activity_items ai WHERE ai.activity_id = a.id AND ai.type = 'open_exercise_list') as total_exercise_lists_count
 		 FROM activities a
 		 JOIN groups g ON g.id = a.group_id
 		 WHERE a.id = $1 AND a.is_active = true`,
 		id,
 	).Scan(&a.ID, &a.PublicID, &a.GroupID, &a.GroupPublicID, &a.Title, &a.Description, &a.DueDate,
-		&a.IsActive, &a.CreatedByID, &a.CreatedAt, &a.UpdatedAt)
+		&a.IsActive, &a.CreatedByID, &a.CreatedAt, &a.UpdatedAt, &a.TotalVideoDurationMinutes, &a.TotalQuestionsCount, &a.TotalExerciseListsCount)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -112,7 +118,10 @@ func (r *ActivityRepository) ListUpcoming(ctx context.Context, groupID int, limi
 
 	query := fmt.Sprintf(
 		`SELECT a.id, a.public_id, a.group_id, g.public_id, a.title, a.description, a.due_date,
-		        a.is_active, a.created_by_id, a.created_at, a.updated_at
+		        a.is_active, a.created_by_id, a.created_at, a.updated_at,
+		        COALESCE((SELECT SUM(vl.duration_minutes) FROM activity_items ai JOIN video_lessons vl ON vl.id = ai.video_lesson_id WHERE ai.activity_id = a.id AND ai.type = 'video_lesson'), 0) as total_video_duration_minutes,
+		        (SELECT COUNT(*) FROM activity_items ai WHERE ai.activity_id = a.id AND ai.type = 'question') as total_questions_count,
+		        (SELECT COUNT(*) FROM activity_items ai WHERE ai.activity_id = a.id AND ai.type = 'open_exercise_list') as total_exercise_lists_count
 		 FROM activities a
 		 JOIN groups g ON g.id = a.group_id
 		 WHERE a.group_id = $1 AND a.is_active = true AND a.due_date >= NOW()%s
@@ -147,7 +156,10 @@ func (r *ActivityRepository) ListPast(ctx context.Context, groupID int, limit, o
 
 	query := fmt.Sprintf(
 		`SELECT a.id, a.public_id, a.group_id, g.public_id, a.title, a.description, a.due_date,
-		        a.is_active, a.created_by_id, a.created_at, a.updated_at
+		        a.is_active, a.created_by_id, a.created_at, a.updated_at,
+		        COALESCE((SELECT SUM(vl.duration_minutes) FROM activity_items ai JOIN video_lessons vl ON vl.id = ai.video_lesson_id WHERE ai.activity_id = a.id AND ai.type = 'video_lesson'), 0) as total_video_duration_minutes,
+		        (SELECT COUNT(*) FROM activity_items ai WHERE ai.activity_id = a.id AND ai.type = 'question') as total_questions_count,
+		        (SELECT COUNT(*) FROM activity_items ai WHERE ai.activity_id = a.id AND ai.type = 'open_exercise_list') as total_exercise_lists_count
 		 FROM activities a
 		 JOIN groups g ON g.id = a.group_id
 		 WHERE a.group_id = $1 AND a.is_active = true AND a.due_date < NOW()%s
@@ -182,7 +194,7 @@ func scanActivities(rows pgx.Rows) ([]entity.Activity, error) {
 	for rows.Next() {
 		var a entity.Activity
 		if err := rows.Scan(&a.ID, &a.PublicID, &a.GroupID, &a.GroupPublicID, &a.Title, &a.Description, &a.DueDate,
-			&a.IsActive, &a.CreatedByID, &a.CreatedAt, &a.UpdatedAt); err != nil {
+			&a.IsActive, &a.CreatedByID, &a.CreatedAt, &a.UpdatedAt, &a.TotalVideoDurationMinutes, &a.TotalQuestionsCount, &a.TotalExerciseListsCount); err != nil {
 			return nil, err
 		}
 		activities = append(activities, a)

@@ -7,6 +7,9 @@ export interface ActivityResponse {
   description?: string;
   due_date: string;
   is_active: boolean;
+  total_video_duration_minutes: number;
+  total_questions_count: number;
+  total_exercise_lists_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +29,9 @@ export interface ActivityDetailResponse {
   description?: string;
   due_date: string;
   is_active: boolean;
+  total_video_duration_minutes: number;
+  total_questions_count: number;
+  total_exercise_lists_count: number;
   attachments: AttachmentResponse[];
   created_at: string;
   updated_at: string;
