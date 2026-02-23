@@ -259,6 +259,8 @@
     "TOPIC_PICKER_CLOSE": "Fechar",
     "TOPIC_PICKER_CONFIRM": "Confirmar",
     "FILTER_TOPIC_TOOLTIP": "Retorna itens que possuam qualquer um dos tópicos selecionados (condição OU).",
+    "SEARCHABLE_SELECT_SEARCH_PLACEHOLDER": "Buscar...",
+    "SEARCHABLE_SELECT_EMPTY": "Nenhum resultado encontrado.",
     "ERROR_HANDOUT_NOT_FOUND": "Apostila não encontrada.",
     "ERROR_HANDOUT_TITLE_TAKEN": "Já existe uma apostila com este título.",
     "INSTITUTIONS_TITLE": "Instituições",

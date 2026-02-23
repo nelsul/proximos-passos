@@ -28,6 +28,7 @@ import { listInstitutions, type InstitutionResponse } from "@/lib/institutions";
 import { LatexText } from "@/components/ui/latex-text";
 import { stripImageMarkers } from "@/components/questions/statement-renderer";
 import { TopicPickerModal } from "@/components/handouts/topic-picker-modal";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -207,55 +208,57 @@ export default function QuestionsPage() {
         )}
       </div>
 
-      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:items-center">
-        <div className="relative sm:col-span-2 lg:flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("QUESTION_SEARCH_PLACEHOLDER")}
-            className="w-full rounded-lg border border-surface-border bg-background py-2.5 pl-10 pr-4 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
+      <div className="mb-4 flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:items-center">
+          <div className="relative sm:col-span-2 lg:flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("QUESTION_SEARCH_PLACEHOLDER")}
+              className="w-full rounded-lg border border-surface-border bg-background py-2.5 pl-10 pr-4 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
+            />
+          </div>
+
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="w-full lg:w-40 shrink-0 rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
+          >
+            <option value="">{t("QUESTION_ALL_TYPES")}</option>
+            <option value="open_ended">{t("QUESTION_TYPE_OPEN_ENDED")}</option>
+            <option value="closed_ended">
+              {t("QUESTION_TYPE_CLOSED_ENDED")}
+            </option>
+          </select>
+
+          <SearchableSelect
+            value={examFilter}
+            onChange={setExamFilter}
+            options={exams.map((exam) => ({
+              value: exam.id,
+              label: `${exam.institution.acronym} — ${exam.title} (${exam.year})`,
+            }))}
+            placeholder={t("QUESTION_ALL_EXAMS")}
+            searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
+            emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}
+            className="w-full lg:w-48 shrink-0"
+          />
+
+          <SearchableSelect
+            value={institutionFilter}
+            onChange={setInstitutionFilter}
+            options={institutions.map((inst) => ({
+              value: inst.id,
+              label: `${inst.name} (${inst.acronym})`,
+            }))}
+            placeholder={t("QUESTION_ALL_INSTITUTIONS")}
+            searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
+            emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}
+            className="w-full lg:w-48 shrink-0"
           />
         </div>
-
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
-        >
-          <option value="">{t("QUESTION_ALL_TYPES")}</option>
-          <option value="open_ended">{t("QUESTION_TYPE_OPEN_ENDED")}</option>
-          <option value="closed_ended">
-            {t("QUESTION_TYPE_CLOSED_ENDED")}
-          </option>
-        </select>
-
-        <select
-          value={examFilter}
-          onChange={(e) => setExamFilter(e.target.value)}
-          className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
-        >
-          <option value="">{t("QUESTION_ALL_EXAMS")}</option>
-          {exams.map((exam) => (
-            <option key={exam.id} value={exam.id}>
-              {exam.institution.name} — {exam.title} ({exam.year})
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={institutionFilter}
-          onChange={(e) => setInstitutionFilter(e.target.value)}
-          className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted outline-none transition-colors hover:border-secondary hover:text-heading focus:border-secondary focus:ring-1 focus:ring-secondary"
-        >
-          <option value="">{t("QUESTION_ALL_INSTITUTIONS")}</option>
-          {institutions.map((inst) => (
-            <option key={inst.id} value={inst.id}>
-              {inst.name} ({inst.acronym})
-            </option>
-          ))}
-        </select>
 
         {topicFilters.length > 0 ? (
           <div className="flex flex-wrap gap-2 items-center">
@@ -271,7 +274,7 @@ export default function QuestionsPage() {
             ))}
             <button
               onClick={() => setShowTopicFilter(true)}
-              className="inline-flex items-center justify-center gap-1.5 rounded-full border border-dashed border-surface-border bg-background px-3 py-2 text-xs font-medium text-muted transition-colors hover:border-secondary hover:text-heading"
+              className="inline-flex shrink-0 whitespace-nowrap items-center justify-center gap-1.5 rounded-full border border-dashed border-surface-border bg-background px-3 py-2 text-xs font-medium text-muted transition-colors hover:border-secondary hover:text-heading"
             >
               <Plus className="h-3.5 w-3.5" />
               {t("QUESTION_FILTER_BY_TOPIC")}
@@ -279,10 +282,10 @@ export default function QuestionsPage() {
             <FilterTooltip />
           </div>
         ) : (
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
             <button
               onClick={() => setShowTopicFilter(true)}
-              className="w-full rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
+              className="w-full whitespace-nowrap rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
             >
               {t("QUESTION_FILTER_BY_TOPIC")}
             </button>

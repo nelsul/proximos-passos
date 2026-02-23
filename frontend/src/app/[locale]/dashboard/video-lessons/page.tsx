@@ -135,16 +135,18 @@ export default function VideoLessonsPage() {
         )}
       </div>
 
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("VIDEO_LESSON_SEARCH_PLACEHOLDER")}
-            className="w-full rounded-lg border border-surface-border bg-background py-2.5 pl-10 pr-4 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
-          />
+      <div className="mb-4 flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:items-center">
+          <div className="relative sm:col-span-2 lg:flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("VIDEO_LESSON_SEARCH_PLACEHOLDER")}
+              className="w-full rounded-lg border border-surface-border bg-background py-2.5 pl-10 pr-4 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
+            />
+          </div>
         </div>
         {topicFilters.length > 0 ? (
           <div className="flex flex-wrap gap-2 items-center">
@@ -160,7 +162,7 @@ export default function VideoLessonsPage() {
             ))}
             <button
               onClick={() => setShowTopicFilter(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full border border-dashed border-surface-border bg-background px-3 py-2 text-xs font-medium text-muted transition-colors hover:border-secondary hover:text-heading"
+              className="w-full shrink-0 whitespace-nowrap sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-full border border-dashed border-surface-border bg-background px-3 py-2 text-xs font-medium text-muted transition-colors hover:border-secondary hover:text-heading"
             >
               <Plus className="h-3.5 w-3.5" />
               {t("VIDEO_LESSON_FILTER_BY_TOPIC")}
@@ -168,10 +170,10 @@ export default function VideoLessonsPage() {
             <FilterTooltip />
           </div>
         ) : (
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
             <button
               onClick={() => setShowTopicFilter(true)}
-              className="w-full sm:w-auto rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
+              className="w-full shrink-0 whitespace-nowrap sm:w-auto rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
             >
               {t("VIDEO_LESSON_FILTER_BY_TOPIC")}
             </button>

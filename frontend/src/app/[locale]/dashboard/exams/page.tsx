@@ -20,6 +20,7 @@ import { EditExamModal } from "@/components/exams/edit-exam-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { useIsAdmin } from "@/contexts/user-context";
 
 export default function ExamsPage() {
@@ -34,10 +35,7 @@ export default function ExamsPage() {
   const [editingExam, setEditingExam] = useState<ExamResponse | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [institutionFilter, setInstitutionFilter] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+  const [institutionFilter, setInstitutionFilter] = useState("");
   const [institutions, setInstitutions] = useState<InstitutionResponse[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -70,23 +68,23 @@ export default function ExamsPage() {
 
   useEffect(() => {
     setPage(1);
-    fetchExams(institutionFilter?.id, 1);
+    fetchExams(institutionFilter, 1);
   }, [institutionFilter, fetchExams]);
 
   useEffect(() => {
-    fetchExams(institutionFilter?.id, page);
+    fetchExams(institutionFilter, page);
   }, [page, fetchExams, institutionFilter]);
 
   function handleCreated() {
     setShowCreate(false);
     toast(t("EXAM_CREATE_SUCCESS"));
-    fetchExams(institutionFilter?.id, page);
+    fetchExams(institutionFilter, page);
   }
 
   function handleUpdated() {
     setEditingExam(null);
     toast(t("EXAM_UPDATE_SUCCESS"));
-    fetchExams(institutionFilter?.id, page);
+    fetchExams(institutionFilter, page);
   }
 
   async function handleDelete(id: string) {
@@ -95,7 +93,7 @@ export default function ExamsPage() {
     try {
       await deleteExam(id);
       toast(t("EXAM_DELETE_SUCCESS"));
-      fetchExams(institutionFilter?.id, page);
+      fetchExams(institutionFilter, page);
     } finally {
       setDeletingId(null);
     }
@@ -145,32 +143,21 @@ export default function ExamsPage() {
             className="w-full rounded-lg border border-surface-border bg-background py-2.5 pl-10 pr-4 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
           />
         </div>
-        {institutionFilter ? (
-          <button
-            onClick={() => setInstitutionFilter(null)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-secondary/10 px-3 py-2 text-xs font-medium text-secondary transition-colors hover:bg-secondary/20"
-          >
-            {institutionFilter.name}
-            <X className="h-3.5 w-3.5" />
-          </button>
-        ) : (
-          <select
-            onChange={(e) => {
-              const inst = institutions.find((i) => i.id === e.target.value);
-              if (inst)
-                setInstitutionFilter({ id: inst.id, name: inst.acronym });
-            }}
-            value=""
-            className="w-full sm:w-auto rounded-lg border border-surface-border bg-background px-4 py-2.5 text-sm text-muted transition-colors hover:border-secondary hover:text-heading"
-          >
-            <option value="">{t("EXAM_FILTER_BY_INSTITUTION")}</option>
-            {institutions.map((inst) => (
-              <option key={inst.id} value={inst.id}>
-                {inst.name} ({inst.acronym})
-              </option>
-            ))}
-          </select>
-        )}
+        <SearchableSelect
+          value={institutionFilter}
+          onChange={setInstitutionFilter}
+          options={[
+            { value: "", label: t("EXAM_FILTER_BY_INSTITUTION") },
+            ...institutions.map((inst) => ({
+              value: inst.id,
+              label: `${inst.name} (${inst.acronym})`,
+            })),
+          ]}
+          placeholder={t("EXAM_FILTER_BY_INSTITUTION")}
+          searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
+          emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}
+          className="w-full sm:w-auto min-w-50"
+        />
       </div>
 
       {loading ? (

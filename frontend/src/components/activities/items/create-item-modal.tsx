@@ -14,6 +14,7 @@ import { stripImageMarkers } from "@/components/questions/statement-renderer";
 import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/ui/input-field";
 import { FilterTooltip } from "@/components/ui/filter-tooltip";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { LatexText } from "@/components/ui/latex-text";
 
 // ==========================================
@@ -311,37 +312,37 @@ function CreateItemModal({
 
                 {contentType === "question" && (
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                    <select
+                    <SearchableSelect
                       value={examFilter}
-                      onChange={(e) => {
-                        setExamFilter(e.target.value);
+                      onChange={(val) => {
+                        setExamFilter(val);
                         setSearchPage(1);
                       }}
-                      className="w-full rounded-lg border border-surface-border bg-surface px-3 py-2 text-sm text-muted outline-none transition-colors focus:border-secondary focus:ring-1 hover:border-secondary"
-                    >
-                      <option value="">{t("QUESTION_ALL_EXAMS")}</option>
-                      {exams.map((exam) => (
-                        <option key={exam.id} value={exam.id}>
-                          {exam.institution.name} — {exam.title} ({exam.year})
-                        </option>
-                      ))}
-                    </select>
+                      options={exams.map((exam) => ({
+                        value: exam.id,
+                        label: `${exam.institution.acronym} — ${exam.title} (${exam.year})`,
+                      }))}
+                      placeholder={t("QUESTION_ALL_EXAMS")}
+                      searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
+                      emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}
+                      className="w-full"
+                    />
 
-                    <select
+                    <SearchableSelect
                       value={institutionFilter}
-                      onChange={(e) => {
-                        setInstitutionFilter(e.target.value);
+                      onChange={(val) => {
+                        setInstitutionFilter(val);
                         setSearchPage(1);
                       }}
-                      className="w-full rounded-lg border border-surface-border bg-surface px-3 py-2 text-sm text-muted outline-none transition-colors focus:border-secondary focus:ring-1 hover:border-secondary"
-                    >
-                      <option value="">{t("QUESTION_ALL_INSTITUTIONS")}</option>
-                      {institutions.map((inst) => (
-                        <option key={inst.id} value={inst.id}>
-                          {inst.name} ({inst.acronym})
-                        </option>
-                      ))}
-                    </select>
+                      options={institutions.map((inst) => ({
+                        value: inst.id,
+                        label: `${inst.name} (${inst.acronym})`,
+                      }))}
+                      placeholder={t("QUESTION_ALL_INSTITUTIONS")}
+                      searchPlaceholder={t("SEARCHABLE_SELECT_SEARCH_PLACEHOLDER")}
+                      emptyMessage={t("SEARCHABLE_SELECT_EMPTY")}
+                      className="w-full"
+                    />
 
                     {topicFilters.length > 0 ? (
                       <div className="flex flex-wrap gap-2 w-full col-span-1 sm:col-span-2 lg:col-span-3">
