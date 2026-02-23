@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -25,6 +26,12 @@ export default function RegisterPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (password !== confirmPassword) {
+      setError(t("ERROR_PASSWORDS_DO_NOT_MATCH"));
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -123,6 +130,17 @@ export default function RegisterPage() {
             placeholder={t("REGISTER_PASSWORD_PLACEHOLDER")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+          />
+
+          <InputField
+            label={t("REGISTER_CONFIRM_PASSWORD_LABEL")}
+            name="confirmPassword"
+            type="password"
+            placeholder={t("REGISTER_CONFIRM_PASSWORD_PLACEHOLDER")}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
             autoComplete="new-password"
           />

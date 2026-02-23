@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"proximos-passos/backend/internal/adapter/dto"
@@ -76,7 +77,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	input := usecase.CreateUserInput{
 		Name:     req.Name,
-		Email:    req.Email,
+		Email:    strings.ToLower(strings.TrimSpace(req.Email)),
 		Password: req.Password,
 		Role:     entity.UserRoleRegular,
 	}
@@ -110,7 +111,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	output, err := h.authUC.Login(r.Context(), usecase.LoginInput{
-		Email:    req.Email,
+		Email:    strings.ToLower(strings.TrimSpace(req.Email)),
 		Password: req.Password,
 	})
 	if err != nil {
