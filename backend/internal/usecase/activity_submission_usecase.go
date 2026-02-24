@@ -63,6 +63,17 @@ func (uc *ActivitySubmissionUseCase) isGroupAdmin(ctx context.Context, groupID i
 	return member.Role == entity.MemberRoleAdmin, nil
 }
 
+func (uc *ActivitySubmissionUseCase) isGroupAdminOrSupervisor(ctx context.Context, groupID int, userID int) (bool, error) {
+	member, err := uc.groupRepo.GetMember(ctx, groupID, userID)
+	if err != nil {
+		return false, err
+	}
+	if member == nil || !member.IsActive || member.AcceptedByID == nil {
+		return false, nil
+	}
+	return member.Role == entity.MemberRoleAdmin || member.Role == entity.MemberRoleSupervisor, nil
+}
+
 type SubmitActivityInput struct {
 	ActivityPublicID string
 	UserPublicID     string
@@ -115,6 +126,7 @@ func (uc *ActivitySubmissionUseCase) Submit(ctx context.Context, input SubmitAct
 		ActivityID: activity.ID,
 		UserID:     user.ID,
 		Notes:      notes,
+		Status:     entity.ActivitySubmissionStatusCreated,
 	}
 
 	if err := uc.subRepo.Create(ctx, sub); err != nil {
@@ -202,6 +214,7 @@ func (uc *ActivitySubmissionUseCase) GetOrCreateSubmission(ctx context.Context, 
 	sub := &entity.ActivitySubmission{
 		ActivityID: activity.ID,
 		UserID:     user.ID,
+		Status:     entity.ActivitySubmissionStatusCreated,
 	}
 	if err := uc.subRepo.Create(ctx, sub); err != nil {
 		return nil, err
@@ -231,13 +244,13 @@ func (uc *ActivitySubmissionUseCase) ListByActivity(ctx context.Context, activit
 		return nil, 0, apperror.ErrUserNotFound
 	}
 
-	// Only group admins or platform admins can list all submissions
+	// Only group admins/supervisors or platform admins can list all submissions
 	if requesterRole != entity.UserRoleAdmin {
-		isAdmin, err := uc.isGroupAdmin(ctx, activity.GroupID, user.ID)
+		isAuth, err := uc.isGroupAdminOrSupervisor(ctx, activity.GroupID, user.ID)
 		if err != nil {
 			return nil, 0, err
 		}
-		if !isAdmin {
+		if !isAuth {
 			return nil, 0, apperror.ErrForbidden
 		}
 	}
@@ -360,6 +373,41 @@ func (uc *ActivitySubmissionUseCase) ListMySubmissions(ctx context.Context, user
 	return subs, total, nil
 }
 
+func (uc *ActivitySubmissionUseCase) SendSubmission(ctx context.Context, submissionPublicID, userPublicID string) (*entity.ActivitySubmission, error) {
+	sub, err := uc.subRepo.GetByPublicID(ctx, submissionPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if sub == nil {
+		return nil, apperror.ErrActivitySubmissionNotFound
+	}
+
+	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, apperror.ErrUserNotFound
+	}
+
+	if sub.UserID != user.ID {
+		return nil, apperror.ErrForbidden
+	}
+
+	// Allow sending/resending from any status.
+	sub.Status = entity.ActivitySubmissionStatusPending
+
+	if err := uc.subRepo.UpdateStatus(ctx, sub); err != nil {
+		return nil, err
+	}
+
+	full, err := uc.subRepo.GetByPublicID(ctx, sub.PublicID)
+	if err != nil {
+		return nil, err
+	}
+	return full, nil
+}
+
 // ==========================================
 // Update Notes (owner only, while pending)
 // ==========================================
@@ -385,9 +433,7 @@ func (uc *ActivitySubmissionUseCase) UpdateNotes(ctx context.Context, submission
 		return nil, apperror.ErrForbidden
 	}
 
-	if sub.Status != entity.ActivitySubmissionStatusPending && sub.Status != entity.ActivitySubmissionStatusReproved {
-		return nil, apperror.ErrActivitySubmissionNotPending
-	}
+	// No status restrictions.
 
 	var trimmed *string
 	if notes != nil {
@@ -433,9 +479,7 @@ func (uc *ActivitySubmissionUseCase) Resubmit(ctx context.Context, submissionPub
 		return nil, apperror.ErrForbidden
 	}
 
-	if sub.Status != entity.ActivitySubmissionStatusReproved {
-		return nil, apperror.ErrActivitySubmissionNotReproved
-	}
+	// No status restrictions for resubmitting.
 
 	sub.Status = entity.ActivitySubmissionStatusPending
 	sub.FeedbackNotes = nil
@@ -561,9 +605,7 @@ func (uc *ActivitySubmissionUseCase) UploadAttachment(ctx context.Context, submi
 	if sub.UserID != user.ID {
 		return nil, apperror.ErrForbidden
 	}
-	if sub.Status != entity.ActivitySubmissionStatusPending && sub.Status != entity.ActivitySubmissionStatusReproved {
-		return nil, apperror.ErrActivitySubmissionNotPending
-	}
+	// No status restrictions for attachments.
 
 	if !allowedSubmissionAttachmentTypes[contentType] {
 		return nil, apperror.ErrInvalidFileType
@@ -617,9 +659,7 @@ func (uc *ActivitySubmissionUseCase) DeleteAttachment(ctx context.Context, submi
 	if sub.UserID != user.ID {
 		return apperror.ErrForbidden
 	}
-	if sub.Status != entity.ActivitySubmissionStatusPending && sub.Status != entity.ActivitySubmissionStatusReproved {
-		return apperror.ErrActivitySubmissionNotPending
-	}
+	// No status restrictions for attachments.
 
 	attachment, err := uc.subRepo.GetAttachment(ctx, sub.ID, filePublicID)
 	if err != nil {

@@ -53,6 +53,7 @@ func (h *GroupHandler) RegisterMemberRoutes(mux *http.ServeMux, adminMW, authMW 
 	mux.Handle("POST /groups/{id}/members/{userId}/approve", authMW(http.HandlerFunc(h.ApproveMember)))
 	mux.Handle("POST /groups/{id}/members/{userId}/reject", authMW(http.HandlerFunc(h.RejectMember)))
 	mux.Handle("DELETE /groups/{id}/admin/members/{userId}", authMW(http.HandlerFunc(h.RemoveMemberAsGroupAdmin)))
+	mux.Handle("PUT /groups/{id}/admin/members/{userId}/role", authMW(http.HandlerFunc(h.UpdateMemberRoleAsGroupAdmin)))
 }
 
 // Create godoc
@@ -850,6 +851,50 @@ func (h *GroupHandler) RemoveMemberAsGroupAdmin(w http.ResponseWriter, r *http.R
 	}
 
 	if err := h.uc.RemoveMemberAsGroupAdmin(r.Context(), groupPublicID, userPublicID, requesterPublicID); err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// UpdateMemberRoleAsGroupAdmin godoc
+// @Summary     Update member role as group admin
+// @Description Updates the role of a group member (for group admins)
+// @Tags        group-members
+// @Accept      json
+// @Produce     json
+// @Security    CookieAuth
+// @Param       id     path     string                      true "Group public ID (UUID)"
+// @Param       userId path     string                      true "User public ID (UUID)"
+// @Param       body   body     dto.UpdateMemberRoleRequest true "New role"
+// @Success     204    "No Content"
+// @Failure     400    {object} apperror.AppError
+// @Failure     401    {object} apperror.AppError
+// @Failure     403    {object} apperror.AppError
+// @Failure     404    {object} apperror.AppError
+// @Failure     500    {object} apperror.AppError
+// @Router      /groups/{id}/admin/members/{userId}/role [put]
+func (h *GroupHandler) UpdateMemberRoleAsGroupAdmin(w http.ResponseWriter, r *http.Request) {
+	groupPublicID := r.PathValue("id")
+	userPublicID := r.PathValue("userId")
+	requesterPublicID := middleware.UserPublicID(r.Context())
+	if requesterPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	var req dto.UpdateMemberRoleRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.Error(w, apperror.ErrInvalidBody)
+		return
+	}
+
+	input := usecase.UpdateMemberRoleInput{
+		Role: entity.MemberRole(req.Role),
+	}
+
+	if err := h.uc.UpdateMemberRoleAsGroupAdmin(r.Context(), groupPublicID, userPublicID, requesterPublicID, input); err != nil {
 		response.Error(w, err)
 		return
 	}

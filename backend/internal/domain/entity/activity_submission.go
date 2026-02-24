@@ -5,6 +5,7 @@ import "time"
 type ActivitySubmissionStatus string
 
 const (
+	ActivitySubmissionStatusCreated  ActivitySubmissionStatus = "created"
 	ActivitySubmissionStatusPending  ActivitySubmissionStatus = "pending"
 	ActivitySubmissionStatusApproved ActivitySubmissionStatus = "approved"
 	ActivitySubmissionStatusReproved ActivitySubmissionStatus = "reproved"

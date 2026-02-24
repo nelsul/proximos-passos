@@ -19,8 +19,9 @@ const (
 type MemberRole string
 
 const (
-	MemberRoleAdmin  MemberRole = "admin"
-	MemberRoleMember MemberRole = "member"
+	MemberRoleAdmin      MemberRole = "admin"
+	MemberRoleSupervisor MemberRole = "supervisor"
+	MemberRoleMember     MemberRole = "member"
 )
 
 type Group struct {

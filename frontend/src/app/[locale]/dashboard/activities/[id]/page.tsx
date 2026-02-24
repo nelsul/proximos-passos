@@ -42,6 +42,7 @@ import {
   listSubmissionAttachments,
   uploadSubmissionAttachment,
   deleteSubmissionAttachment,
+  sendActivitySubmission,
   type ActivitySubmissionResponse,
   type SubmissionAttachmentResponse,
 } from "@/lib/activity-submissions";
@@ -64,6 +65,7 @@ export default function ActivityDetailPage() {
   const [activity, setActivity] = useState<ActivityDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [isGroupAdmin, setIsGroupAdmin] = useState(false);
+  const [isGroupSupervisor, setIsGroupSupervisor] = useState(false);
   const [groupId, setGroupId] = useState("");
 
   // Edit
@@ -82,6 +84,7 @@ export default function ActivityDetailPage() {
     useState<ActivitySubmissionResponse | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [resubmitting, setResubmitting] = useState(false);
+  const [sending, setSending] = useState(false);
   const [submissionNotes, setSubmissionNotes] = useState("");
   const [editingSubNotes, setEditingSubNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
@@ -113,6 +116,7 @@ export default function ActivityDetailPage() {
       try {
         const m = await checkMembership(data.group_id);
         setIsGroupAdmin(m.status === "member" && m.role === "admin");
+        setIsGroupSupervisor(m.status === "member" && m.role === "supervisor");
       } catch {
         // Not a member — read-only access may still work via backend permission
       }
@@ -152,13 +156,21 @@ export default function ActivityDetailPage() {
   }
 
   async function handleSaveSubNotes() {
-    if (!submission || savingNotes) return;
+    if (savingNotes) return;
     setSavingNotes(true);
     try {
-      const updated = await updateActivitySubmissionNotes(submission.id, {
-        notes: editingSubNotes.trim(),
-      });
-      setSubmission(updated);
+      let currentSub = submission;
+      if (!currentSub) {
+        currentSub = await submitActivity(activityId, {
+          notes: editingSubNotes.trim() || undefined,
+        });
+        setSubmission(currentSub);
+      } else {
+        currentSub = await updateActivitySubmissionNotes(currentSub.id, {
+          notes: editingSubNotes.trim(),
+        });
+        setSubmission(currentSub);
+      }
       toast(t("ACTIVITY_SUBMISSION_NOTES_SAVED"));
     } catch (err) {
       if (err instanceof ApiRequestError) {
@@ -174,12 +186,19 @@ export default function ActivityDetailPage() {
   async function handleUploadSubAttachment(
     e: React.ChangeEvent<HTMLInputElement>,
   ) {
-    if (!e.target.files?.[0] || !submission) return;
+    if (!e.target.files?.[0]) return;
     setUploadingSubFile(true);
     try {
-      await uploadSubmissionAttachment(submission.id, e.target.files[0]);
+      let currentSub = submission;
+      if (!currentSub) {
+        currentSub = await submitActivity(activityId, {
+          notes: submissionNotes?.trim() || undefined,
+        });
+        setSubmission(currentSub);
+      }
+      await uploadSubmissionAttachment(currentSub.id, e.target.files[0]);
       toast(t("ACTIVITY_SUBMISSION_ATTACHMENT_UPLOADED"));
-      const atts = await listSubmissionAttachments(submission.id);
+      const atts = await listSubmissionAttachments(currentSub.id);
       setSubAttachments(atts ?? []);
     } catch (err) {
       if (err instanceof ApiRequestError) {
@@ -247,6 +266,22 @@ export default function ActivityDetailPage() {
       }
     } finally {
       setResubmitting(false);
+    }
+  }
+
+  async function handleSendSubmission() {
+    if (!submission || sending) return;
+    setSending(true);
+    try {
+      const updated = await sendActivitySubmission(submission.id);
+      setSubmission(updated);
+      toast(t("ACTIVITY_SUBMISSION_SENT_SUCCESS"));
+    } catch (err) {
+      if (err instanceof ApiRequestError) {
+        toast(t(`ERROR_${err.code}`), "error");
+      }
+    } finally {
+      setSending(false);
     }
   }
 
@@ -533,11 +568,11 @@ export default function ActivityDetailPage() {
       {/* Activity Items */}
       <ActivityItems activityId={activityId} isAdmin={isGroupAdmin} />
 
-      {/* Admin: Student Submissions */}
-      {isGroupAdmin && <ActivitySubmissions activityId={activityId} />}
+      {/* Admin/Supervisor: Student Submissions */}
+      {(isGroupAdmin || isGroupSupervisor) && <ActivitySubmissions activityId={activityId} />}
 
-      {/* Activity Submission */}
-      {!isGroupAdmin && (
+      {/* Activity Submission (only for regular members, not supervisors) */}
+      {!isGroupAdmin && !isGroupSupervisor && (
         <div className="rounded-lg border border-surface-border bg-surface p-6">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-heading">
             <Send className="h-5 w-5 text-secondary" />
@@ -552,13 +587,17 @@ export default function ActivityDetailPage() {
                     ? "border border-green-200 bg-green-50 text-green-800"
                     : submission.status === "reproved"
                       ? "border border-red-200 bg-red-50 text-red-800"
-                      : "border border-amber-200 bg-amber-50 text-amber-800"
+                      : submission.status === "created"
+                        ? "border border-blue-200 bg-blue-50 text-blue-800"
+                        : "border border-amber-200 bg-amber-50 text-amber-800"
                 }`}
               >
                 {submission.status === "approved" ? (
                   <CheckCircle2 className="h-5 w-5 text-green-600" />
                 ) : submission.status === "reproved" ? (
                   <XCircle className="h-5 w-5 text-red-600" />
+                ) : submission.status === "created" ? (
+                  <FileText className="h-5 w-5 text-blue-600" />
                 ) : (
                   <ClockIcon className="h-5 w-5 text-amber-600" />
                 )}
@@ -583,42 +622,30 @@ export default function ActivityDetailPage() {
                 </span>
               </div>
 
-              {/* Editable notes when pending or reproved, read-only when approved */}
-              {submission.status === "pending" ||
-              submission.status === "reproved" ? (
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-heading">
-                    {t("ACTIVITY_SUBMISSION_NOTES")}
-                  </label>
-                  <textarea
-                    value={editingSubNotes}
-                    onChange={(e) => setEditingSubNotes(e.target.value)}
-                    rows={3}
-                    placeholder={t("ACTIVITY_SUBMISSION_NOTES_PLACEHOLDER")}
-                    className="w-full rounded-lg border border-surface-border bg-background p-3 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
-                  />
-                  <div className="flex justify-end">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      loading={savingNotes}
-                      onClick={handleSaveSubNotes}
-                      className="w-auto"
-                    >
-                      {t("ACTIVITY_SUBMISSION_SAVE_NOTES")}
-                    </Button>
-                  </div>
+              {/* Notes are always editable */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-heading">
+                  {t("ACTIVITY_SUBMISSION_NOTES")}
+                </label>
+                <textarea
+                  value={editingSubNotes}
+                  onChange={(e) => setEditingSubNotes(e.target.value)}
+                  rows={3}
+                  placeholder={t("ACTIVITY_SUBMISSION_NOTES_PLACEHOLDER")}
+                  className="w-full rounded-lg border border-surface-border bg-background p-3 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
+                />
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    loading={savingNotes}
+                    onClick={handleSaveSubNotes}
+                    className="w-auto"
+                  >
+                    {t("ACTIVITY_SUBMISSION_SAVE_NOTES")}
+                  </Button>
                 </div>
-              ) : (
-                submission.notes && (
-                  <div className="text-sm text-muted">
-                    <span className="font-medium text-heading">
-                      {t("ACTIVITY_SUBMISSION_NOTES")}:
-                    </span>{" "}
-                    {submission.notes}
-                  </div>
-                )
-              )}
+              </div>
 
               {submission.feedback_notes && (
                 <div className="rounded-lg border border-surface-border bg-background p-3 text-sm">
@@ -636,8 +663,8 @@ export default function ActivityDetailPage() {
                     <Paperclip className="h-4 w-4 text-secondary" />
                     {t("ACTIVITY_SUBMISSION_ATTACHMENTS_TITLE")}
                   </h3>
-                  {(submission.status === "pending" ||
-                    submission.status === "reproved") && (
+                  {/* Upload always available */}
+                  {(
                     <label className="cursor-pointer">
                       <input
                         type="file"
@@ -685,8 +712,8 @@ export default function ActivityDetailPage() {
                             </p>
                           </div>
                         </a>
-                        {(submission.status === "pending" ||
-                          submission.status === "reproved") && (
+                        {/* Delete always available */}
+                        {(
                           <button
                             onClick={() => handleDeleteSubAttachment(att.id)}
                             disabled={deletingSubFile === att.id}
@@ -705,33 +732,26 @@ export default function ActivityDetailPage() {
                 )}
               </div>
 
-              {/* Resubmit button when reproved */}
-              {submission.status === "reproved" && (
-                <div className="flex justify-end">
-                  <Button
-                    size="sm"
-                    loading={resubmitting}
-                    onClick={handleResubmit}
-                    className="w-auto"
-                  >
-                    <Send className="h-4 w-4" />
-                    {t("ACTIVITY_SUBMISSION_RESUBMIT")}
-                  </Button>
-                </div>
-              )}
+              {/* Send / Resubmit — always available */}
+              <div className="mt-4 flex justify-end gap-3 border-t border-surface-border pt-4">
+                <Button
+                  size="sm"
+                  loading={resubmitting || sending}
+                  onClick={handleResubmit}
+                  className="w-auto"
+                >
+                  <Send className="h-4 w-4" />
+                  {submission.status === "created"
+                    ? t("ACTIVITY_SUBMISSION_SEND_DRAFT")
+                    : t("ACTIVITY_SUBMISSION_RESUBMIT")}
+                </Button>
+              </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-muted">
-                {t("ACTIVITY_SUBMISSION_DESCRIPTION")}
+            <div className="space-y-3 mt-6 border-t border-surface-border pt-4">
+              <p className="text-sm font-medium text-heading">
+                {t("ACTIVITY_SUBMISSION_START_DESCRIPTION")}
               </p>
-              <textarea
-                value={submissionNotes}
-                onChange={(e) => setSubmissionNotes(e.target.value)}
-                rows={3}
-                placeholder={t("ACTIVITY_SUBMISSION_NOTES_PLACEHOLDER")}
-                className="w-full rounded-lg border border-surface-border bg-background p-3 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
-              />
               <div className="flex justify-end">
                 <Button
                   size="sm"
@@ -740,7 +760,7 @@ export default function ActivityDetailPage() {
                   className="w-auto"
                 >
                   <Send className="h-4 w-4" />
-                  {t("ACTIVITY_SUBMISSION_SUBMIT")}
+                  {t("ACTIVITY_SUBMISSION_START")}
                 </Button>
               </div>
             </div>

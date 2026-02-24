@@ -15,7 +15,7 @@ export interface ActivitySubmissionResponse {
   id: string;
   activity: ActivitySubmissionActivityRef;
   user: ActivitySubmissionUserRef;
-  status: "pending" | "approved" | "reproved";
+  status: "created" | "pending" | "approved" | "reproved";
   notes?: string;
   feedback_notes?: string;
   reviewed_at?: string;
@@ -95,6 +95,15 @@ export async function resubmitActivitySubmission(
 ): Promise<ActivitySubmissionResponse> {
   return api<ActivitySubmissionResponse>(
     `/activity-submissions/${id}/resubmit`,
+    { method: "POST" },
+  );
+}
+
+export async function sendActivitySubmission(
+  id: string,
+): Promise<ActivitySubmissionResponse> {
+  return api<ActivitySubmissionResponse>(
+    `/activity-submissions/${id}/send`,
     { method: "POST" },
   );
 }

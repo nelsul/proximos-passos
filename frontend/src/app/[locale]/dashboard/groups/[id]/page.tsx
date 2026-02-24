@@ -35,6 +35,7 @@ import {
   rejectMember,
   removeMember,
   checkMembership,
+  updateMemberRoleAsGroupAdmin,
   type GroupResponse,
   type GroupMemberResponse,
   type MembershipStatus,
@@ -280,6 +281,22 @@ export default function GroupDetailPage() {
     try {
       await removeMember(groupId, userId);
       toast(t("GROUP_MEMBER_REMOVED"));
+      fetchMembers(membersPage);
+    } catch (err) {
+      if (err instanceof ApiRequestError) {
+        toast(t(`ERROR_${err.code}`), "error");
+      }
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleRoleChange(userId: string, currentRole: string, newRole: "admin" | "supervisor" | "member") {
+    if (currentRole === newRole) return;
+    setActionLoading(userId);
+    try {
+      await updateMemberRoleAsGroupAdmin(groupId, userId, newRole);
+      toast(t("GROUP_MEMBER_ROLE_UPDATED"));
       fetchMembers(membersPage);
     } catch (err) {
       if (err instanceof ApiRequestError) {
@@ -711,27 +728,50 @@ export default function GroupDetailPage() {
                           <span className="text-sm font-medium text-heading">
                             {m.name}
                           </span>
-                          {m.role === "admin" && (
+                          {!isGroupAdmin && m.role === "admin" && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-secondary/15 px-2 py-0.5 text-xs font-medium text-secondary">
                               <Shield className="h-3 w-3" />
                               {t("GROUP_DETAIL_ROLE_ADMIN")}
                             </span>
                           )}
+                          {!isGroupAdmin && m.role === "supervisor" && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400">
+                              <Users className="h-3 w-3" />
+                              {t("GROUP_DETAIL_ROLE_SUPERVISOR")}
+                            </span>
+                          )}
                         </div>
                       </div>
-                      {isGroupAdmin && m.role !== "admin" && (
-                        <button
-                          onClick={() => handleRemoveMember(m.user_id)}
-                          disabled={actionLoading === m.user_id}
-                          className="rounded-lg p-1.5 text-muted hover:text-red-400 hover:bg-red-600/10 transition-colors disabled:opacity-50"
-                          title={t("GROUP_REMOVE_MEMBER_BUTTON")}
-                        >
-                          {actionLoading === m.user_id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <UserMinus className="h-4 w-4" />
+
+                      {/* Admin role select and remove button */}
+                      {isGroupAdmin && (
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={m.role}
+                            onChange={(e) => handleRoleChange(m.user_id, m.role, e.target.value as "admin" | "supervisor" | "member")}
+                            disabled={actionLoading === m.user_id || m.role === "admin"}
+                            className="rounded-lg border border-surface-border bg-surface px-2 py-1.5 text-xs text-body outline-none focus:border-secondary disabled:opacity-50"
+                          >
+                            <option value="member">{t("GROUP_DETAIL_ROLE_MEMBER")}</option>
+                            <option value="supervisor">{t("GROUP_DETAIL_ROLE_SUPERVISOR")}</option>
+                            <option value="admin">{t("GROUP_DETAIL_ROLE_ADMIN")}</option>
+                          </select>
+                          
+                          {m.role !== "admin" && (
+                            <button
+                              onClick={() => handleRemoveMember(m.user_id)}
+                              disabled={actionLoading === m.user_id}
+                              className="rounded-lg p-1.5 text-muted hover:text-red-400 hover:bg-red-600/10 transition-colors disabled:opacity-50"
+                              title={t("GROUP_REMOVE_MEMBER_BUTTON")}
+                            >
+                              {actionLoading === m.user_id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <UserMinus className="h-4 w-4" />
+                              )}
+                            </button>
                           )}
-                        </button>
+                        </div>
                       )}
                     </div>
                   ))}

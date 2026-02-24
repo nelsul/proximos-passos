@@ -38,6 +38,8 @@ func (h *ActivitySubmissionHandler) RegisterRoutes(mux *http.ServeMux, authMW fu
 	mux.Handle("PUT /activity-submissions/{id}", authMW(http.HandlerFunc(h.UpdateNotes)))
 	// Resubmit a reproved submission (owner)
 	mux.Handle("POST /activity-submissions/{id}/resubmit", authMW(http.HandlerFunc(h.Resubmit)))
+	// Send a draft submission for review (owner)
+	mux.Handle("POST /activity-submissions/{id}/send", authMW(http.HandlerFunc(h.SendSubmission)))
 	// Submission attachments
 	mux.Handle("GET /activity-submissions/{id}/question-attempts", authMW(http.HandlerFunc(h.GetSubmissionQuestionAttempts)))
 	mux.Handle("GET /activity-submissions/{id}/attachments", authMW(http.HandlerFunc(h.ListAttachments)))
@@ -315,6 +317,33 @@ func (h *ActivitySubmissionHandler) Resubmit(w http.ResponseWriter, r *http.Requ
 	}
 
 	sub, err := h.uc.Resubmit(r.Context(), publicID, userPublicID)
+	if err != nil {
+		response.Error(w, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, dto.ActivitySubmissionToResponse(sub))
+}
+
+// SendSubmission godoc
+// @Summary     Send a draft submission for review
+// @Description Changes a submission status from created to pending
+// @Tags        activity-submissions
+// @Produce     json
+// @Security    CookieAuth
+// @Param       id path string true "Submission public ID"
+// @Success     200 {object} dto.ActivitySubmissionResponse
+// @Failure     409 {object} apperror.AppError
+// @Router      /activity-submissions/{id}/send [post]
+func (h *ActivitySubmissionHandler) SendSubmission(w http.ResponseWriter, r *http.Request) {
+	publicID := r.PathValue("id")
+	userPublicID := middleware.UserPublicID(r.Context())
+	if userPublicID == "" {
+		response.Error(w, apperror.ErrUnauthorized)
+		return
+	}
+
+	sub, err := h.uc.SendSubmission(r.Context(), publicID, userPublicID)
 	if err != nil {
 		response.Error(w, err)
 		return

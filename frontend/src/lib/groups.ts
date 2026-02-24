@@ -74,7 +74,7 @@ export interface GroupMemberResponse {
   name: string;
   email: string;
   avatar_url: string | null;
-  role: "admin" | "member";
+  role: "admin" | "supervisor" | "member";
   is_active: boolean;
   joined_at: string;
   updated_at: string;
@@ -117,7 +117,7 @@ export type MembershipStatus = "none" | "pending" | "member";
 
 export interface MembershipResponse {
   status: MembershipStatus;
-  role?: "admin" | "member";
+  role?: "admin" | "supervisor" | "member";
 }
 
 export async function checkMembership(
@@ -209,5 +209,16 @@ export async function removeMember(
 ): Promise<void> {
   return api<void>(`/groups/${groupId}/admin/members/${userId}`, {
     method: "DELETE",
+  });
+}
+
+export async function updateMemberRoleAsGroupAdmin(
+  groupId: string,
+  userId: string,
+  role: "admin" | "supervisor" | "member"
+): Promise<void> {
+  return api<void>(`/groups/${groupId}/admin/members/${userId}/role`, {
+    method: "PUT",
+    body: JSON.stringify({ role }),
   });
 }

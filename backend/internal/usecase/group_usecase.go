@@ -618,6 +618,11 @@ func (uc *GroupUseCase) CheckMembership(ctx context.Context, groupPublicID strin
 
 // isGroupAdmin checks whether the given user is an active admin member of the group.
 func (uc *GroupUseCase) isGroupAdmin(ctx context.Context, groupID int, userPublicID string) (bool, *entity.User, error) {
+	return uc.checkRole(ctx, groupID, userPublicID, entity.MemberRoleAdmin)
+}
+
+// isGroupAdminOrSupervisor checks whether the given user is an active admin OR supervisor member of the group.
+func (uc *GroupUseCase) isGroupAdminOrSupervisor(ctx context.Context, groupID int, userPublicID string) (bool, *entity.User, error) {
 	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
 	if err != nil {
 		return false, nil, err
@@ -634,7 +639,27 @@ func (uc *GroupUseCase) isGroupAdmin(ctx context.Context, groupID int, userPubli
 		return false, user, nil
 	}
 
-	return member.Role == entity.MemberRoleAdmin, user, nil
+	return member.Role == entity.MemberRoleAdmin || member.Role == entity.MemberRoleSupervisor, user, nil
+}
+
+func (uc *GroupUseCase) checkRole(ctx context.Context, groupID int, userPublicID string, requiredRole entity.MemberRole) (bool, *entity.User, error) {
+	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
+	if err != nil {
+		return false, nil, err
+	}
+	if user == nil {
+		return false, nil, apperror.ErrUserNotFound
+	}
+
+	member, err := uc.groupRepo.GetMember(ctx, groupID, user.ID)
+	if err != nil {
+		return false, user, err
+	}
+	if member == nil || !member.IsActive || member.AcceptedByID == nil {
+		return false, user, nil
+	}
+
+	return member.Role == requiredRole, user, nil
 }
 
 func (uc *GroupUseCase) UpdateAsGroupAdmin(ctx context.Context, publicID string, requesterPublicID string, input UpdateGroupInput) (*entity.Group, error) {
@@ -706,11 +731,11 @@ func (uc *GroupUseCase) ListPendingMembers(ctx context.Context, groupPublicID st
 		return nil, 0, apperror.ErrGroupNotFound
 	}
 
-	isAdmin, _, err := uc.isGroupAdmin(ctx, group.ID, requesterPublicID)
+	isAdminOrSupervisor, _, err := uc.isGroupAdminOrSupervisor(ctx, group.ID, requesterPublicID)
 	if err != nil {
 		return nil, 0, err
 	}
-	if !isAdmin {
+	if !isAdminOrSupervisor {
 		return nil, 0, apperror.ErrForbidden
 	}
 
@@ -820,4 +845,32 @@ func (uc *GroupUseCase) RemoveMemberAsGroupAdmin(ctx context.Context, groupPubli
 	}
 
 	return uc.groupRepo.RemoveMember(ctx, group.ID, user.ID)
+}
+
+func (uc *GroupUseCase) UpdateMemberRoleAsGroupAdmin(ctx context.Context, groupPublicID, userPublicID, requesterPublicID string, input UpdateMemberRoleInput) error {
+	group, err := uc.groupRepo.GetByPublicID(ctx, groupPublicID)
+	if err != nil {
+		return err
+	}
+	if group == nil {
+		return apperror.ErrGroupNotFound
+	}
+
+	isAdmin, _, err := uc.isGroupAdmin(ctx, group.ID, requesterPublicID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return apperror.ErrForbidden
+	}
+
+	user, err := uc.userRepo.GetByPublicID(ctx, userPublicID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return apperror.ErrUserNotFound
+	}
+
+	return uc.groupRepo.UpdateMemberRole(ctx, group.ID, user.ID, input.Role)
 }
