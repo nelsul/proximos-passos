@@ -569,7 +569,7 @@ export default function ActivityDetailPage() {
       <ActivityItems activityId={activityId} isAdmin={isGroupAdmin} />
 
       {/* Admin/Supervisor: Student Submissions */}
-      {(isGroupAdmin || isGroupSupervisor) && <ActivitySubmissions activityId={activityId} />}
+      {(isGroupAdmin || isGroupSupervisor) && <ActivitySubmissions activityId={activityId} canReview={isGroupAdmin} />}
 
       {/* Activity Submission (only for regular members, not supervisors) */}
       {!isGroupAdmin && !isGroupSupervisor && (

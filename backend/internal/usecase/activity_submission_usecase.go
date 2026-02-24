@@ -694,7 +694,7 @@ func (uc *ActivitySubmissionUseCase) GetSubmissionQuestionAttempts(ctx context.C
 		return nil, apperror.ErrUserNotFound
 	}
 
-	// Allow if platform admin or group admin
+	// Allow if platform admin, group admin, or supervisor
 	if requesterRole != entity.UserRoleAdmin {
 		activity, err := uc.activityRepo.GetByID(ctx, sub.ActivityID)
 		if err != nil {
@@ -703,11 +703,11 @@ func (uc *ActivitySubmissionUseCase) GetSubmissionQuestionAttempts(ctx context.C
 		if activity == nil {
 			return nil, apperror.ErrActivityNotFound
 		}
-		isAdmin, err := uc.isGroupAdmin(ctx, activity.GroupID, user.ID)
+		isAuth, err := uc.isGroupAdminOrSupervisor(ctx, activity.GroupID, user.ID)
 		if err != nil {
 			return nil, err
 		}
-		if !isAdmin {
+		if !isAuth {
 			return nil, apperror.ErrForbidden
 		}
 	}

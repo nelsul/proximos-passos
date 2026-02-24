@@ -35,9 +35,10 @@ import { useToast } from "@/components/ui/toast";
 
 interface ActivitySubmissionsProps {
   activityId: string;
+  canReview?: boolean;
 }
 
-export function ActivitySubmissions({ activityId }: ActivitySubmissionsProps) {
+export function ActivitySubmissions({ activityId, canReview = true }: ActivitySubmissionsProps) {
   const t = useTranslations();
   const { toast } = useToast();
 
@@ -319,7 +320,7 @@ export function ActivitySubmissions({ activityId }: ActivitySubmissionsProps) {
 
                   {/* Actions */}
                   <div className="flex shrink-0 items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
-                    {sub.status === "pending" && (
+                    {canReview && sub.status === "pending" && (
                       <button
                         onClick={() => openReview(sub)}
                         className="inline-flex flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg border border-surface-border bg-surface-light px-3 py-1.5 text-xs font-medium text-muted hover:text-heading hover:border-secondary/40 transition-colors shadow-sm"
@@ -571,7 +572,7 @@ export function ActivitySubmissions({ activityId }: ActivitySubmissionsProps) {
                   </div>
 
                   {/* Review button inside expanded for non-pending too */}
-                  {sub.status !== "pending" && (
+                  {canReview && sub.status !== "pending" && (
                     <div className="flex pt-2">
                        <button
                         onClick={() => openReview(sub)}
