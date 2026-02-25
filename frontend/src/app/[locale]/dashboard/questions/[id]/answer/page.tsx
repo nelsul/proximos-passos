@@ -294,15 +294,12 @@ export default function AnswerQuestionPage({
                     {OPTION_LETTERS[idx] ?? idx + 1}
                   </span>
                   <div className="flex-1">
-                    {opt.text && <LatexText text={opt.text} />}
-                    {opt.images?.map((img) => (
-                      <img
-                        key={img.id}
-                        src={img.url}
-                        alt={img.filename}
-                        className="mt-2 max-h-48 max-w-full rounded border border-gray-200 object-contain"
-                      />
-                    ))}
+                    <StatementRenderer
+                      statement={opt.text ?? ""}
+                      images={opt.images ?? []}
+                      className="text-sm text-heading leading-relaxed"
+                      imageClassName="mt-2 max-h-48 max-w-full rounded border border-gray-200 object-contain"
+                    />
                   </div>
                   {revealCorrect && isCorrectOption && (
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />

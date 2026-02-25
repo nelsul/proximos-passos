@@ -33,6 +33,7 @@ export function SearchableSelect({
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [asyncOptions, setAsyncOptions] = useState<Option[] | null>(null);
+  const [cachedOption, setCachedOption] = useState<Option | null>(null);
   const [searching, setSearching] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -45,7 +46,8 @@ export function SearchableSelect({
       );
 
   const selectedOption = initialOptions.find((o) => o.value === value)
-    ?? asyncOptions?.find((o) => o.value === value);
+    ?? asyncOptions?.find((o) => o.value === value)
+    ?? (cachedOption?.value === value ? cachedOption : undefined);
 
   const runSearch = useCallback(
     (query: string) => {
@@ -143,6 +145,7 @@ export function SearchableSelect({
                   key={option.value}
                   onClick={() => {
                     onChange(option.value);
+                    setCachedOption(option);
                     setIsOpen(false);
                     setSearch("");
                     setAsyncOptions(null);

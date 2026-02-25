@@ -220,7 +220,25 @@ export function QuestionForm({
     (async () => {
       try {
         const res = await listExams(1, 200);
-        if (!cancelled) setExams(res.data ?? []);
+        if (!cancelled) {
+          const list = res.data ?? [];
+          if (initialQuestion?.exam && !list.some((e) => e.id === initialQuestion.exam!.id)) {
+            list.unshift({
+              id: initialQuestion.exam.id,
+              title: initialQuestion.exam.title,
+              year: initialQuestion.exam.year,
+              institution: {
+                id: "",
+                name: initialQuestion.exam.institution,
+                acronym: initialQuestion.exam.institution_acronym || initialQuestion.exam.institution,
+              },
+              is_active: true,
+              created_at: "",
+              updated_at: "",
+            });
+          }
+          setExams(list);
+        }
       } finally {
         if (!cancelled) setExamsLoading(false);
       }
@@ -228,7 +246,7 @@ export function QuestionForm({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialQuestion]);
 
   // ---- Block operations ----
 

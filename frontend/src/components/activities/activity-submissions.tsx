@@ -16,6 +16,8 @@ import {
   Image,
   Eye,
   HelpCircle,
+  GraduationCap,
+  PenLine,
 } from "lucide-react";
 import {
   listActivitySubmissions,
@@ -31,6 +33,7 @@ import { listActivityItems, type ActivityItemResponse } from "@/lib/activities";
 import { ApiRequestError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { LatexText } from "@/components/ui/latex-text";
+import { stripImageMarkers } from "@/components/questions/statement-renderer";
 import { useToast } from "@/components/ui/toast";
 
 interface ActivitySubmissionsProps {
@@ -350,21 +353,23 @@ export function ActivitySubmissions({ activityId, canReview = true }: ActivitySu
                 <div className="border-t border-surface-border px-3 pb-3 pt-2 space-y-3">
                   {/* Notes */}
                   {sub.notes && (
-                    <div className="text-sm">
-                      <span className="font-medium text-heading">
-                        {t("ACTIVITY_SUBMISSION_NOTES")}:
-                      </span>{" "}
-                      <span className="text-muted">{sub.notes}</span>
+                    <div className="rounded-lg border border-surface-border bg-background p-3.5 shadow-sm space-y-2">
+                      <div className="flex items-center gap-1.5 text-sm font-semibold text-heading">
+                        <PenLine className="h-4 w-4 text-muted" />
+                        <span>{t("ACTIVITY_SUBMISSION_NOTES")}</span>
+                      </div>
+                      <p className="text-sm text-body whitespace-pre-wrap leading-relaxed">{sub.notes}</p>
                     </div>
                   )}
 
                   {/* Feedback */}
                   {sub.feedback_notes && (
-                    <div className="rounded-lg border border-surface-border bg-surface p-2.5 text-sm">
-                      <span className="font-medium text-heading">
-                        {t("ACTIVITY_SUBMISSION_FEEDBACK")}:
-                      </span>{" "}
-                      <span className="text-body">{sub.feedback_notes}</span>
+                    <div className="rounded-lg border border-secondary/30 bg-secondary/5 p-3.5 shadow-sm space-y-2">
+                      <div className="flex items-center gap-1.5 text-sm font-semibold text-secondary-dark">
+                        <GraduationCap className="h-4 w-4 text-secondary" />
+                        <span>{t("ACTIVITY_SUBMISSION_FEEDBACK")}</span>
+                      </div>
+                      <p className="text-sm text-body whitespace-pre-wrap leading-relaxed">{sub.feedback_notes}</p>
                     </div>
                   )}
 
@@ -504,10 +509,10 @@ export function ActivitySubmissions({ activityId, canReview = true }: ActivitySu
                                               :
                                             </span>{" "}
                                             <LatexText
-                                              text={
+                                              text={stripImageMarkers(
                                                 attempt.option_selected.text ??
                                                 attempt.option_selected.id
-                                              }
+                                              )}
                                               as="span"
                                               className={
                                                 attempt.option_selected

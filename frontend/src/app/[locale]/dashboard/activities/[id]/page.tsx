@@ -22,6 +22,8 @@ import {
   PlayCircle,
   HelpCircle,
   CheckSquare,
+  GraduationCap,
+  PenLine,
 } from "lucide-react";
 import { CountdownTimer } from "@/components/ui/countdown-timer";
 import {
@@ -580,7 +582,17 @@ export default function ActivityDetailPage() {
           </h2>
 
           {submission ? (
-            <div className="space-y-3">
+            <div className="space-y-4 mt-2">
+              {submission.feedback_notes && (
+                <div className="rounded-xl border border-secondary/30 bg-secondary/5 p-4 shadow-sm space-y-2">
+                  <div className="flex items-center gap-1.5 text-sm font-semibold text-secondary-dark">
+                     <GraduationCap className="h-4 w-4 text-secondary" />
+                     <span>{t("ACTIVITY_SUBMISSION_FEEDBACK")}</span>
+                  </div>
+                  <p className="text-sm text-body whitespace-pre-wrap leading-relaxed">{submission.feedback_notes}</p>
+                </div>
+              )}
+
               <div
                 className={`flex items-center gap-2 rounded-lg p-3 ${
                   submission.status === "approved"
@@ -623,10 +635,11 @@ export default function ActivityDetailPage() {
               </div>
 
               {/* Notes are always editable */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-heading">
-                  {t("ACTIVITY_SUBMISSION_NOTES")}
-                </label>
+              <div className="rounded-xl border border-surface-border bg-surface p-4 shadow-sm space-y-3">
+                <div className="flex items-center gap-1.5 text-sm font-semibold text-heading">
+                  <PenLine className="h-4 w-4 text-muted" />
+                  <label>{t("ACTIVITY_SUBMISSION_NOTES")}</label>
+                </div>
                 <textarea
                   value={editingSubNotes}
                   onChange={(e) => setEditingSubNotes(e.target.value)}
@@ -640,21 +653,12 @@ export default function ActivityDetailPage() {
                     variant="outline"
                     loading={savingNotes}
                     onClick={handleSaveSubNotes}
-                    className="w-auto"
+                    className="w-auto shadow-sm"
                   >
                     {t("ACTIVITY_SUBMISSION_SAVE_NOTES")}
                   </Button>
                 </div>
               </div>
-
-              {submission.feedback_notes && (
-                <div className="rounded-lg border border-surface-border bg-background p-3 text-sm">
-                  <span className="font-medium text-heading">
-                    {t("ACTIVITY_SUBMISSION_FEEDBACK")}:
-                  </span>{" "}
-                  <span className="text-body">{submission.feedback_notes}</span>
-                </div>
-              )}
 
               {/* Submission attachments (visible always, editable when pending or reproved) */}
               <div className="rounded-lg border border-surface-border bg-background p-4">
@@ -748,16 +752,31 @@ export default function ActivityDetailPage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-3 mt-6 border-t border-surface-border pt-4">
+            <div className="space-y-4 mt-6 border-t border-surface-border pt-4">
               <p className="text-sm font-medium text-heading">
                 {t("ACTIVITY_SUBMISSION_START_DESCRIPTION")}
               </p>
+
+              <div className="rounded-xl border border-surface-border bg-surface p-4 shadow-sm space-y-3">
+                <div className="flex items-center gap-1.5 text-sm font-semibold text-heading">
+                  <PenLine className="h-4 w-4 text-muted" />
+                  <label>{t("ACTIVITY_SUBMISSION_NOTES")}</label>
+                </div>
+                <textarea
+                  value={submissionNotes}
+                  onChange={(e) => setSubmissionNotes(e.target.value)}
+                  rows={3}
+                  placeholder={t("ACTIVITY_SUBMISSION_NOTES_PLACEHOLDER")}
+                  className="w-full rounded-lg border border-surface-border bg-background p-3 text-sm text-body placeholder:text-muted outline-none transition-colors focus:border-secondary focus:ring-1 focus:ring-secondary"
+                />
+              </div>
+
               <div className="flex justify-end">
                 <Button
                   size="sm"
                   loading={submitting}
                   onClick={handleSubmitActivity}
-                  className="w-auto"
+                  className="w-auto shadow-sm"
                 >
                   <Send className="h-4 w-4" />
                   {t("ACTIVITY_SUBMISSION_START")}
